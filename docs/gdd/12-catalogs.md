@@ -34,7 +34,11 @@ Goblins (scavenger camps, love corpses) · Ogres (strongholds, heavy-swing teach
 | Crossbows | light, heavy | slow reload, high pierce | Crossbow Mastery |
 | Throwing | knives, javelins, bombs | quick throws | Throwing |
 | Shields | buckler, round, tower | block, parry, bash | Shield Mastery |
-| Magic foci | staff, wand, tome | element bolt from the focus's element (fire, frost, stone, storm, life, shadow) | Staff / Wand / Tome Mastery |
+| Magic foci | staff, wand, tome | **no basic attack**; each focus has a focus-bound ability instead (see below) | Staff / Wand / Tome Mastery |
+
+### Focus-bound abilities (draft, OQ-017)
+
+Each focus item carries exactly one built-in ability, which is free (no level point), costs mana, and scales with that focus's mastery. Examples: *Ember Staff* → Flame Jet (short cone) · *Shard Wand* → Stone Shards (3-shot spread) · *Frostbound Tome* → Rime Ward (absorb shield) · *Storm Rod* (wand) → Arc Lash (chain to 2 targets) · *Living Staff* → Sapling (summon a healing sprout) · *Hollow Tome* → Siphon (drain mana from target).
 
 ## Traits (grow by use)
 
@@ -56,7 +60,7 @@ Goblins (scavenger camps, love corpses) · Ogres (strongholds, heavy-swing teach
 | Frost | Ice Lance · Frost Nova · Freeze River · Blizzard (deep) |
 | Stone | Stone Skin · Earth Spike · Boulder Throw · Quake (deep) |
 | Storm | Chain Lightning · Static Dash · Thunder Call |
-| Life | Mend · Regrowth · Purify · Revive (deep; respawn worlds only?) |
+| Life | Mend · Regrowth · Purify · Quick Revive (revives a downed ally faster, from range) |
 | Shadow | Blink · Shadow Cloak · Life Drain · Fear |
 | Utility | Light · Recall (return to bed) · Featherfall · Waterwalk |
 
@@ -76,6 +80,11 @@ Goblins (scavenger camps, love corpses) · Ogres (strongholds, heavy-swing teach
 | Dive Strike | Raptors (flyers) | Jumping rank |
 | Charge | Boars, bulls | Any melee |
 | Feign Death | Opossum-likes, rogues | Sneaking rank |
+| Fire Spit *(magic)* | Salamanders | Any magic focus |
+| Frost Breath *(magic)* | Ice wyrms, frost mages | Any magic focus |
+| Blink Step *(magic)* | Will-o'-wisps, shadow mages | Any magic focus |
+| Earthen Grip *(magic)* | Mountain trolls, druids | Staff |
+| Mana Sense *(magic)* | Hermit mages | Mana Flow rank (reveals magical monsters and foci nearby) |
 
 ## Biomes (launch)
 

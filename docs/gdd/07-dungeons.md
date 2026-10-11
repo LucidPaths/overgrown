@@ -23,7 +23,7 @@ Dungeons and rifts are the same thing in two settings. This is where equipment l
 
 ## Death in a dungeon
 
-- You're teleported to the dungeon entrance and **lose XP** (Metin2-style; → OQ-007).
+- You're teleported to the dungeon entrance and **lose XP**. The loss scales with floor depth and **can de-level you** (Metin2-style, harsh; amounts tunable).
 - **The dungeon ate you:** each death raises that dungeon's **difficulty tier** for everyone in that world. Its monsters level up and its floors get nastier.
 - Difficulty tiers decay slowly over time, and clearing deep floors pushes them back down faster.
 

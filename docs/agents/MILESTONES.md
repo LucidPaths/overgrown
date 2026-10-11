@@ -6,7 +6,7 @@ A milestone is a batch of GDD tasks that together make something you can play-te
 
 Nothing playable yet. This is the plumbing every later task stands on, so it's opus-heavy.
 
-OVR-001 · OVR-002 · TEC-001 · TEC-002 · TEC-003 · TEC-004 · TEC-005 · ART-001 · ART-002 · ART-003
+OVR-001 · OVR-002 · OVR-003 · TEC-001 · TEC-002 · TEC-003 · TEC-004 · TEC-005 · TEC-019 · ART-001 · ART-002 · ART-003
 
 **E2E checklist**
 - A clean clone builds client + asset pipeline with documented commands.
@@ -14,10 +14,11 @@ OVR-001 · OVR-002 · TEC-001 · TEC-002 · TEC-003 · TEC-004 · TEC-005 · ART
 - The same seed gives identical RNG sequences in TS and Python.
 - A pipeline-built atlas loads in the client; rebuilding gives byte-identical output.
 - The sim runs in a worker at 20 Hz and the renderer interpolates.
+- The sim package builds without DOM types (it's ready for a Node dedicated host).
 
 ## M1 — Walk the world
 
-OVR-003 (license, needs OQ-001 decided) · WLD-001 · WLD-002 · WLD-003 · WLD-004 · ART-004 · ART-005 · ART-006 · CHR-001 · CMB-001 · CMB-002 · UIX-002
+WLD-001 · WLD-002 · WLD-003 · WLD-004 · ART-004 · ART-005 · ART-006 · CHR-001 · CMB-001 · CMB-002 · UIX-002
 
 **E2E checklist**
 - Create a world from a seed and walk with the keyboard, then with touch emulation.

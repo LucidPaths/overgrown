@@ -52,5 +52,5 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 
 - [ ] **OVR-001** `[proto]` Repo scaffold: TS client, Python asset pipeline, CI that builds both and fails on lint or type errors.
 - [ ] **OVR-002** `[proto]` Seeded RNG utility shared by client and pipeline (same seed gives the same output in TS and Python where needed).
-- [ ] **OVR-003** Choose and add an open-source license (→ OQ-001).
+- [ ] **OVR-003** Add the MIT `LICENSE` file (decided in OQ-001: MIT for code and generated assets).
 - [ ] **OVR-004** Write overgrown-specific instantiations for the five lattice principles in `docs/PRINCIPLE_LATTICE.md` (replace the `[ADAPT]` markers); Lucid approves.

@@ -93,3 +93,4 @@ These are the main source of "feel", so give them real visual budget.
 - [ ] **WLD-019** Destructible props with HP, break states and drops.
 - [ ] **WLD-020** Falling-prop physics: trees topple in the direction they were hit and deal damage on impact.
 - [ ] **WLD-021** Frozen rivers in winter (walkable ice that can crack).
+- [ ] **WLD-022** Chunk retention: drop visited chunks that have no lasting changes and regenerate them from the seed on revisit; region sim statistics are kept.

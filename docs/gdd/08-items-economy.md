@@ -29,8 +29,8 @@ They feed each other. Crafters can **reforge** (reroll an affix) and **upgrade**
 
 - **NPC merchants:** barter or coin. The haggling trait improves prices, and reputation with the merchant's faction matters.
 - **Dynamic prices:** each settlement tracks supply and demand per good. Flooding a town with wolf pelts crashes the price; a war spikes weapon prices. Caravans move goods between settlements in the sim.
-- **Player stalls:** players can rent a stall in a city (Metin2-style) and set prices. The stall sells while the player is in the world. Offline vending → OQ-008.
-- **Currency:** a single coin currency to start (→ OQ-009 for regional currencies).
+- **Player stalls:** players can rent a stall in a city (Metin2-style) and set prices. A player can **hire an NPC clerk** who keeps selling while the owner is offline or in another world. The clerk is a real NPC: paid wages, can be robbed, can die.
+- **Currency:** one coin currency everywhere.
 
 ## Corpses
 
@@ -57,3 +57,4 @@ They feed each other. Crafters can **reforge** (reroll an affix) and **upgrade**
 - [ ] **ITM-015** Player stalls: rent, list, sell while present.
 - [ ] **ITM-016** Corpse decay into loot caches (→ CMB-020).
 - [ ] **ITM-017** Scavenger NPCs and hoarding monsters loot corpses.
+- [ ] **ITM-018** Hired NPC stall clerks: wages, selling while the owner is away, payouts on return; clerk is a full NPC (→ NPC-001).

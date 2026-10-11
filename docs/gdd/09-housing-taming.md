@@ -5,7 +5,7 @@
 - Houses in settlements can be **bought or rented** (vacant ones, including ones freed when an NPC dies or migrates).
 - Furnish with crafted or bought furniture: bed (respawn point in respawn worlds), storage, crafting stations, decorations.
 - A home belongs to the character in that world. If the settlement dies, so does your neighborhood.
-- No free-form base building (→ OQ-010 if this changes).
+- No free-form base building for now. It may come after MVP (OQ-010).
 
 ## Camps
 

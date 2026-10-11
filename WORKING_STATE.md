@@ -10,9 +10,9 @@ Last updated: 2026-10-11
 **Definition, not dispatch.** Lucid wants things defined properly before any worker runs. No code exists yet.
 
 Waiting on Lucid:
-- Review `docs/gdd/12-catalogs.md` (draft content) and `docs/gdd/13-open-questions.md`. Copies are in the claude.ai Project under `review/`.
+- Review `docs/gdd/12-catalogs.md` (draft content, including the new mage section, OQ-017). A copy is in the claude.ai Project under `review/`.
 - Sign off `docs/agents/MILESTONES.md` (draft).
-- OQ-001 license (blocks OVR-003 in M1, not M0).
+- OQ-002 (final name) is the only original open question left; it doesn't block anything.
 
 Next once cleared: write specs for M0 and dispatch.
 
@@ -28,6 +28,7 @@ None.
 - 2026-10-11 Git: the worker commits on its branch; the orchestrator pushes and opens the PR.
 - 2026-10-11 Two gates: a sonnet critic per task, then a context-free **fable** gate on the PR (spec + diff + lattice). Fable findings → PR review comment → same worker goes back. Fable PASS → orchestrator merges automatically and ticks the GDD box.
 - 2026-10-11 Tests only where they guard something that would silently break. E2E runs **per milestone**, not per PR.
+- 2026-10-11 OQ-001 to OQ-016 resolved with Lucid (see `docs/gdd/13-open-questions.md` § Resolved). The architecture-relevant ones: MIT license; a Node dedicated host is planned, so **the sim must stay browser-API-free** (TEC-019, in M0); X sign-in is optional forever; hardcore mode is solo-only; there's a downed state with a ~10 s revive; untouched chunks get dropped and regenerated from the seed.
 
 ## Corrections (accumulate; mistakes not to repeat)
 

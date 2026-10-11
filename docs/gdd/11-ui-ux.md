@@ -2,7 +2,7 @@
 
 ## Principles
 
-- **The first click is the game.** Open the link, see the world within seconds. Whether Sign in with X is required up front or prompted later is open (→ OQ-004); the default is to prompt after the first few minutes. Character creation is short (species + appearance) and can be skipped with a random roll.
+- **The first click is the game.** Open the link, see the world within seconds. Sign in with X is optional and never blocks play. Character creation is short (species + appearance) and can be skipped with a random roll.
 - **Diegetic where possible.** Danger is read from sprites (size, scars, grey fur) before numbers. Numbers appear as your perception trait grows.
 - **Touch and mouse are equals.** Every action works with both.
 
@@ -25,7 +25,8 @@
 ## Menus
 
 - Inventory + paper doll · character sheet (traits, abilities, teachings, level points) · crafting · trade/barter · stall management · map · quest log · faction reputation.
-- World menu: create world (seed, permadeath on/off, PvP stays on), load, export/import, open to friends (share link), kick/ban.
+- World menu: create world (seed; mode: Respawn / Permadeath / Hardcore, where Hardcore is solo-only; PvP is always on), load, export/import, open to friends (share link; hidden for Hardcore), kick/ban.
+- Settings include the optional click-to-move control scheme.
 
 ## Onboarding
 

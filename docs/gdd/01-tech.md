@@ -19,7 +19,8 @@
 | Signaling | Small WebSocket service (self-hostable; ours runs on Hetzner) | Peers find each other; no game traffic passes through it |
 | Storage | IndexedDB (worlds, characters), export/import as files | Valheim-style local ownership |
 | Assets | Python 3 pipeline (Pillow, NumPy) producing atlases + JSON | Deterministic, code-generated art and audio |
-| Auth | Sign in with X (OAuth 2.0 PKCE) | Identity label for characters (→ OQ-004 for cost and verification) |
+| Auth | Sign in with X (OAuth 2.0 PKCE), **optional** | Identity label only; never required to play (OQ-004). X API cost is still unverified. |
+| Dedicated host | The same sim code in Node.js (planned) | Always-on worlds on a server (OQ-003) |
 
 ## Architecture
 
@@ -33,6 +34,7 @@ client (main thread)            sim worker                    peers
 
 - The simulation is an ECS-style data layout (typed arrays), so thousands of coarse entities stay cheap.
 - The renderer only reads snapshots from the sim. It never mutates game state.
+- **The sim never touches browser APIs** (DOM, Pixi, WebAudio, `window`). It has to run unchanged in a Web Worker *and* in Node.js for dedicated hosts. Storage and networking reach the sim through small adapter interfaces.
 
 ## Multiplayer model
 
@@ -41,11 +43,11 @@ client (main thread)            sim worker                    peers
 - **Split-by-area authority** (Valheim-style zone ownership): each chunk region is simulated by one peer, normally the player nearest to it. Ownership transfers as players move. The world host owns persistence and anything nobody is near.
 - **Trust model: Valheim-style.** Characters are local files and cheating is possible. We accept this and don't build anti-cheat. Worlds can kick and ban.
 - **Player cap: 10 per world.**
-- **The world only exists while someone hosts it.** When the host leaves, the world closes. Host migration is an open question (→ OQ-005).
+- **The world only exists while someone hosts it.** When a tab host leaves, the world closes; there's no peer-to-peer host migration (OQ-005). Always-on worlds run on a **dedicated host**: the same sim in Node.js on a server, which players join through the same share-link flow.
 
 ## Persistence
 
-- **World save:** seed + diffs from generated state + full sim state of visited regions, in IndexedDB. Exportable as a file.
+- **World save:** seed + diffs from generated state + sim state of visited regions, in IndexedDB. Exportable as a file. Chunks without lasting changes aren't stored; they're regenerated from the seed (WLD-022).
 - **Character save:** local, exportable, tagged with the X identity that created it. Valheim-style: it carries inventory between worlds.
 - **Corpses live in the world save**, not the character save.
 
@@ -69,8 +71,10 @@ client (main thread)            sim worker                    peers
 - [ ] **TEC-010** Input-replication netcode: clients send inputs, owners send state; snapshot interpolation for remote entities.
 - [ ] **TEC-011** Zone ownership: assign, transfer and hand off chunk regions between peers.
 - [ ] **TEC-012** Asset streaming: core atlas in the initial load, biome atlases loaded on demand.
-- [ ] **TEC-013** Sign in with X (OAuth 2.0 PKCE) and character identity tagging (→ OQ-004).
+- [ ] **TEC-013** Optional Sign in with X (OAuth 2.0 PKCE) and character identity tagging; the game is fully playable without it.
 - [ ] **TEC-014** Kick/ban list per world.
 - [ ] **TEC-015** Performance HUD (fps, entity counts, sim tick cost) behind a debug flag.
 - [ ] **TEC-016** Load-time CI check: fail if the initial bundle exceeds budget.
 - [ ] **TEC-017** Open Graph/X card meta tags so shared links render a preview image (summary card, not a player card).
+- [ ] **TEC-018** Dedicated host: run the sim worker code in Node.js with storage and network adapters, so a server can host an always-on world joined via share link.
+- [ ] **TEC-019** `[proto]` CI guard: the sim package builds with no DOM/browser types available, so browser API use in the sim fails the build.

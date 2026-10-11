@@ -40,6 +40,8 @@ A teaching is a transferable technique, usually an attack pattern or movement tr
 - **NPC teachers**, who can be asked, paid or befriended into teaching. Example: an assassin teaches silent running.
 - **Fighting monsters or NPCs that use it, repeatedly.** Example: fight ogres enough and you learn the heavy blunt swing. Fight archers and you pick up quickdraw or multishot.
 
+**Magic teachings** work the same way: spell techniques learned from NPC mages or from magical monsters (e.g. fire spit from a salamander). They need a magic focus and cost mana. Together with the focus-bound ability of the equipped focus (→ CMB magic), they mean a mage never depends on Ability Books alone.
+
 Each teaching has a **requirement** (weapon type or trait rank) to use it, plus its own proficiency that grows by use. Teachings cost **no level points**. The cost is exposure: you have to seek out the right teacher or enemy.
 
 ## Equip slots (paper doll)
@@ -48,8 +50,9 @@ Head, chest, legs, feet, hands, back (cape or quiver), main hand, off hand (shie
 
 ## Death (summary; details in CMB)
 
-- **Overworld:** per world setting. **Permadeath** deletes the character; its items stay on its corpse in that world for anyone to loot. **Respawn** sends you back to your bed or the world spawn and leaves a corpse to recover (Valheim-style).
-- **Dungeon/rift:** you get teleported to the entrance and lose XP. The dungeon gets harder for everyone (→ DNG).
+- At 0 HP you're **downed** for ~10 s and an ally can revive you.
+- **Overworld:** depends on the world mode. **Respawn** sends you back to your bed or the world spawn and leaves a corpse to recover. **Permadeath** deletes the character; its items stay on its corpse for anyone to loot. **Hardcore** (solo only) deletes the character and the world.
+- **Dungeon/rift:** you're teleported to the entrance and lose XP, scaled by depth; you can de-level. The dungeon gets harder for everyone (→ DNG).
 - Either way, reputation is tied to the character, so a new character starts fresh.
 
 ## Tasks

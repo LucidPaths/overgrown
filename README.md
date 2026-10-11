@@ -14,4 +14,4 @@ Pre-production. The design lives in [`docs/gdd/`](docs/gdd/README.md). Every tas
 
 ## License
 
-TBD (open source; see [OQ list](docs/gdd/13-open-questions.md)).
+MIT, for code and generated assets alike.

@@ -1,22 +1,30 @@
 # 13 — Open Questions
 
-Each question has a **default** that code follows until it's decided. When one is resolved, record the decision and strike the question; keep the ID.
+Undecided things go here, each with a **default** that code follows until it's decided. When a question is resolved, its row moves to *Resolved* with the decision, and the design sections are updated to match. IDs are never reused.
+
+## Open
 
 | ID | Question | Default until decided |
 |----|----------|----------------------|
-| OQ-001 | Which open-source license? Code and generated assets may want different licenses (e.g. MIT/Apache for code, CC-BY-SA for art). | Undecided; nothing published as a release before this is set. |
-| OQ-002 | Final game name, since "overgrown" is the working name. | `overgrown` |
-| OQ-003 | Can a world be hosted somewhere other than a browser tab (a headless dedicated host on a server) for always-on worlds? | Tab-only. |
-| OQ-004 | Sign in with X: X developer account and API costs are unverified. Required before first play, or prompted later? What happens with no X account? | Prompt after a few minutes of play; allow local-only characters if sign-in fails. |
-| OQ-005 | Host migration: when the host leaves, does another peer take over, or does the world close? | World closes; other players' characters keep what they carried. |
-| OQ-006 | Click-to-move as an alternative desktop scheme? | WASD + mouse only. |
-| OQ-007 | Dungeon XP loss size, and can it de-level you? | 10% of the current level's XP requirement; no de-leveling. |
-| OQ-008 | Can player stalls sell while the owner is offline (or in another world)? | No; stalls close when the owner leaves. |
-| OQ-009 | Regional/species currencies? | One coin currency. |
-| OQ-010 | Free-form base building ever? | No; claim, furnish and camps only. |
-| OQ-011 | Permadeath design needs a closer look, per Lucid. Is permadeath + corpse looting fun at scale, or is a lineage/heir system better? | Per-world setting: permadeath or respawn. |
-| OQ-012 | Revive ability: does it exist, and does it work in permadeath worlds? | Respawn worlds only. |
-| OQ-013 | Can PvP be disabled per world, or is open PvP universal? | Open PvP everywhere (as chosen). |
-| OQ-014 | Do characters from a permadeath world get flagged when joining respawn worlds (and vice versa)? | No flags. |
-| OQ-015 | Max world size or chunk retention? Save files grow without bound in an infinite world. | Keep all visited chunks; revisit when saves exceed ~50 MB. |
-| OQ-016 | Should magic-focus basic attacks and fire-type abilities overlap (fire staff + Fireball book)? Lucid flagged it as possibly redundant but wants magic to be "just another thing". | Both exist; the focus attack is weak and spammable, book abilities are strong and costly. |
+| OQ-002 | Final game name. | `overgrown` (working name) |
+| OQ-017 | Mage design details: which foci exist, what each focus-bound ability is, and which monsters/NPCs teach magic teachings. | Draft in `12-catalogs.md`; Lucid to review. |
+
+## Resolved
+
+| ID | Question | Decision (2026-10-11) | Applied in |
+|----|----------|----------|------------|
+| OQ-001 | License | **MIT for everything** (code and generated assets). | OVR-003 |
+| OQ-003 | Headless dedicated hosts for always-on worlds? | **Yes, plan for it.** The sim must run in Node without browser APIs, so a server can host a world the same way a tab does. | 01-tech, TEC-018 |
+| OQ-004 | When does Sign in with X happen? | **Optional, forever.** It's identity sugar, never a gate. Characters work fully without it. | 01-tech, TEC-013 |
+| OQ-005 | What happens when the host leaves? | **The tab-hosted world closes.** Always-on worlds use a dedicated host (OQ-003). No peer-to-peer host migration. | 01-tech |
+| OQ-006 | Click-to-move? | **Yes, as an optional desktop scheme** in settings (Metin2-style). | 05-combat, CMB-024 |
+| OQ-007 | Dungeon XP loss | **Harsh: scales with depth and can de-level.** | 05-combat, 07-dungeons |
+| OQ-008 | Can stalls sell while the owner is away? | **Yes, through a hired NPC clerk** who runs the stall in that world. | 08-items-economy, ITM-018 |
+| OQ-009 | Regional currencies? | **No. One coin currency.** | 08-items-economy |
+| OQ-010 | Free-form base building? | **Maybe later, post-MVP.** Not planned now. | 09-housing-taming |
+| OQ-011 | Permadeath design | **Per-world mode, picked by the host:** Respawn, Permadeath, or **Hardcore** (solo-only; your death deletes the world, Minecraft-style). | 05-combat, 11-ui-ux |
+| OQ-012 | Revive | **Yes, everywhere.** A dying character is *downed* for ~10 s, and an ally can revive them in that window. In PvP, looters wait out the 10 s. | 05-combat, CMB-025 |
+| OQ-013 | Can PvP be turned off? | **No. Open PvP everywhere.** | 05-combat |
+| OQ-014 | Flag characters by the modes they've played? | **No flags.** | — |
+| OQ-015 | Save size in infinite worlds | **Forget untouched chunks:** visited chunks with no lasting changes are dropped and regenerated from the seed on revisit. Region sim statistics are kept. | 02-world, WLD-022 |
+| OQ-016 | Magic focus attack vs ability books | **A focus has no basic attack.** It comes with a built-in **focus-bound ability** (no level-point cost). Mages also learn **magic teachings** from NPC mages and magical monsters, like martial teachings. Ability Books aren't only elemental spells, and mages shouldn't depend on books alone. | 04-characters, 05-combat, 12-catalogs |
