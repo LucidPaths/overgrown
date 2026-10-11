@@ -11,6 +11,7 @@
 - Every kill grants XP, overworld and dungeon alike. Quests, crafting milestones and discoveries grant XP too.
 - **Soft cap:** the XP curve steepens so levels slow down without a hard ceiling. This mirrors monsters soft-capping with age.
 - **Level points: 1 per level.** They're the currency for abilities (below). A level 10 character has 10 points in total, so it can't hold 11 abilities.
+- **De-leveling** (dungeon deaths can cause it): if spent points exceed your new level, the **most recently learned or ranked-up ability goes dormant**. It can't be used until the level is regained, then it wakes automatically. Nothing is lost permanently.
 
 ## The three ways to grow
 
@@ -59,7 +60,7 @@ Head, chest, legs, feet, hands, back (cape or quiver), main hand, off hand (shie
 
 - [ ] **CHR-001** `[proto]` Character entity shared by players and NPCs (same component set).
 - [ ] **CHR-002** `[proto]` XP and level-up with a soft-cap curve (tunable table).
-- [ ] **CHR-003** Level point pool: earned 1 per level; spent on learning and ranking abilities.
+- [ ] **CHR-003** Level point pool: earned 1 per level; spent on learning and ranking abilities; on de-level, the most recent spend goes dormant until the level is regained.
 - [ ] **CHR-004** `[proto]` Trait system core: use events → trait XP → rank, with diminishing returns.
 - [ ] **CHR-005** `[proto]` Weapon mastery traits feeding the damage roll skew (→ CMB-008).
 - [ ] **CHR-006** Movement traits: dodge, sprint, swim, climb, jump.
