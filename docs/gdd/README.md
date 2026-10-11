@@ -36,9 +36,11 @@ The GDD is the single source of truth for what the game is. Code that contradict
 
 ## Workflow
 
-1. A worker agent (or human) picks **one unchecked task**, creates a branch named after its ID (lowercase ID + slug, e.g. `cmb-004-stamina-pool`), and implements only that task.
-2. The PR title starts with the ID: `CMB-004: stamina pool`. The PR body links the GDD line.
-3. The merge agent reviews, merges, then in the same merge (or an immediate follow-up commit) ticks the box and appends the PR number:
+The full agent pipeline (spec → worker → critic → PR → Fable gate → merge) is in [docs/agents/PIPELINE.md](../agents/PIPELINE.md). In short:
+
+1. Every task gets a spec in `docs/specs/<ID>.md` before work starts. A worker implements only that task on a branch named after its ID (lowercase ID + slug, e.g. `cmb-004-stamina-pool`).
+2. The PR title starts with the ID: `CMB-004: stamina pool`. The PR body links the GDD line and the spec.
+3. After the final gate passes, the orchestrator merges, then in the same push (or an immediate follow-up commit) ticks the box and appends the PR number:
    ```
    - [x] **ABC-001** Example task description. — #42
    ```
