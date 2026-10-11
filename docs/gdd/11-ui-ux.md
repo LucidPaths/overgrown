@@ -1,0 +1,47 @@
+# 11 — UI & UX
+
+## Principles
+
+- **The first click is the game.** Open the link, see the world within seconds. Whether Sign in with X is required up front or prompted later is open (→ OQ-004); the default is to prompt after the first few minutes. Character creation is short (species + appearance) and can be skipped with a random roll.
+- **Diegetic where possible.** Danger is read from sprites (size, scars, grey fur) before numbers. Numbers appear as your perception trait grows.
+- **Touch and mouse are equals.** Every action works with both.
+
+## HUD
+
+- HP, stamina and mana bars, plus an ability fatigue indicator.
+- Hotbar (desktop) / ability ring (touch).
+- Minimap showing explored areas only; a full map shows explored chunks, discovered settlements, dungeons and rifts.
+- Clock and season indicator; weather icon.
+- Damage numbers (toggleable).
+
+## Nameplates (trait-gated)
+
+| Perception rank | You see |
+|---|---|
+| Low | Name only, plus visual cues |
+| Mid | Rough danger tier (color) and age symbol |
+| High | Exact level, age stage, mutation flag, known teachings |
+
+## Menus
+
+- Inventory + paper doll · character sheet (traits, abilities, teachings, level points) · crafting · trade/barter · stall management · map · quest log · faction reputation.
+- World menu: create world (seed, permadeath on/off, PvP stays on), load, export/import, open to friends (share link), kick/ban.
+
+## Onboarding
+
+No tutorial island. Spawn near a small friendly village where generated starter quests teach the systems through doing: gather, craft a weapon, cull a pest, sell materials, read your first Ability Book.
+
+## Tasks
+
+- [ ] **UIX-001** `[proto]` HUD: HP, stamina, mana bars.
+- [ ] **UIX-002** `[proto]` Touch layout: stick, attack, dodge, ability ring; auto-switch by input device.
+- [ ] **UIX-003** Minimap and full map with fog of war.
+- [ ] **UIX-004** Nameplates gated by perception trait.
+- [ ] **UIX-005** Inventory + paper doll screen.
+- [ ] **UIX-006** Character sheet.
+- [ ] **UIX-007** Crafting, trade and stall UIs.
+- [ ] **UIX-008** World menu: create/load/export/import/open to friends.
+- [ ] **UIX-009** Character creation: species + appearance, random roll.
+- [ ] **UIX-010** Quest log and faction reputation screens.
+- [ ] **UIX-011** Settings: graphics, audio buses, juice intensity, control remapping.
+- [ ] **UIX-012** Starter-village onboarding quests (→ NPC-019).
