@@ -2,7 +2,7 @@
 
 ## Creation
 
-- **Species** (→ CAT species): the only mechanical choice at creation. Each species has a few **unique innate abilities** that no one else can learn.
+- **Species** (→ CAT species): the only mechanical choice at creation. Each species has **one innate**: a way of interacting with the world (senses, traversal, trust) that the species starts with and anyone else can unlock later through a trait. Innates are never stat buffs or immunities, are roughly equal in value, and don't steer playstyle.
 - **Appearance:** body, colors, hair or fur, face, starting clothes. Everything else is learned in play.
 - **No attributes.** There is no STR/DEX/INT. Power comes from traits, abilities, teachings and gear. Attributes that grow by use would be redundant with traits, and attributes bought with points would compete with abilities.
 
@@ -72,7 +72,7 @@ Head, chest, legs, feet, hands, back (cape or quiver), main hand, off hand (shie
 - [ ] **CHR-013** Learn teachings from NPC teachers (dialogue, cost, conditions).
 - [ ] **CHR-014** Learn teachings by repeatedly fighting monsters or NPCs that use them.
 - [ ] **CHR-015** Teaching proficiency grows by use.
-- [ ] **CHR-016** Species selection with innate abilities (→ CAT species).
+- [ ] **CHR-016** Species selection with one innate each, implemented as a pre-unlocked trait capability (→ CAT species).
 - [ ] **CHR-017** Appearance editor: body, colors, hair/fur, face, starting clothes.
 - [ ] **CHR-018** Equip slots and paper-doll layering (→ ART-010).
 - [ ] **CHR-019** Character sheet UI: traits, abilities, teachings, level points.

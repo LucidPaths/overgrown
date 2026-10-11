@@ -4,19 +4,22 @@
 
 ## Species (sapient, playable)
 
-Each species has 2 **innate abilities** nobody else can learn.
+Each species has **one innate**, and every innate follows three rules (decided by Lucid):
+1. **World, not numbers.** No percentage buffs, no immunities, no combat stats. An innate changes *how you interact with the world*: what you can sense, reach or be trusted with.
+2. **A head start, not an exclusive.** Every innate is something anyone can unlock later by growing a trait. The species just starts with it.
+3. **Equal weight, small footprint.** All innates are roughly equally useful and situational. None of them should push a species toward a playstyle.
 
-| Species | Feel | Innate abilities |
-|---|---|---|
-| Humans | Adaptable, everywhere | *Quick Study* (all trait XP +10%) · *Second Wind* (once per day, refill stamina at low HP) |
-| Elves | Forest, long-lived | *Keen Sight* (larger sight radius at night) · *Light Step* (no footstep noise on grass and forest floor) |
-| Dwarves | Mountain, craft | *Stonesense* (see ore veins through walls) · *Sturdy* (reduced knockback) |
-| Orcs | Badlands, raiders and traders | *Bloodrush* (damage up while below 30% HP) · *Thick Hide* (bleed immune) |
-| Foxfolk | Meadow tricksters | *Feint* (dodges leave a decoy) · *Silver Tongue* (haggling starts higher) |
-| Bearfolk | Forest, big and slow | *Hibernate* (sleeping heals fully and fast) · *Maul* (bare-hand heavy attack that scales) |
-| Rabbitfolk | Grassland, fast and timid | *Burrow Dash* (dodge distance +50%) · *Big Ears* (hear unseen enemies; minimap pings) |
-| Birdfolk | Cliffs and coast | *Glide* (glide down from heights, cross gaps) · *Sky Eye* (see flyer shadows from further away) |
-| Lizardfolk | River and swamp | *Gills* (breathe underwater) · *Cold Blood* (slow in cold, regen in heat) |
+| Species | Feel | Innate | Anyone else unlocks it via |
+|---|---|---|---|
+| Humans | Adaptable, everywhere | *Settler*: can rent houses and stalls in any settlement from day one, without needing standing there first | Reputation with that settlement's faction |
+| Elves | Forest, long-lived | *Night Eyes*: see at night as if it were dusk | Perception |
+| Dwarves | Mountain, craft | *Stonesense*: ore veins nearby show through rock | Gathering (mining) |
+| Orcs | Badlands, raiders and traders | *Scavenger's Nose*: recent kills and corpses nearby show on the minimap | Tracking |
+| Foxfolk | Meadow tricksters | *Soft Paws*: footsteps make no noise on grass and forest floor | Sneaking |
+| Bearfolk | Forest, big and slow | *Forager's Eye*: can tell at a glance which plants and mushrooms are edible, poisonous or useful | Foraging |
+| Rabbitfolk | Grassland, fast and timid | *Danger Sense*: a flyer's diving shadow shows earlier | Perception |
+| Birdfolk | Cliffs and coast | *Glide*: glide down from heights and across gaps | Jumping |
+| Lizardfolk | River and swamp | *Gills*: breathe underwater | Swimming |
 
 ## Monster societies (NPC-only clades)
 
@@ -105,7 +108,7 @@ Workbench (basic; camp-capable) · Forge · Tannery · Loom · Alchemy Table · 
 ## Tasks
 
 - [ ] **CAT-001** Lucid review pass over this catalog; strike/rename/add.
-- [ ] **CAT-002** Data schema + files for species and innate abilities.
+- [ ] **CAT-002** Data schema + files for species and their innates (as pre-unlocked trait capabilities).
 - [ ] **CAT-003** Data files for weapon families and types.
 - [ ] **CAT-004** Data files for traits.
 - [ ] **CAT-005** Data files for abilities.
