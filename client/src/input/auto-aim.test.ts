@@ -75,10 +75,10 @@ describe("pickAutoAim", () => {
     // Exact distance tie: the smaller EntityId wins, whatever the snapshot order.
     expect(
       pick([
-        { id: 9, dx: 30, dy: 0 },
-        { id: 3, dx: 30, dy: 0 },
+        { id: 9, dx: 50, dy: 0 },
+        { id: 3, dx: 48, dy: 14 },
       ]),
-    ).toEqual({ x: 30, y: 0 });
+    ).toEqual({ x: 48, y: 14 });
   });
 
   it("null without a direction, without `you`, or with nothing in the cone", () => {

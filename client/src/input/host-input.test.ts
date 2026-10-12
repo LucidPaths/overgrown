@@ -49,8 +49,9 @@ describe("HostInput", () => {
   });
 
   it("a press and its held state are one message", () => {
-    const { host, posts } = setup("touch");
+    const { host, posts } = setup("keyboard-mouse");
     host.press("touch", "attack", held({ aimX: 30, aimY: -4 }));
+    expect(host.active).toBe("touch");
     expect(posts).toHaveLength(1);
     expect(posts[0]).toMatchObject({ aimX: 30, aimY: -4, attackPresses: 1, dodgePresses: 0 });
   });
