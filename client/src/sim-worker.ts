@@ -1,6 +1,7 @@
 // Thin adapter between the browser worker globals and the browser-free sim.
 // The only module that touches worker globals.
 import { TICK_MS } from "@overgrown/sim/constants";
+import { advance, type StepClock } from "@overgrown/sim/fixed-step";
 import { snapshotBuffers, type HostToSim, type SimToHost } from "@overgrown/sim/protocol";
 import { createSim } from "@overgrown/sim/sim";
 
@@ -24,15 +25,23 @@ function fail(error: unknown): void {
 function start(seed: number): void {
   if (loop !== undefined) throw new Error("sim worker received a second init");
   const sim = createSim(seed);
+  const clock: StepClock = { accumulatorMs: 0 };
+  let last = performance.now(); // wall-clock time is read here, in the adapter, never in the sim
+  // Poll at twice the tick rate: setInterval is irregular, the accumulator makes the average exact.
   loop = setInterval(() => {
     try {
-      sim.step();
-      const snapshot = sim.snapshot();
-      scope.postMessage({ type: "snapshot", snapshot }, snapshotBuffers(snapshot));
+      const now = performance.now();
+      const steps = advance(clock, now - last);
+      last = now;
+      for (let i = 0; i < steps; i++) sim.step();
+      if (steps > 0) {
+        const snapshot = sim.snapshot(); // only the newest: the renderer never needs the skipped ones
+        scope.postMessage({ type: "snapshot", snapshot }, snapshotBuffers(snapshot));
+      }
     } catch (error) {
       fail(error);
     }
-  }, TICK_MS);
+  }, TICK_MS / 2);
 }
 
 scope.addEventListener("message", (event) => {

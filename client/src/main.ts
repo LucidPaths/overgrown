@@ -1,6 +1,8 @@
-import type { HostToSim, SimToHost } from "@overgrown/sim/protocol";
+import { TICK_MS } from "@overgrown/sim/constants";
+import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
 import { Application, Text, TextStyle, TextureStyle } from "pixi.js";
+import { createFrame, interpolate } from "./render/interpolate";
 import { SnapshotView } from "./render/snapshot-view";
 
 const DEFAULT_SEED = 1;
@@ -51,11 +53,27 @@ try {
   debugText.position.set(4, 4);
   app.stage.addChild(debugText);
 
+  // Rendering is one tick behind: draw prev -> curr, `alpha` of the way through the tick.
+  let prev: Snapshot | null = null;
+  let curr: Snapshot | null = null;
+  let currReceivedAt = 0;
+  const frame = createFrame();
+  app.ticker.add(() => {
+    if (curr === null) return;
+    interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
+    view.update(frame);
+  });
+
   const worker = new Worker(new URL("./sim-worker.ts", import.meta.url), { type: "module" });
   worker.addEventListener("message", (event: MessageEvent<SimToHost>) => {
     const msg = event.data;
-    if (msg.type === "snapshot") view.update(msg.snapshot);
-    else showFatal("overgrown's simulation stopped", new Error(msg.message));
+    if (msg.type === "snapshot") {
+      prev = curr;
+      curr = msg.snapshot;
+      currReceivedAt = performance.now();
+    } else {
+      showFatal("overgrown's simulation stopped", new Error(msg.message));
+    }
   });
   // Failures before the worker's own try/catch exists (e.g. its module fails to load).
   worker.addEventListener("error", (event) => {
