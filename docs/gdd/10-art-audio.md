@@ -17,7 +17,7 @@ tools/art/  (Python)
   palettes/        biome + pop + actor palettes (data)
   lib/             primitives: shapes, outlines, shading ramps, dithering, noise
   gen/             one generator per asset family (tiles, bodies, armor, weapons, monsters, props, vfx, icons)
-  build.py         runs all generators → atlases/*.png + atlases/*.json
+  build.py         runs all generators → atlases/*.webp (lossless, OQ-028) + atlases/*.json
 ```
 
 - Generators are **parametric**: e.g. `monster(body_plan="quadruped", size=1.2, age="old", mutation=None, palette="forest")`. Variants are parameters, not new files.
