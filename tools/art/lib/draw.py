@@ -17,9 +17,14 @@ _BAYER4 = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]
 _BAYER4_THRESHOLDS = (_BAYER4 + 0.5) / 16
 
 
+def _is_int(v: object) -> bool:
+    """True for Python ints and numpy integers; bool, np.bool_, floats and NaN are not ints."""
+    return isinstance(v, int | np.integer) and not isinstance(v, bool | np.bool_)
+
+
 def _color(color: Rgba) -> np.ndarray:
     """Validate an RGBA tuple (4 ints 0-255, binary alpha) and return it as a uint8 vector."""
-    if len(color) != 4 or any(not isinstance(v, int) or not 0 <= v <= 255 for v in color):
+    if len(color) != 4 or any(not _is_int(v) or not 0 <= v <= 255 for v in color):
         raise ValueError(f"color must be 4 ints in 0..255, got {color!r}")
     if color[3] not in (0, 255):
         raise ValueError(
@@ -31,17 +36,24 @@ def _color(color: Rgba) -> np.ndarray:
 LINE_COORD_MAX = 100_000  # line() walks every pixel of its span, so unbounded spans are refused
 
 
-def _ints(**values: object) -> None:
-    """Every named value must be a real int (bool, float and NaN are rejected)."""
+def _ints(**values: object) -> list[int]:
+    """Every named value must be an int or numpy integer; returns them as Python ints, in order."""
+    out = []
     for name, v in values.items():
-        if not isinstance(v, int) or isinstance(v, bool):
-            raise ValueError(f"{name} must be an int, got {v!r}")  # noqa: TRY004
+        if not _is_int(v):
+            raise ValueError(f"{name} must be an int, got {v!r}")
+        out.append(int(v))
+    return out
 
 
 def _finite(**values: object) -> None:
     """Every named value must be a finite real number (bool and NaN/inf are rejected)."""
     for name, v in values.items():
-        if not isinstance(v, int | float) or isinstance(v, bool) or not math.isfinite(v):
+        if (
+            not isinstance(v, int | float | np.integer | np.floating)
+            or isinstance(v, bool | np.bool_)
+            or not math.isfinite(v)
+        ):
             raise ValueError(f"{name} must be a finite number, got {v!r}")
 
 
@@ -60,7 +72,7 @@ def _check_mask(img: np.ndarray, mask: np.ndarray) -> None:
 
 def canvas(w: int, h: int) -> np.ndarray:
     """Fully transparent w x h image."""
-    _ints(w=w, h=h)
+    w, h = _ints(w=w, h=h)
     if w < 1 or h < 1:
         raise ValueError(f"canvas size must be at least 1x1, got {w}x{h}")
     return np.zeros((h, w, 4), np.uint8)
@@ -69,7 +81,9 @@ def canvas(w: int, h: int) -> np.ndarray:
 def rect(img: np.ndarray, x: int, y: int, w: int, h: int, color: Rgba) -> None:
     """Filled rectangle with top-left (x, y), clipped to the image."""
     _check_image(img)
-    _ints(x=x, y=y, w=w, h=h)
+    x, y, w, h = _ints(x=x, y=y, w=w, h=h)
+    if w < 0 or h < 0:
+        raise ValueError(f"rect size must not be negative, got w={w} h={h}")
     c = _color(color)
     x0, y0 = max(x, 0), max(y, 0)
     x1, y1 = min(x + w, img.shape[1]), min(y + h, img.shape[0])
@@ -83,7 +97,7 @@ def line(img: np.ndarray, x0: int, y0: int, x1: int, y1: int, color: Rgba) -> No
     Exact ties (the line passes between two pixels) round toward the line's end point.
     """
     _check_image(img)
-    _ints(x0=x0, y0=y0, x1=x1, y1=y1)
+    x0, y0, x1, y1 = _ints(x0=x0, y0=y0, x1=x1, y1=y1)
     for name, v in (("x0", x0), ("y0", y0), ("x1", x1), ("y1", y1)):
         if abs(v) > LINE_COORD_MAX:
             raise ValueError(f"{name}={v} is outside +-{LINE_COORD_MAX}")
@@ -110,7 +124,7 @@ def line(img: np.ndarray, x0: int, y0: int, x1: int, y1: int, color: Rgba) -> No
 
 def ellipse_mask(w: int, h: int, cx: float, cy: float, rx: float, ry: float) -> np.ndarray:
     """Bool (h, w) mask: pixel (x, y) is inside iff ((x+0.5-cx)/rx)^2 + ((y+0.5-cy)/ry)^2 <= 1."""
-    _ints(w=w, h=h)
+    w, h = _ints(w=w, h=h)
     _finite(cx=cx, cy=cy, rx=rx, ry=ry)
     if rx <= 0 or ry <= 0:
         raise ValueError(f"ellipse radii must be positive, got rx={rx} ry={ry}")
@@ -207,7 +221,7 @@ def paste(dst: np.ndarray, src: np.ndarray, x: int, y: int) -> None:
     """Copy src pixels with alpha 255 onto dst at (x, y), clipped to dst."""
     _check_image(dst)
     _check_image(src)
-    _ints(x=x, y=y)
+    x, y = _ints(x=x, y=y)
     sh, sw = src.shape[:2]
     dh, dw = dst.shape[:2]
     cx0, cy0 = max(x, 0), max(y, 0)

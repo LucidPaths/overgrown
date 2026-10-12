@@ -98,3 +98,15 @@ def test_out_of_bounds_drawing_is_clipped_and_bad_coords_are_rejected():
         draw.line(img, 0, 0, 10**9, 3, RED)
     with pytest.raises(ValueError, match="x"):
         draw.rect(img, 1.5, 0, 1, 1, RED)
+
+    # numpy integers (from np.nonzero bounds, pixel reads) are ints; negative sizes are errors
+    img = draw.canvas(4, 4)
+    draw.rect(
+        img, np.int64(1), np.int64(1), np.int64(2), np.int64(1), tuple(np.uint8([9, 8, 7, 255]))
+    )
+    assert _opaque(img) == {(1, 1), (2, 1)} and tuple(img[1, 1]) == (9, 8, 7, 255)
+    draw.rect(img, 0, 0, 0, 3, RED)  # zero size stays a legal no-op
+    assert len(_opaque(img)) == 2
+    for w, h, name in ((-1, 2, "w"), (2, -1, "h")):
+        with pytest.raises(ValueError, match=f"{name}="):
+            draw.rect(img, 0, 0, w, h, RED)
