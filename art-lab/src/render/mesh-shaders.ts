@@ -66,8 +66,8 @@ void main() {
     vec2 d = (gl_FragCoord.xy - uCut.xy) * vec2(1.0, 0.85);
     float r = length(d) / uCut.w;
     ivec2 q = ivec2(gl_FragCoord.xy);
-    if (r < 0.7 && ((q.x + q.y) & 1) == 0) discard;
-    if (r < 1.0 && (q.x & 1) == 0 && (q.y & 1) == 0) discard;
+    if (r < 0.72) discard;                                  // a clean hole: the player is drawn as is
+    if (r < 1.0 && ((q.x + q.y) & 1) == 0) discard;        // a dithered rim, so the hole has no hard edge
   }
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
