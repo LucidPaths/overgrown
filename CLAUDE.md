@@ -25,7 +25,9 @@ sim/           @overgrown/sim — pure TS simulation. Sees NO browser APIs (lib 
 client/        @overgrown/client — Vite + PixiJS app (renderer, input, UI, worker adapter, net)
 tools/art/     Python asset pipeline → client/public/generated/ (gitignored build output)
 contracts/     cross-language fixtures (e.g. RNG test vectors) shared by TS and Python tests
+scripts/       dev tools run with node (check-page.mjs: headless page check)
 services/      (later) tiny signaling service
+.claude/skills/ discipline skills copied from LucidPaths/claude.md-workflow (goal-loop, adversarial-review, …); docs/agents/ wins where they differ
 docs/          gdd/, agents/, specs/, e2e/, PRINCIPLE_LATTICE.md
 ```
 
@@ -33,7 +35,7 @@ No barrel files: import modules by path (`@overgrown/sim/version`), never throug
 
 ## Commands
 
-Activate a Python env with `tools/art/requirements-dev.txt` installed first (in the orchestrator's container: `source /home/claude/.venv-og/bin/activate`).
+Activate a Python 3.13 venv with `tools/art/requirements-dev.txt` installed first. Convention: `.venv/` at the repo root (gitignored): `python3.13 -m venv .venv && .venv/bin/pip install -r tools/art/requirements-dev.txt`, then `source .venv/bin/activate`.
 
 ```
 npm ci              install (lockfile committed)
@@ -41,6 +43,7 @@ npm run check       typecheck sim + client, eslint, ruff check, ruff format --ch
 npm test            vitest (TS) + pytest (tools/art)
 npm run build       art pipeline, then client production build → client/dist/
 npm run dev         Vite dev server
+node scripts/check-page.mjs <url> [shot.png] [waitMs]   headless page check (canvas info, console errors; exit 1 on errors)
 ```
 
 CI (`.github/workflows/ci.yml`) runs check, test and build on every push to main and every PR.
@@ -80,4 +83,4 @@ Add each one here as it's discovered.
 - **RNG inputs must be safe integers** (|v| ≤ 2^53−1). Both languages reject anything else, so they can't diverge.
 - **`npm run dev` builds the art first.** Pass Vite args after `--` (`npm run dev -- --port 4183`).
 - **Debug movers are temporary scaffolding** (`sim/src/debug-movers.ts`, `debug/*` frames). Remove them when real entities land in M1/M2.
-- **GitHub from the agent container:** GraphQL and branch deletion are blocked by the proxy. Use REST (`gh api repos/LucidPaths/overgrown/...`) for PRs, comments and merges.
+- **Cloud sessions (claude.ai/code):** `gh` has no valid token there and the git proxy refuses branch deletion. Use the GitHub connector tools for PRs, comments and merges; Lucid deletes branches in the GitHub UI. Locally, `gh` works normally.

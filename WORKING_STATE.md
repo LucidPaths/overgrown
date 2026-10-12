@@ -7,7 +7,7 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M0 complete (2026-10-12).** Housekeeping OVR-006/OVR-007 in flight, then M1.
+**M0 complete (2026-10-12).** Housekeeping: OVR-006 merged (#12); OVR-007 in flight. Then M1 (plan pending Lucid's answers).
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
 1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
@@ -23,7 +23,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-None. M0 is done: 12 tasks, PRs #1–#11, E2E green. Open follow-ups: ART-023, OVR-005, TEC-020, TEC-021 (not in any milestone yet).
+OVR-007 (branch ovr-007-dev-env, haiku). M0 is done: 12 tasks, PRs #1–#11, E2E green. Open follow-ups: ART-023, OVR-005, TEC-020, TEC-021 (not in any milestone yet).
 
 ## Decisions (accumulate)
 
@@ -37,6 +37,7 @@ None. M0 is done: 12 tasks, PRs #1–#11, E2E green. Open follow-ups: ART-023, O
 
 - 2026-10-12 OVR-001 also implemented TEC-019 in one PR (#1): the guard *is* the sim tsconfig, so a separate PR would have been a no-op. Allowed exception to one-task-per-PR.
 - 2026-10-12 Session moved to a claude.ai/code cloud container. Fable is available to subagents (probe → "OK"). Lucid chose to copy the claude.md-workflow skills (without its hooks) into `.claude/skills/` (OVR-007); where they differ, this repo's pipeline docs win.
+- 2026-10-12 Direct commits to `main` are refused by this session's permission classifier, so GDD ticks and WORKING_STATE updates ride in the next task PR; a PR merges only on the exact head Fable passed, so its own tick lands in the following PR.
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)
