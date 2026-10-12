@@ -8,7 +8,7 @@ Last updated: 2026-10-12
 ## Current phase
 
 **M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
-1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 (opus)
+1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. WLD-002 (sonnet) · ART-004 (sonnet) · CMB-001 (opus)
 3. WLD-003 (opus) · ART-006 (sonnet)
 4. WLD-004 (sonnet) · TEC-022 (sonnet)
@@ -30,7 +30,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Wave 1: WLD-001 #15, CHR-001 #16 merged; ART-005 in PR. Wave 2 workers done or running: CMB-001 (opus), ART-004 (sonnet), WLD-002 (sonnet). Wave 3 specs (WLD-003, ART-006) being drafted. Open follow-ups outside M1: ART-023, OVR-005.
+Wave 1 merged (#15, #16, #17). Wave 2: WLD-002 in PR; ART-004 critic PASS, queued; CMB-001 in critic. Wave 3 specs (WLD-003, ART-006) being drafted. Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
@@ -50,6 +50,7 @@ Wave 1: WLD-001 #15, CHR-001 #16 merged; ART-005 in PR. Wave 2 workers done or r
 ## Corrections (accumulate; mistakes not to repeat)
 
 - 2026-10-12 PR #14 (docs-only design lock) took 4 Fable rounds on cross-reference bookkeeping. Before gating a GDD edit, run a scripted sweep: every OQ "Applied in" cell ↔ task-line pointers ↔ prose mentions, and re-read surrounding prose and MILESTONES checklists.
+- 2026-10-12 Never chain `git add -A && git commit` after a `git merge` without checking `git diff --name-only --diff-filter=U` first: a conflicted CLAUDE.md got committed with markers on the ART-005 branch (caught before push, amended).
 - 2026-10-12 Parallel tasks that each add CLAUDE.md contract rows: merge `main` into the later branch before its Fable gate, so the gate sees the real head.
 
 - 2026-10-11 Used a research subagent before Lucid's research rule for this project was settled. It's now allowed as read-only digests only.
