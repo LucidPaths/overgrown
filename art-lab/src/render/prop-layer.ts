@@ -104,7 +104,7 @@ export class PropLayer implements Drawable {
     gl.uniform1f(this.sp.u.uTime!, f.time);
     gl.uniform4fv(this.sp.u.uPushers!, this.pushers);
     gl.disable(gl.CULL_FACE);
-    for (const m of this.meshes.values()) drawMesh(gl, m);
+    for (const [k, m] of this.meshes) { const [cx, cy] = k.split(",").map(Number); if (f.sees(cx!, cy!, 256)) drawMesh(gl, m); }
     gl.enable(gl.CULL_FACE);
   }
 
@@ -114,7 +114,7 @@ export class PropLayer implements Drawable {
     gl.uniform4fv(this.p.u.uPushers!, this.pushers);
     gl.uniform4fv(this.p.u.uCut!, this.cut);
     gl.disable(gl.CULL_FACE);
-    for (const m of this.meshes.values()) drawMesh(gl, m);
+    for (const [k, m] of this.meshes) { const [cx, cy] = k.split(",").map(Number); if (f.sees(cx!, cy!)) drawMesh(gl, m); }
     gl.enable(gl.CULL_FACE);
   }
 }

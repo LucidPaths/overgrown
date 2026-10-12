@@ -37,6 +37,10 @@ export interface FrameInfo {
   lighting: Lighting;
   /** clip-space y per px of height (see LEAN) */
   lean: number;
+  /** world xz rectangle the camera can see (generous: tall things and their lean included) */
+  view: { x0: number; x1: number; z0: number; z1: number };
+  /** true if chunk (cx, cy) touches the view, grown by `pad` px (shadow casters need more) */
+  sees(cx: number, cy: number, pad?: number): boolean;
   /** Called by drawables: sets the shared light uniforms on a program that is in use. */
   setLight(p: Program): void;
 }
@@ -152,7 +156,13 @@ export class Renderer {
     const L = this.lighting;
     const self = this;
     const lean = (2 * this.zoom / this.ih) * this.lean;
+    const fo = this.focus, hw = this.iw / 2 / this.zoom, hd = this.ih / 2 / this.zoom / Math.sin((PITCH_DEG * Math.PI) / 180);
+    const view = { x0: fo[0] - hw - 48, x1: fo[0] + hw + 48, z0: fo[2] - hd - 64, z1: fo[2] + hd + 180 };
     const f: FrameInfo = {
+      view,
+      sees(cx: number, cy: number, pad = 0) {
+        return cx * 512 + 512 > view.x0 - pad && cx * 512 < view.x1 + pad && cy * 512 + 512 > view.z0 - pad && cy * 512 < view.z1 + pad;
+      },
       viewProj: vp, lightViewProj: lvp, time, lighting: L, lean, ...this.basis,
       setLight(p: Program) {
         const u = p.u;

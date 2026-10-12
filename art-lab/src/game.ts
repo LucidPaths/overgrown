@@ -67,6 +67,7 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
   const fx = new FxLayer(r.gl);
   r.drawables.push(terrain, props, actors, fx);
   performance.mark("lab:gl");
+  (window as unknown as { __lab: unknown }).__lab = { r, terrain, props, actors, fx }; // for perf probes
   const forced = Number(q.get("scale") ?? 0);
   const resize = () => r.resize(Math.round(innerWidth * devicePixelRatio), Math.round(innerHeight * devicePixelRatio), forced);
   resize();

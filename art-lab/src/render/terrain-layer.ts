@@ -104,19 +104,17 @@ export class TerrainLayer implements Drawable {
     gl.useProgram(this.shadowP.prog);
     gl.uniformMatrix4fv(this.shadowP.u.uLightViewProj!, false, f.lightViewProj);
     gl.uniformMatrix4fv(this.shadowP.u.uModel!, false, this.identity);
-    for (const c of this.chunks.values()) drawMesh(gl, c.ground);
-    for (const c of this.chunks.values()) if (c.cliff) drawMesh(gl, c.cliff);
+    for (const c of this.chunks.values()) if (f.sees(c.cx, c.cy, 256)) { drawMesh(gl, c.ground); if (c.cliff) drawMesh(gl, c.cliff); }
   }
 
   main(gl: GL, f: FrameInfo): void {
     gl.useProgram(this.terrainP.prog);
     f.setLight(this.terrainP);
-    for (const c of this.chunks.values()) drawMesh(gl, c.ground);
-    for (const c of this.chunks.values()) if (c.cliff) drawMesh(gl, c.cliff);
+    for (const c of this.chunks.values()) if (f.sees(c.cx, c.cy)) { drawMesh(gl, c.ground); if (c.cliff) drawMesh(gl, c.cliff); }
     gl.useProgram(this.waterP.prog);
     f.setLight(this.waterP);
     gl.disable(gl.CULL_FACE);
-    for (const c of this.chunks.values()) if (c.water) drawMesh(gl, c.water);
+    for (const c of this.chunks.values()) if (c.water && f.sees(c.cx, c.cy)) drawMesh(gl, c.water);
     gl.enable(gl.CULL_FACE);
   }
 }
