@@ -742,8 +742,15 @@ TAILS: dict[str, dict[str, TailTemplate]] = {
 
 
 def tail(tail_kind: str, view: str) -> TailTemplate | None:
-    """The tail template of a species' tail kind in one view; None when that view shows no tail."""
-    return TAILS.get(tail_kind, {}).get(view)
+    """The tail template of a tail kind in one view; None for "none" or when that view shows no tail."""
+    if tail_kind == "none":
+        return None
+    try:
+        return TAILS[tail_kind].get(
+            view
+        )  # a view without an entry shows no tail (it is hidden behind the body)
+    except KeyError as err:
+        raise ValueError(f"heads: no tail templates for tail kind {tail_kind!r}") from err
 
 
 def template(species_key: str, view: str) -> Template:

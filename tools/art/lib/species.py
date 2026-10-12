@@ -33,7 +33,9 @@ class Species:
     body_ramp: str  # actors ramp for skin, fur, feathers or scales
     accent_ramp: str | None  # muzzle, belly, tail tip; None iff skin
     hair_ramp: str | None  # None iff the species has no hair
-    extra_ramp: str | None  # beak, inner ear...: a second accent; None when unused
+    extra_ramp: (
+        str | None
+    )  # beak, inner ear...: a second accent; a template may use F-J only if this is set
     cloth_ramp: str  # the base tunic
     legwear_ramp: str  # the base shorts
 
@@ -64,8 +66,8 @@ SPECIES: tuple[Species, ...] = (
     Species("elf",        8,  8,    8,  3,       3,  3,    2,    6,    "none",   "skin",     "skin_elf",     None,           "hair_blond", None,       "cloth_violet",  "cloth_moss"),
     Species("dwarf",      5,  7,    6,  6,       5,  4,    4,    8,    "none",   "skin",     "skin_dwarf",   None,           "hair_red",   None,       "cloth_sky",     "cloth_leather"),
     Species("orc",        6,  8,    8,  6,       5,  4,    4,    8,    "none",   "skin",     "skin_orc",     None,           "hair_black", None,       "cloth_leather", "cloth_ochre"),
-    Species("foxfolk",    7,  7,    7,  4,       4,  3,    3,    7,    "fox",    "fur",      "fur_fox",      "cream",        None,         None,       "cloth_teal",    "cloth_leather"),
-    Species("bearfolk",   5,  8,    7,  7,       6,  4,    5,    9,    "bear",   "fur",      "fur_bear",     "cream",        None,         None,       "cloth_moss",    "cloth_leather"),
+    Species("foxfolk",    7,  7,    7,  4,       4,  3,    3,    7,    "fox",    "fur",      "fur_fox",      "cream",        None,         "cream",    "cloth_teal",    "cloth_leather"),
+    Species("bearfolk",   5,  8,    7,  7,       6,  4,    5,    9,    "bear",   "fur",      "fur_bear",     "cream",        None,         "pink",     "cloth_moss",    "cloth_leather"),
     Species("rabbitfolk", 6,  7,    6,  3,       3,  3,    2,    6,    "rabbit", "fur",      "fur_rabbit",   "cream",        None,         "pink",     "cloth_rose",    "cloth_leather"),
     Species("birdfolk",   8,  6,    7,  4,       3,  2,    3,    6,    "bird",   "feathers", "feather_bird", "cream",        None,         "beak",     "cloth_ochre",   "cloth_leather"),
     Species("lizardfolk", 7,  7,    7,  4,       4,  3,    3,    7,    "lizard", "scales",   "scale_lizard", "belly_lizard", None,         None,       "cloth_linen",   "cloth_leather"),

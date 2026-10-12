@@ -94,8 +94,17 @@ class Sheet:
         self.own[mask] = self.roles[role]
         self.sh[mask] = shade[mask] if isinstance(shade, np.ndarray) else shade
 
-    def paint_template(self, rows: list[str], x0: int, y0: int) -> Mask:
-        """Draw a template with its top-left cell at (x0, y0); returns the mask it covered."""
+    def paint_template(self, rows: list[str], x0: int, y0: int, where: str) -> Mask:
+        """Draw a template with its top-left cell at (x0, y0); returns the mask it covered.
+
+        `where` names the template (species/view) in errors. A letter whose role the species has no ramp for raises.
+        """
+        for ch in sorted({c for row in rows for c in row} - set(heads.BLANK)):
+            role = heads.LEGEND[ch][0]
+            if role not in self.roles:
+                raise ValueError(
+                    f"{where}: template uses {ch!r} ({role} ramp) but the species has no {role}_ramp"
+                )
         covered = np.zeros((CELL, CELL), bool)
         for dy, row in enumerate(rows):
             for dx, ch in enumerate(row):
@@ -165,9 +174,15 @@ def _sheet(pal: Palette, sp: Species) -> Sheet:
 
     body = pal.ramp(sp.body_ramp)
     add("body", body)
-    add("accent", body if sp.accent_ramp is None else pal.ramp(sp.accent_ramp))
-    add("hair", pal.ramp(sp.hair_ramp) if sp.hair_ramp else body)
-    add("extra", pal.ramp(sp.extra_ramp) if sp.extra_ramp else body)
+    # Only the roles the species has a ramp for are registered: a template letter for any other role is an
+    # error in paint_template, never a silent body-colour pixel.
+    for role, name in (
+        ("accent", sp.accent_ramp),
+        ("hair", sp.hair_ramp),
+        ("extra", sp.extra_ramp),
+    ):
+        if name is not None:
+            add(role, pal.ramp(name))
     add("cloth", pal.ramp(sp.cloth_ramp))
     add("legwear", pal.ramp(sp.legwear_ramp))
     add("boot", pal.ramp("cloth_leather"))
@@ -308,7 +323,7 @@ def _draw_head(b: _Body) -> None:
     head = b.skel["head"]
     x0 = head.x - tpl.width // 2
     y0 = head.y - tpl.chin_row
-    covered = b.sheet.paint_template(tpl.rows, x0, y0)
+    covered = b.sheet.paint_template(tpl.rows, x0, y0, f"{b.sp.key}/{b.view}")
     # the head's bottom edge shades the collar and the shoulders under it
     b.sheet.darken(_shift(covered, 0, 1) & ~covered)
 
@@ -320,7 +335,7 @@ def _draw_tail(b: _Body) -> None:
     root = b.skel["tail_root"]
     x0 = root.x - tpl.anchor[0] + b.pose.tail[0]
     y0 = root.y - tpl.anchor[1] + b.pose.tail[1]
-    b.sheet.paint_template(list(tpl.rows), x0, y0)
+    b.sheet.paint_template(list(tpl.rows), x0, y0, f"{b.sp.key} tail/{b.view}")
 
 
 # --- the body ------------------------------------------------------------------------------

@@ -104,3 +104,21 @@ def test_silhouettes_have_no_orphan_pixels(frames):
             if (dy, dx) != (0, 0)
         )
         assert not (opaque & (neighbours == 0)).any(), name
+
+
+@pytest.mark.parametrize(
+    ("key", "field", "role", "letter"),
+    [("rabbitfolk", "extra_ramp", "extra", "H"), ("human", "hair_ramp", "hair", "[a-e]")],
+)
+def test_template_letter_for_a_missing_ramp_fails_instead_of_painting_body_colour(
+    key, field, role, letter
+):
+    """A species row without the ramp its template draws with must not silently paint in body colour."""
+    species = next(sp for sp in SPECIES if sp.key == key)
+    broken = dataclasses.replace(species, **{field: None})
+    skel = base_skeleton(broken, "down")
+    message = (
+        rf"{key}/front: template uses '{letter}' \({role} ramp\) but the species has no {role}_ramp"
+    )
+    with pytest.raises(ValueError, match=message):
+        actor.draw_body(Context(1, "actor"), broken, skel, "down")
