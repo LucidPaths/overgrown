@@ -142,7 +142,6 @@ try {
   sim.postMessage(init);
 
   const pixi = new Application();
-  app = pixi;
   const [, sheet] = await Promise.all([
     pixi.init({
       resizeTo: window,
@@ -153,6 +152,8 @@ try {
     }),
     loadCoreAtlas(),
   ]);
+  // Assigned only once init has resolved: Pixi defines `app.ticker` then, and the handler's catch uses it.
+  app = pixi;
   if (fatal) {
     // The sim already failed while we waited: keep its message.
     sim.terminate();

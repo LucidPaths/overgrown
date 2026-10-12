@@ -38,7 +38,7 @@ Recipe: `node scripts/measure-startup.mjs <url> 5 shot.png`; phone profile (390x
 | Before TEC-021 | 4627 ms (4579 / 4675) | 4172 ms | 2243 ms | 4454 ms | 4452 ms | 163,245 / 320,851 / 1,003 / 485,099 | 2425 ms |
 | After TEC-021 | 2852 ms (2766 / 3094) | 1135 ms | 1525 ms | 1330 ms | 1329 ms | 163,371 / 138,314 / 1,003 / 302,688 | 1513 ms |
 
-Byte floor = total bytes / 200,000 B/s, the time the bytes alone take on the throttled link. The worker is only created after the atlas has loaded and the renderer is up, so first frame is the floor plus a serial chain; TEC-021 adds its "after" row to this table.
+Byte floor = total bytes / 200,000 B/s, the time the bytes alone take on the throttled link. Before TEC-021 the worker was only created after the atlas had loaded and the renderer was up, so first frame was the floor plus a serial chain; TEC-021 removed that chain (the "after" row).
 
 The "after TEC-021" row (same recipe, N = 5, host load 0.87, built from the TEC-021 branch) is two changes: parallel startup (the worker is created first, the renderer and the atlas load together) and the lossless WebP atlas (the atlas bytes drop from 320,851 to 138,314).
 
