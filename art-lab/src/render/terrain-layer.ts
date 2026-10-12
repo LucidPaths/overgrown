@@ -58,6 +58,11 @@ export class TerrainLayer implements Drawable {
     }
   }
 
+  /** Builds chunk (cx, cy) now if it isn't held. */
+  ensure(cx: number, cy: number): void {
+    if (!this.chunks.has(`${cx},${cy}`)) this.build(cx, cy);
+  }
+
   pending(fx: number, fz: number, rx: number, rz: number): number {
     const ccx = Math.floor(fx / 512), ccz = Math.floor(fz / 512);
     let n = 0;

@@ -28,8 +28,8 @@ const MAX_HP = 4;
 const RESPAWN_TICKS = 8 * TICK_HZ;
 
 /** The spawn plus the clearing around it; both threads call this so their prop placement agrees. */
-export function labSpawn(seed: number): { x: number; y: number } {
-  const sp = findSpawn(createChunkStore(seed));
+export function labSpawn(seed: number, ground: Ground): { x: number; y: number } {
+  const sp = findSpawn(createChunkStore(seed, (_s, cx, cy) => ground.chunk(cx, cy)));
   const tx = Math.floor(sp.x / 16), ty = Math.floor(sp.y / 16);
   if (!clearings.some((c) => c.tx === tx && c.ty === ty)) clearings.push({ tx, ty, r: 2 });
   return sp;
@@ -66,9 +66,10 @@ export function createLabWorld(seed: number, opts: { npcs?: number; species?: Sp
   const ecs = new World();
   const world = createCharacterWorld(ecs);
   const anchor = ecs.register("ChunkAnchor", {});
-  const chunks = createChunkStore(seed);
   const ground = new Ground(seed);
-  const spawn = labSpawn(seed);
+  // one generation per chunk: the store and the prop placement share Ground's cache
+  const chunks = createChunkStore(seed, (_s, cx, cy) => ground.chunk(cx, cy));
+  const spawn = labSpawn(seed, ground);
   const rng = new Rng(deriveSeed(seed, 0x1ab));
   const blockedCache = new Map<number, boolean>();
   const tileAt = (tx: number, ty: number): TileValue => {

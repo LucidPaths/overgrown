@@ -64,7 +64,7 @@ export class Renderer {
   private g?: Target;
   private post?: Target;
   private shadowT?: Target;
-  readonly shadowSize = 2048;
+  readonly shadowSize = 1024; // ~0.75-1 world px per shadow texel at the game zoom
   private postP: Program;
   private blitP: Program;
   readonly drawables: Drawable[] = [];

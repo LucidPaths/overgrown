@@ -3,15 +3,20 @@ import { TICK_MS } from "../../../sim/src/constants";
 import { chunkBuffers, snapshotBuffers, type InputMessage, type SimToHost } from "../../../sim/src/protocol";
 import { createLabWorld, type LabWorld } from "./lab-world";
 
+const bootAt = performance.now();
+(self as unknown as Worker).postMessage({ type: "boot" }); // the host waits for this before its own heavy work
 type In = { type: "init"; seed: number; npcs: number; species: number } | InputMessage;
 let w: LabWorld | undefined;
 const post = (m: SimToHost, t: ArrayBuffer[] = []) => (self as unknown as Worker).postMessage(m, t);
 
-self.onmessage = (e: MessageEvent<In>) => {
-  const m = e.data;
+const onMessage = (m: In) => {
   try {
     if (m.type === "init") {
+      const t0 = performance.now();
       w = createLabWorld(m.seed, { npcs: m.npcs, species: m.species as 0 });
+      (self as unknown as Worker).postMessage({ type: "timing", boot: bootAt, init: t0, created: performance.now(), origin: performance.timeOrigin });
+      const s0 = w.snapshot(); // tick 0 right away: the host can draw before the first step
+      post({ type: "snapshot", snapshot: s0 }, snapshotBuffers(s0));
       let next = performance.now();
       const tick = () => {
         const now = performance.now();
@@ -35,3 +40,5 @@ self.onmessage = (e: MessageEvent<In>) => {
     post({ type: "error", message: err instanceof Error ? `${err.message}\n${err.stack}` : String(err) });
   }
 };
+self.onmessage = (e: MessageEvent<In>) => onMessage(e.data);
+onMessage(JSON.parse((self as unknown as { name: string }).name) as In);

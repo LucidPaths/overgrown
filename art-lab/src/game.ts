@@ -32,15 +32,27 @@ interface Vis {
   draw: ActorDraw;
 }
 
-export function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): void {
+export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Promise<void> {
   const seed = Number(q.get("seed") ?? 22);
   const species = Number(q.get("species") ?? 4);
   let hour = Number(q.get("hour") ?? 10.5);
   const cycle = Number(q.get("cycle") ?? 0); // real minutes per in-game day; 0 = frozen
-  const spawn = labSpawn(seed); // also registers the spawn clearing, so props agree with the worker's collision
+  // the worker starts first: its spawn search and chunk generation run while this thread builds meshes
+  // the init travels in the worker's name: the worker starts its world the moment it boots, no message round trip
+  const init = { type: "init", seed, npcs: Number(q.get("npcs") ?? 9), species };
+  const worker = new Worker(new URL("./sim/lab-worker.ts", import.meta.url), { type: "module", name: JSON.stringify(init) });
+  // Chromium boots a worker only when this thread yields: wait for it (bounded), so its startup overlaps our mesh building
+  await new Promise<void>((res) => {
+    const done = () => { clearTimeout(to); worker.removeEventListener("message", on); res(); };
+    const on = (e: MessageEvent) => { if ((e.data as { type: string }).type === "boot") done(); };
+    const to = setTimeout(done, 1500);
+    worker.addEventListener("message", on);
+  });
+  const ground = new Ground(seed);
+  const spawn = labSpawn(seed, ground); // also registers the spawn clearing, so props agree with the worker's collision
+  performance.mark("lab:spawn");
 
   const r = new Renderer(canvas);
-  const ground = new Ground(seed);
   const terrain = new TerrainLayer(r.gl, ground);
   const props = new PropLayer(r.gl, ground);
   const actors = new ActorLayer(r.gl);
@@ -48,6 +60,7 @@ export function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): void {
   terrain.onChunk = (rl) => { props.add(rl); hf.add(rl); };
   terrain.onDrop = (cx, cy) => { props.drop(cx, cy); hf.drop(cx, cy); };
   r.drawables.push(terrain, props, actors);
+  performance.mark("lab:gl");
   const forced = Number(q.get("scale") ?? 0);
   const resize = () => r.resize(Math.round(innerWidth * devicePixelRatio), Math.round(innerHeight * devicePixelRatio), forced);
   resize();
@@ -55,18 +68,33 @@ export function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): void {
 
   // the first view: build the chunks around the spawn before the first frame
   r.focus = [spawn.x, 0, spawn.y];
-  while (terrain.pending(spawn.x, spawn.y, 1, 1) > 0) terrain.update(spawn.x, spawn.y, 1, 1, 9);
+  // the first view: build only the chunks the screen shows; the rest of the ring streams in one per frame
+  const hw = r.iw / 2 + 32, hd = r.ih / 2 / Math.sin((52 * Math.PI) / 180) + 96;
+  for (let cz = Math.floor((spawn.y - hd) / 512); cz <= Math.floor((spawn.y + hd) / 512); cz++) {
+    for (let cx = Math.floor((spawn.x - hw) / 512); cx <= Math.floor((spawn.x + hw) / 512); cx++) terrain.ensure(cx, cz);
+  }
   r.focus[1] = hf.height(spawn.x, spawn.y);
+  performance.mark("lab:chunks");
 
-  const worker = new Worker(new URL("./sim/lab-worker.ts", import.meta.url), { type: "module" });
   let prev: Snapshot | null = null, curr: Snapshot | null = null, currAt = 0;
   worker.onmessage = (e: MessageEvent<SimToHost>) => {
     const m = e.data;
-    if (m.type === "snapshot") { prev = curr; curr = m.snapshot; currAt = performance.now(); }
+    const tm = m as unknown as { type: string; boot: number; init: number; created: number; origin: number };
+    if (tm.type === "boot") return;
+    if (tm.type === "timing") {
+      const off = tm.origin - performance.timeOrigin;
+      performance.mark("lab:worker-boot", { startTime: tm.boot + off });
+      performance.mark("lab:worker-init", { startTime: tm.init + off });
+      performance.mark("lab:worker-created", { startTime: tm.created + off });
+      return;
+    }
+    if (m.type === "snapshot") {
+      if (!curr) performance.mark("lab:first-snapshot");
+      prev = curr; curr = m.snapshot; currAt = performance.now();
+    }
     else if (m.type === "chunk") ground.put({ cx: m.cx, cy: m.cy, tiles: m.tiles, biomes: m.biomes } as never);
     else if (m.type === "error") { console.error(m.message); showError(m.message); }
   };
-  worker.postMessage({ type: "init", seed, npcs: Number(q.get("npcs") ?? 9), species });
   const post = (m: InputMessage) => worker.postMessage(m);
   const input = createInput(canvas, post);
   const bot = q.get("bot") === "1" ? botDriver(post) : null;
