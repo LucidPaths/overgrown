@@ -9,6 +9,7 @@ from types import ModuleType
 from gen import GENERATORS
 from lib.atlas import Frame, write_atlas
 from lib.context import Context
+from lib.palette import load_all
 
 log = logging.getLogger("overgrown.art")
 
@@ -57,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+    load_all()  # a broken palette file fails the build even if no generator uses it yet
     atlases = collect(GENERATORS, ART_SEED)
     args.out.mkdir(parents=True, exist_ok=True)
     for atlas in sorted(atlases):
