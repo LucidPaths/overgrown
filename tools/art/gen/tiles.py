@@ -4,6 +4,10 @@ Contract: contracts/tile-frames.json (checked by tests/test_tiles.py and client/
 A frame is a 16x16 render cell whose corners sit on four world tiles. Mask bits: TL=1 TR=2 BL=4 BR=8.
 A terrain's frame with mask m is opaque where the terrain (or any higher one) is nearest, so higher terrains
 draw over lower ones and the lowest terrain present is a fully opaque base (mask 15).
+
+Look (docs/art/DIRECTION.md section 8): quiet centres (one base tone plus a few deliberate clusters, never per-pixel
+speckle), organic low-frequency transition shapes, a lit top lip and a dark bottom lip on raised edges, foam on
+water edges, all colours from the biome palette's ramps.
 """
 
 import numpy as np
@@ -28,13 +32,14 @@ PRECEDENCE = (
     "cliff",
 )
 WATER = frozenset({"shallow_water", "deep_water", "very_deep_water"})
-TILE_RAMPS = (*PRECEDENCE, "detail")  # ramps every biome palette must have
-FULL_MASK, FULL_VARIANTS, EDGE_VARIANTS = 15, 3, 2
-EDGE_NOISE = 0.3  # tunable
+TILE_RAMPS = (*PRECEDENCE, "detail", "grass_alt")  # ramps every biome palette must have
+FULL_MASK, FULL_VARIANTS, EDGE_VARIANTS = 15, 10, 2
+EDGE_NOISE = 0.26  # amplitude of the low-frequency edge wobble, tunable
+EDGE_FADE = 5  # px from the frame's outer ring over which the wobble fades in
 FACE_H = 4  # cliff face height in px, tunable
 
 _LAST = SIZE - 1
-_LATTICE = 5  # edge-noise lattice points per side
+_LATTICE = 4  # edge-noise lattice points per side
 
 
 def frame_name(palette: str, terrain: str, mask: int, variant: int) -> str:
@@ -49,6 +54,20 @@ def masks(terrain: str) -> tuple[int, ...]:
 
 def variants(mask: int) -> int:
     return FULL_VARIANTS if mask == FULL_MASK else EDGE_VARIANTS
+
+
+# ---- shape ------------------------------------------------------------------------------------
+
+
+def _despeckle(cov: np.ndarray) -> np.ndarray:
+    """Flip pixels that have at most one 4-neighbour of their own value (orphans, 1 px necks); frame edge counts as same."""
+    for _ in range(2):
+        padded = np.pad(cov, 1, mode="edge")
+        same = np.zeros(cov.shape, np.int64)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            same += padded[1 + dy : 1 + dy + SIZE, 1 + dx : 1 + dx + SIZE] == cov
+        cov = np.where(same <= 1, ~cov, cov)
+    return cov
 
 
 def coverage(mask: int, rng: Rng) -> np.ndarray:
@@ -68,6 +87,7 @@ def coverage(mask: int, rng: Rng) -> np.ndarray:
     ix = np.minimum(np.floor(gx).astype(np.int64), _LATTICE - 2)
     iy = np.minimum(np.floor(gy).astype(np.int64), _LATTICE - 2)
     fx, fy = gx - ix, gy - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)  # smoothstep: no lattice creases
     noise = (
         lattice[iy, ix] * (1 - fx) * (1 - fy)
         + lattice[iy, ix + 1] * fx * (1 - fy)
@@ -78,114 +98,183 @@ def coverage(mask: int, rng: Rng) -> np.ndarray:
     idx = np.arange(SIZE)
     edge_dist = np.minimum(idx, _LAST - idx)
     border = np.minimum(edge_dist[None, :], edge_dist[:, None])
-    weight = np.minimum(border, 2) / 2  # 0 on the outer ring, 1 from 2 px in
-    return bil + EDGE_NOISE * weight * noise > 0.5
+    t = np.minimum(border, EDGE_FADE) / EDGE_FADE  # 0 on the outer ring, 1 from EDGE_FADE px in
+    weight = t * t * (3 - 2 * t)
+    cov = bil + EDGE_NOISE * weight * noise > 0.5
+    ring = border == 0
+    cleaned = _despeckle(cov)
+    return np.where(ring, cov, cleaned)  # the ring is exact; everything inside is cleaned
 
 
-# ---- texture ---------------------------------------------------------------------------------
+def _neighbour(covered: np.ndarray, dy: int, dx: int) -> np.ndarray:
+    """covered shifted so each pixel sees its neighbour at (dy, dx); outside the frame counts as covered."""
+    padded = np.pad(covered, 1, constant_values=True)
+    return padded[1 + dy : 1 + dy + SIZE, 1 + dx : 1 + dx + SIZE]
 
 
-def _speckle(img: np.ndarray, rng: Rng, base, dark, light, dark_p: float, light_p: float) -> None:
-    """Fill every pixel with base, or dark / light with the given chances."""
-    for y in range(SIZE):
-        for x in range(SIZE):
-            f = rng.next_float()
-            img[y, x] = dark if f < dark_p else light if f > 1 - light_p else base
+def _cliff_face(covered: np.ndarray) -> np.ndarray:
+    """Uncovered pixels with covered ground 1..FACE_H rows directly above; row 15 is never face."""
+    face = np.zeros_like(covered)
+    for k in range(1, FACE_H + 1):
+        face[k:] |= covered[:-k]
+    face &= ~covered
+    face[_LAST] = False
+    return face
 
 
-def _strokes(img, rng: Rng, count: int, length: int, colors, under=None) -> None:
-    """Horizontal strokes fully inside rows and columns 1..14, optionally with a 1 px shadow below."""
-    for _ in range(count):
-        x = rng.int(1, 1 + SIZE - 2 - length)
-        y = rng.int(1, SIZE - 3)
-        c = colors[rng.int(0, len(colors) - 1)]
-        for i in range(length):
-            img[y, x + i] = c
-            if under is not None:
-                img[y + 1, x + i] = under
+# ---- texture ----------------------------------------------------------------------------------
 
 
-def _dots(img, rng: Rng, count: int, colors) -> None:
-    """Single pixels fully inside rows and columns 1..14."""
-    for _ in range(count):
-        x, y = rng.int(1, SIZE - 2), rng.int(1, SIZE - 2)
-        img[y, x] = colors[rng.int(0, len(colors) - 1)]
+def _scatter(
+    rng: Rng, n: int, ext: tuple[int, int] = (2, 2), min_d: int = 5
+) -> list[tuple[int, int]]:
+    """Up to n anchor points at least min_d apart, for features extending ext = (dx, dy) px right and down.
+
+    Every feature lands inside columns and rows 1..14, so no cluster is ever cut at a tile seam, and the
+    spread is even, so visual weight is balanced.
+    """
+    points: list[tuple[int, int]] = []
+    for _ in range(n * 12):
+        if len(points) == n:
+            break
+        x, y = rng.int(1, SIZE - 2 - ext[0]), rng.int(1, SIZE - 2 - ext[1])
+        if all((x - px) ** 2 + (y - py) ** 2 >= min_d * min_d for px, py in points):
+            points.append((x, y))
+    return points
 
 
-def _detail(img, rng: Rng, detail) -> None:
-    """Sparse specks (flowers, leaf litter, pebbles, shells): 0-3 per tile, some two pixels wide."""
-    for _ in range(rng.int(0, 3)):
-        x, y = rng.int(1, SIZE - 3), rng.int(1, SIZE - 2)
-        c = detail[rng.int(0, len(detail) - 1)]
-        img[y, x] = c
-        if rng.int(0, 1):
-            img[y, x + 1] = detail[rng.int(0, len(detail) - 1)]
+def _put(img: np.ndarray, x: int, y: int, color) -> None:
+    if 0 <= x < SIZE and 0 <= y < SIZE:
+        img[y, x] = color
 
 
-def _grass(img, rng: Rng, ramp, detail) -> None:
-    mid = len(ramp) // 2
-    _speckle(img, rng, ramp[mid], ramp[mid - 1], ramp[mid + 1], 0.14, 0.12)
-    for _ in range(6):  # blades: a light tip over a shaded stem
-        x, y = rng.int(1, SIZE - 2), rng.int(1, SIZE - 3)
-        img[y, x] = ramp[-1]
-        img[y + 1, x] = ramp[mid - 1]
-    _detail(img, rng, detail)
+def _stamp(img: np.ndarray, x: int, y: int, shape: list[tuple[int, int, object]]) -> None:
+    for dx, dy, color in shape:
+        _put(img, x + dx, y + dy, color)
 
 
-def _dirt(img, rng: Rng, ramp, detail) -> None:
-    mid = len(ramp) // 2
-    _speckle(img, rng, ramp[mid], ramp[mid - 1], ramp[mid + 1], 0.16, 0.12)
-    for _ in range(3):  # pebbles: light top, shadow below right
-        x, y = rng.int(1, SIZE - 3), rng.int(1, SIZE - 3)
-        img[y, x] = ramp[-1]
-        img[y, x + 1] = ramp[-2]
-        img[y + 1, x + 1] = ramp[0]
-    _detail(img, rng, detail)
+def _grass(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    g, alt, det = p["grass"], p["grass_alt"], p["detail"]
+    img[:] = g[2]
+    tufts = [3, 3, 4, 3, 4, 3][v % 6]
+    flowers = [0, 0, 0, 0, 0, 1][v % 6]
+    for i, (x, y) in enumerate(_scatter(rng, tufts + flowers, ext=(2, 2), min_d=5)):
+        if (
+            i < tufts
+        ):  # a blade tuft seen from above: two lit tips over a cool shaded root (the bluer grass_alt)
+            if rng.int(0, 1):
+                _stamp(img, x, y, [(0, 0, g[3]), (2, 0, g[3]), (1, 1, alt[0])])
+            else:
+                _stamp(img, x, y, [(1, 0, g[3]), (0, 1, g[3]), (1, 1, alt[0])])
+        else:  # a flower: two petals over a bright heart
+            c = det[rng.int(0, 2)]
+            _stamp(img, x, y, [(0, 0, c), (1, 0, c), (0, 1, det[3])])
 
 
-def _sand(img, rng: Rng, ramp, detail) -> None:
-    mid = len(ramp) // 2
-    _speckle(img, rng, ramp[mid], ramp[mid - 1], ramp[mid + 1], 0.12, 0.12)
-    _strokes(img, rng, 4, 3, [ramp[-1]], under=ramp[mid - 1])  # wind ripples
+def _dirt(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    d = p["dirt"]
+    img[:] = d[2]
+    pebbles = [1, 2, 1, 2, 3, 1][v % 6]
+    cracks = [0, 1, 1, 0, 1, 1][v % 6]
+    spots = _scatter(rng, pebbles + cracks, ext=(3, 1), min_d=5)
+    for i, (x, y) in enumerate(spots):
+        if i < pebbles:  # a pebble: lit top, shaded underside
+            _stamp(
+                img, x, y, [(0, 0, d[3]), (1, 0, d[3]), (0, 1, d[1]), (1, 1, d[1]), (2, 1, d[1])]
+            )
+        else:  # a short crack with a lit lip
+            _stamp(
+                img,
+                x,
+                y,
+                [
+                    (0, 0, d[1]),
+                    (1, 0, d[1]),
+                    (2, 1, d[1]),
+                    (3, 1, d[1]),
+                    (0, 1, d[3]),
+                    (1, 1, d[3]),
+                ],
+            )
+    for x, y in _scatter(rng, 3, ext=(0, 0), min_d=4):  # a few light grains
+        _put(img, x, y, d[3])
 
 
-def _stone(img, rng: Rng, ramp, detail) -> None:
-    mid = len(ramp) // 2
-    _speckle(img, rng, ramp[mid], ramp[mid - 1], ramp[mid + 1], 0.16, 0.1)
-    for _ in range(5):  # slabs: lit top row, shaded bottom row
-        x, y = rng.int(1, SIZE - 4), rng.int(1, SIZE - 3)
-        for i in range(3):
-            img[y, x + i] = ramp[-1]
-            img[y + 1, x + i] = ramp[0]
+def _sand(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    s, det = p["sand"], p["detail"]
+    img[:] = s[2]
+    ripples = [2, 3, 2, 3, 4, 2][v % 6]
+    for x, y in _scatter(
+        rng, ripples, ext=(5, 1), min_d=5
+    ):  # a wind ripple: lit crest over a shaded trough
+        n = rng.int(3, 4)
+        for i in range(n):
+            _put(img, x + i, y, s[3])
+            _put(img, x + i + 1, y + 1, s[1])
+    if v % 3 == 2:  # a shell glint
+        x, y = _scatter(rng, 1, ext=(1, 1))[0]
+        _stamp(img, x, y, [(0, 0, det[3]), (1, 0, det[2]), (0, 1, s[1])])
 
 
-def _cliff(img, rng: Rng, ramp, detail) -> None:
-    top = ramp[2:]  # the top surface uses the upper shades; the face uses the two darkest
-    _speckle(img, rng, top[1], top[0], top[-1], 0.2, 0.04)
-    for y in range(SIZE):  # horizontal strata
-        if rng.int(0, 5) == 0:
-            for x in range(SIZE):
-                if rng.next_float() < 0.4:
-                    img[y, x] = top[-1]
-    _dots(img, rng, 6, [ramp[1]])  # pits
+def _stone(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    st = p["stone"]
+    img[:] = st[2]
+    for x, y in _scatter(rng, [1, 2, 1, 2, 2][v % 5], ext=(5, 3), min_d=6):
+        # a slab seam: a dark run with one step in it, lit along its lower edge
+        n = rng.int(4, 6)
+        step = rng.int(2, n - 2)
+        for i in range(n):
+            dy = 1 if i >= step else 0
+            _put(img, x + i, y + dy, st[1])
+            _put(img, x + i, y + dy + 1, st[3])
+        if rng.int(0, 1):  # and a short vertical joint from the end of the seam
+            _put(img, x + n - 1, y + 2, st[1])
+            _put(img, x + n - 1, y + 3, st[1])
+    for x, y in _scatter(rng, 2, ext=(1, 0), min_d=5):  # a lit chip
+        _stamp(img, x, y, [(0, 0, st[3]), (1, 0, st[3])])
 
 
-def _water(img, rng: Rng, ramp, ripples: int) -> None:
-    mid = len(ramp) // 2
-    _speckle(img, rng, ramp[mid], ramp[mid - 1], ramp[mid + 1], 0.14, 0.1)
-    _strokes(img, rng, ripples, 3, [ramp[-1]])
+def _cliff(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    cl = p["cliff"]
+    img[:] = cl[3]  # the lit top of the ledge
+    for x, y in _scatter(rng, 2, ext=(4, 0), min_d=6):
+        n = rng.int(3, 5)
+        for i in range(n):
+            _put(img, x + i, y, cl[2])
+    for x, y in _scatter(rng, 2, ext=(0, 0), min_d=5):
+        _put(img, x, y, cl[4])
 
 
-def _shallow(img, rng: Rng, ramp, detail) -> None:
-    _water(img, rng, ramp, 5)
+def _water(
+    img: np.ndarray, rng: Rng, p: dict, base: str, base_i: int, ripples: int, v: int
+) -> None:
+    w = p[base]
+    img[:] = w[base_i]
+    if base_i + 1 >= len(w):
+        return
+    light = w[min(base_i + 1, len(w) - 1)]
+    spark = w[-1]
+    for x, y in _scatter(rng, ripples, ext=(5, 1), min_d=5):  # a ripple dash and its shadow
+        n = rng.int(3, 4)
+        for i in range(n):
+            _put(img, x + i, y, light)
+        _put(img, x + 1, y + 1, w[base_i - 1] if base_i > 0 else w[0])
+        _put(img, x + 2, y + 1, w[base_i - 1] if base_i > 0 else w[0])
+    if base == "shallow_water" and v % 2 == 1:
+        x, y = _scatter(rng, 1, ext=(0, 0))[0]
+        _put(img, x, y, spark)
 
 
-def _deep(img, rng: Rng, ramp, detail) -> None:
-    _water(img, rng, ramp, 2)
+def _shallow(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    _water(img, rng, p, "shallow_water", 2, [2, 3, 3, 2, 3, 2][v % 6], v)
 
 
-def _very_deep(img, rng: Rng, ramp, detail) -> None:
-    _water(img, rng, ramp, 0)
+def _deep(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    _water(img, rng, p, "deep_water", 1, [1, 2, 1, 2, 1, 2][v % 6], v)
+
+
+def _very_deep(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
+    _water(img, rng, p, "very_deep_water", 1, [0, 1, 0, 1, 0, 1][v % 6], v)
 
 
 _TEXTURES = {
@@ -200,51 +289,58 @@ _TEXTURES = {
 }
 
 
-# ---- shape ------------------------------------------------------------------------------------
+# ---- edges ------------------------------------------------------------------------------------
 
 
-def _uncovered_neighbour(covered: np.ndarray) -> np.ndarray:
-    """True where a pixel has an uncovered 4-neighbour inside the frame (outside counts as covered)."""
-    padded = np.pad(covered, 1, constant_values=True)
-    near = np.zeros_like(covered)
-    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        near |= ~padded[1 + dy : 1 + dy + SIZE, 1 + dx : 1 + dx + SIZE]
-    return near & covered
-
-
-def _cliff_face(covered: np.ndarray) -> np.ndarray:
-    """Uncovered pixels with covered ground 1..FACE_H rows directly above; row 15 is never face."""
-    face = np.zeros_like(covered)
-    for k in range(1, FACE_H + 1):
-        face[k:] |= covered[:-k]
-    face &= ~covered
-    face[_LAST] = False
-    return face
+def _rims(img: np.ndarray, covered: np.ndarray, terrain: str, ramp) -> None:
+    """The edge treatment: a lit top lip and a dark bottom lip on land, foam on water, wet pale sand on shores."""
+    top = covered & ~_neighbour(covered, -1, 0)
+    bottom = covered & ~_neighbour(covered, 1, 0)
+    side = covered & (~_neighbour(covered, 0, -1) | ~_neighbour(covered, 0, 1))
+    if terrain in WATER:
+        foam = ramp[-1]
+        img[top | bottom | side] = foam
+    elif terrain == "sand":
+        img[top | side] = ramp[3]
+        img[bottom] = ramp[1]
+    elif terrain == "cliff":
+        img[top | side] = ramp[4]
+    else:
+        img[side] = ramp[1]
+        img[top] = ramp[3]
+        img[bottom] = ramp[0]
+        under = np.zeros_like(bottom)
+        under[:-1] = bottom[1:]  # the row above a bottom lip is in shade too
+        img[under & covered & ~bottom & ~top] = ramp[1]
 
 
 def draw_tile(ctx: Context, palette: str, terrain: str, mask: int, variant: int) -> np.ndarray:
     """One (16, 16, 4) uint8 frame."""
     pal = ctx.palette(palette)
-    ramp, detail = pal.ramp(terrain), pal.ramp("detail")
+    ramps = {name: pal.ramp(name) for name in TILE_RAMPS}
+    ramp = ramps[terrain]
     covered = coverage(mask, ctx.rng("edge", terrain, mask, variant))
 
     tex = draw.canvas(SIZE, SIZE)
-    _TEXTURES[terrain](tex, ctx.rng(palette, terrain, mask, variant), ramp, detail)
-    rim = _uncovered_neighbour(covered)
-    tex[rim] = ramp[-1] if terrain in WATER else ramp[0]  # water: foam shelf; land: dark lip
+    _TEXTURES[terrain](tex, ctx.rng(palette, terrain, mask, variant), ramps, variant)
+    if mask != FULL_MASK:
+        _rims(tex, covered, terrain, ramp)
 
     img = draw.canvas(SIZE, SIZE)
     img[covered] = tex[covered]
     if terrain == "cliff":
         face = _cliff_face(covered)
         stripes = ctx.rng(palette, terrain, mask, variant, "face")
-        stripe = [stripes.int(0, 2) for _ in range(SIZE)]
+        stripe = [stripes.int(0, 3) for _ in range(SIZE)]
         for x in range(SIZE):
             for y in range(SIZE):
                 if face[y, x]:
                     lowest = not face[y + 1, x]  # row 15 is never face, so y + 1 is in frame
-                    dark = stripe[x] == 0 or (stripe[x] == 1 and y % 2 == 0)
-                    img[y, x] = ramp[0] if lowest or dark else ramp[1]
+                    first = covered[y - 1, x]
+                    shade = ramp[0] if lowest or stripe[x] == 0 else ramp[1]
+                    if first:
+                        shade = ramp[2] if stripe[x] == 3 else ramp[1]
+                    img[y, x] = shade
     return img
 
 

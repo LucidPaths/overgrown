@@ -1,20 +1,15 @@
 {
   "name": "meadow",
   "ramps": {
-    "grass": ["#2e6b34", "#3f8a3a", "#58a83c", "#78c244", "#9ad95a"],
-    "grass_dry": ["#8a7a2e", "#b09a3c", "#d2bc5a", "#ecdc86"],
-    "dirt": ["#4a2f20", "#6b4530", "#8c5e3e", "#ae7d54", "#cc9d72"],
-    "stone": ["#4e5260", "#6c7080", "#8d91a0", "#b0b4c0"],
-    "water": ["#1d5d96", "#2f82c0", "#52a9dc", "#8ccdf0", "#c4e8fa"],
-    "wood": ["#3d2616", "#5c3a20", "#7e5430", "#a2763f"],
-    "leaf": ["#1f5a3a", "#2c7a4a", "#3f9c58", "#62bc6c"],
-    "flower_warm": ["#c4402a", "#e8683a", "#f59a4a", "#fcc86a"],
-    "flower_cool": ["#5a4ab8", "#7c6ad8", "#a08ef0", "#c8baff"],
-    "sand": ["#b8934f", "#d4b068", "#e8cb84", "#f6e2a6"],
-    "cliff": ["#3f3848", "#5a5064", "#786d80", "#9a8e9c", "#bcb0bc"],
-    "shallow_water": ["#2f82c0", "#4a9fd6", "#6cbbe8", "#98d6f4", "#cdeefc"],
-    "deep_water": ["#173f78", "#1d5090", "#2868a8"],
-    "very_deep_water": ["#0c224c", "#102c5e", "#16396f"],
-    "detail": ["#c8352e", "#f0833a", "#f7d24a", "#fff2d2"]
+    "grass": ["#09693f", "#2a8734", "#62a023", "#98b54b", "#c4cb7f"],
+    "grass_alt": ["#1f7360", "#409156", "#87a36b"],
+    "dirt": ["#583126", "#77482d", "#926337", "#a2835c", "#b1a38a"],
+    "sand": ["#bd9574", "#d3b373", "#e3d18f", "#f5e8ba"],
+    "stone": ["#595566", "#736e85", "#9286a0", "#afa2b5", "#cac0cb"],
+    "cliff": ["#2f2a3e", "#443e58", "#5c5270", "#796c83", "#928895"],
+    "shallow_water": ["#6084a9", "#639fca", "#6abce6", "#92d6f1", "#c7f0fc"],
+    "deep_water": ["#2d447f", "#1c5d98", "#0c79a0"],
+    "very_deep_water": ["#222153", "#203068", "#0b4572"],
+    "detail": ["#be222a", "#ee7a1f", "#efd956", "#f5efd8"]
   }
 }

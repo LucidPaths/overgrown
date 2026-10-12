@@ -1,5 +1,6 @@
 """Ground tile frames against contracts/tile-frames.json (the TS lookup is checked against the same file)."""
 
+import itertools
 import json
 from pathlib import Path
 
@@ -63,3 +64,50 @@ def test_tile_edges_follow_corner_rule(frames):
         ring = np.ones((16, 16), bool)
         ring[1:15, 1:15] = False
         assert (opaque[ring] == want[ring]).all(), f.name
+
+
+def test_biome_palettes_are_distinct_moods(frames):
+    """Each biome must be recognisable at a glance: no two palettes share a base colour for the big surfaces."""
+    base = {}
+    for f in frames:
+        _, palette, terrain, mask, variant = f.name.split("/")
+        if (
+            mask == "15"
+            and variant == "0"
+            and terrain in ("grass", "shallow_water", "dirt", "stone")
+        ):
+            img = np.array(f.image)[..., :3].reshape(-1, 3)
+            colours, counts = np.unique(img, axis=0, return_counts=True)
+            base[(palette, terrain)] = colours[counts.argmax()].astype(int)
+    for terrain in ("grass", "shallow_water", "stone"):
+        for a, b in itertools.combinations(FIXTURE["palettes"], 2):
+            gap = int(np.abs(base[(a, terrain)] - base[(b, terrain)]).sum())
+            assert gap >= 24, f"{a} and {b} have almost the same {terrain} colour"
+
+
+def test_full_tiles_are_quiet(frames):
+    """Centres are one base tone with a few deliberate clusters, never per-pixel speckle (docs section 8)."""
+    for f in frames:
+        mask = f.name.split("/")[3]
+        if mask != "15":
+            continue
+        img = np.array(f.image)[..., :3]
+        flat = img.reshape(-1, 3)
+        _, counts = np.unique(flat, axis=0, return_counts=True)
+        assert counts.max() >= 0.6 * 256, (
+            f"{f.name}: the base tone covers only {counts.max() / 256:.0%}"
+        )
+
+
+def test_features_stay_off_the_tile_edge(frames):
+    """No cluster is cut at a seam: on a full tile the outer ring is the base tone."""
+    for f in frames:
+        _, _, terrain, mask, _ = f.name.split("/")
+        if mask != "15" or terrain == "cliff":
+            continue
+        img = np.array(f.image)[..., :3]
+        ring = np.ones((16, 16), bool)
+        ring[1:15, 1:15] = False
+        colours, counts = np.unique(img.reshape(-1, 3), axis=0, return_counts=True)
+        base = colours[counts.argmax()]
+        assert (img[ring] == base).all(), f"{f.name}: a feature touches the tile edge"
