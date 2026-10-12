@@ -1,5 +1,6 @@
 """Atlas packing, naming rules and build determinism."""
 
+import json
 import subprocess
 import sys
 from itertools import combinations
@@ -10,7 +11,7 @@ import pytest
 from PIL import Image
 
 from build import collect
-from lib.atlas import Frame, pack
+from lib.atlas import Frame, image_name, pack, write_atlas
 from lib.rng import Rng
 
 BUILD = Path(__file__).resolve().parents[1] / "build.py"
@@ -77,5 +78,30 @@ def test_build_is_byte_identical(tmp_path):
     outs = [tmp_path / "a", tmp_path / "b"]
     for out in outs:
         subprocess.run([sys.executable, str(BUILD), "--out", str(out)], check=True)
-    for name in ("core.png", "core.json"):
+    for out in outs:
+        assert sorted(f.name for f in out.iterdir()) == ["core.json", "core.webp"]
+    for name in (image_name("core"), "core.json"):
         assert (outs[0] / name).read_bytes() == (outs[1] / name).read_bytes(), name
+
+
+def test_atlas_image_is_lossless(tmp_path):
+    def solid(name: str, rgba: tuple[int, int, int, int]) -> Frame:
+        return Frame(name, Image.new("RGBA", (4, 4), rgba))
+
+    # Neighbouring opaque colours one step apart; a transparent pixel keeps its RGB.
+    mixed = Image.new("RGBA", (4, 4), (10, 20, 30, 255))
+    mixed.putpixel((1, 1), (11, 20, 30, 255))
+    mixed.putpixel((2, 2), (200, 100, 50, 0))
+    frames = [
+        Frame("t/mixed", mixed),
+        solid("t/a", (11, 20, 30, 255)),
+        solid("t/b", (250, 3, 77, 128)),
+    ]
+    write_atlas(tmp_path, "t", frames)
+    meta = json.loads((tmp_path / "t.json").read_text(encoding="utf-8"))
+    assert meta["meta"]["image"] == "t.webp"
+    sheet = Image.open(tmp_path / "t.webp").convert("RGBA")
+    for f in frames:
+        r = meta["frames"][f.name]["frame"]
+        region = sheet.crop((r["x"], r["y"], r["x"] + r["w"], r["y"] + r["h"]))
+        assert region.tobytes() == f.image.tobytes(), f.name

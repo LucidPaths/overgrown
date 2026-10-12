@@ -7,13 +7,13 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
+**M1 complete (2026-10-12):** all 14 tasks merged (#15–#28) and the M1 E2E passed every checklist and extra item (docs/e2e/M1.md, this PR). Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 → ✅ UIX-002 #26 → TEC-020 (#27, Fable fix pending re-gate) → TEC-021 (spec on branch)
-6. M1 E2E
+5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 · TEC-021 #28
+6. ✅ M1 E2E — all 5 checklist + 9 extra items PASS, no new tasks (docs/e2e/M1.md)
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
@@ -30,11 +30,10 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-**PAUSED 2026-10-12 ~12:45 UTC at Lucid's request. Resume exactly here:**
-1. PR #27 (TEC-020, branch tec-020-dpr-cap): Fable round 1 found `measure-startup.mjs` turning missing measurements into 0. The worker fixed it in f381a54 (verified: normal run exit 0, median 4630 ms; broken instrumentation → exit 1 naming the keys). Still to do: critic re-check of f381a54 → re-run verification → Fable round 2 on the new head → merge if PASS and CI green.
-2. TEC-021 (branch tec-021-startup, spec committed, NOT dispatched): dispatch a sonnet worker after #27 merges. Before opening its PR, drop `docs/orchestration/m1-contracts.md` from that branch (only parked there so the sheet survives a container reset). Pass along: fix the main.ts TDZ pattern (a constructor failure after `app.ticker.add` gets overwritten by a ReferenceError on the next tick); first-frame baseline 4.63 s, bar ≤ 3 s (OQ-028); spawn search costs ≤ ~236 ms; the CMB-001 AC12 `phoneCanvas` constant is now 541×1201 after TEC-020.
-3. Then the M1 E2E (docs/agents/E2E.md + MILESTONES M1 checklist). Extra items: a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); stall numbers vs a no-ground baseline (SwiftShader halves fps here); characters animate in-game (TEC-022 wiring only smoke-tested); the ≤ 3 s first frame; touch emulation walk.
-Merged so far: #12–#26 (OVR-006/007, M1 design lock, and 12 of 14 M1 tasks). Remaining M1: TEC-020 (#27), TEC-021.
+**2026-10-12 ~21:00 UTC.** M1 done; the M1 E2E PR carries this update. In flight:
+- **ART-024** art direction pass (Lucid's request): code PR #30 (branch art-024-direction, critic PASS with notes, fixed in b7dbfcf; Fable gate running), previews PR #29 (branch art-024-previews, images + README only; merge together with #30). WebP atlas 124 KB → 85 KB.
+Not yet decided with Lucid (from the ART-024 and M1 E2E reports): a `?species=` dev parameter so all 9 species show in-game (only Humans spawn); biome-border colour band (renderer picks the TL tile's biome per dual-grid cell); ground shadows (ART-018); props first for empty ground (ART-007); compact atlas JSON (core.json 634 KB raw, ~13 KB gzipped); a 6-frame walk; an opt-in state hook for M2 E2E; first-frame margin is thin (2754 ms vs 3000 ms) before M2 assets.
+Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it off first).
 
 ## Decisions (accumulate)
 

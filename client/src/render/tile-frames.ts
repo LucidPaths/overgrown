@@ -39,7 +39,7 @@ export const BIOME_PALETTES: Record<BiomeValue, string> = {
 };
 
 export const FULL_MASK = 15;
-export const FULL_VARIANTS = 3;
+export const FULL_VARIANTS = 10;
 export const EDGE_VARIANTS = 2;
 
 /** The only place the frame-name format is spelled out in TS. */

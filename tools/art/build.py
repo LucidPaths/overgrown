@@ -7,7 +7,7 @@ from pathlib import Path
 from types import ModuleType
 
 from gen import GENERATORS
-from lib.atlas import Frame, write_atlas
+from lib.atlas import Frame, image_name, write_atlas
 from lib.context import Context
 from lib.palette import load_all
 
@@ -65,7 +65,12 @@ def main(argv: list[str] | None = None) -> int:
         frames = atlases[atlas]
         size = write_atlas(args.out, atlas, frames)
         log.info(
-            "%s: %d frames -> %dx%d %s", atlas, len(frames), size, size, args.out / f"{atlas}.png"
+            "%s: %d frames -> %dx%d %s",
+            atlas,
+            len(frames),
+            size,
+            size,
+            args.out / image_name(atlas),
         )
     return 0
 

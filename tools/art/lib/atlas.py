@@ -69,8 +69,13 @@ def pack(
     )
 
 
+def image_name(atlas: str) -> str:
+    """File name of an atlas image; the one place the extension lives (OQ-028)."""
+    return f"{atlas}.webp"
+
+
 def write_atlas(out_dir: Path, atlas: str, frames: list[Frame]) -> int:
-    """Pack frames and write <atlas>.png + <atlas>.json into out_dir. Returns the atlas side length."""
+    """Pack frames and write <atlas>.webp (lossless) + <atlas>.json into out_dir. Returns the atlas side length."""
     size, placements = pack(frames)
     images = {f.name: f.image for f in frames}
     sheet = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -84,17 +89,19 @@ def write_atlas(out_dir: Path, atlas: str, frames: list[Frame]) -> int:
             "spriteSourceSize": {"x": 0, "y": 0, "w": p.w, "h": p.h},
             "sourceSize": {"w": p.w, "h": p.h},
         }
-    image_name = f"{atlas}.png"
     meta = {
         "app": "overgrown-art",
         "version": "1",
-        "image": image_name,
+        "image": image_name(atlas),
         "format": "RGBA8888",
         "size": {"w": size, "h": size},
         "scale": "1",
     }
     # Pillow writes no timestamp or other metadata by default; keep it that way.
-    sheet.save(out_dir / image_name, format="PNG", compress_level=9)
+    # lossless + exact: decoded RGBA equals the sheet byte for byte, RGB under transparent pixels included.
+    sheet.save(
+        out_dir / image_name(atlas), format="WEBP", lossless=True, quality=100, method=6, exact=True
+    )
     text = json.dumps({"frames": entries, "meta": meta}, sort_keys=True, indent=1) + "\n"
     (out_dir / f"{atlas}.json").write_text(text, encoding="utf-8")
     return size
