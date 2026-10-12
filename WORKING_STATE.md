@@ -12,7 +12,7 @@ Last updated: 2026-10-12
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 → ✅ UIX-002 #26 → TEC-020 (#27, Fable fix pending re-gate) → TEC-021 (spec on branch)
+5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 → TEC-021 (sonnet, in flight)
 6. M1 E2E
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
