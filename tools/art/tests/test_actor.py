@@ -122,3 +122,17 @@ def test_template_letter_for_a_missing_ramp_fails_instead_of_painting_body_colou
     )
     with pytest.raises(ValueError, match=message):
         actor.draw_body(Context(1, "actor"), broken, skel, "down")
+
+
+def test_feathered_species_without_talon_ramp_is_rejected():
+    bird = next(sp for sp in SPECIES if sp.covering == "feathers")
+    with pytest.raises(ValueError, match=rf"{bird.key}: extra_ramp .* required .* 'feathers'"):
+        dataclasses.replace(bird, extra_ramp=None)
+
+
+def test_painting_a_role_the_sheet_lacks_names_the_species_and_role():
+    sheet = actor.Sheet([[(1, 2, 3, 255)] * 6], {"body": 0}, "testfolk")
+    with pytest.raises(
+        ValueError, match="testfolk: painting needs the extra ramp .* no extra_ramp"
+    ):
+        sheet.paint(np.ones((32, 32), bool), "extra", 3)

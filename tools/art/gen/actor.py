@@ -84,6 +84,7 @@ def _bottom_edge(mask: Mask) -> Mask:
 class Sheet:
     ramps: list[list[Rgba]]
     roles: dict[str, int]
+    species: str  # the species key, for error messages
     own: np.ndarray = field(default_factory=lambda: np.full((CELL, CELL), -1, np.int16))
     sh: np.ndarray = field(default_factory=lambda: np.zeros((CELL, CELL), np.int16))
 
@@ -91,6 +92,10 @@ class Sheet:
         return self.own >= 0
 
     def paint(self, mask: Mask, role: str, shade: int | np.ndarray) -> None:
+        if role not in self.roles:
+            raise ValueError(
+                f"{self.species}: painting needs the {role} ramp but the species has no {role}_ramp"
+            )
         self.own[mask] = self.roles[role]
         self.sh[mask] = shade[mask] if isinstance(shade, np.ndarray) else shade
 
@@ -190,7 +195,7 @@ def _sheet(pal: Palette, sp: Species) -> Sheet:
     add("tusk", pal.ramp("tusk"))
     add("eye", [pal.color("eye")])
     add("shine", [pal.color("eye_shine")])
-    return Sheet(ramps, roles)
+    return Sheet(ramps, roles, sp.key)
 
 
 def _shape_shade(mask: Mask, light_rows: int = 1, shadow_rows: int = 1) -> np.ndarray:

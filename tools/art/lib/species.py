@@ -57,6 +57,11 @@ class Species:
                 f"species {self.key}: accent_ramp must be None iff covering is 'skin', "
                 f"got accent_ramp={self.accent_ramp!r} with covering={self.covering!r}"
             )
+        if self.covering == "feathers" and self.extra_ramp is None:
+            raise ValueError(
+                f"species {self.key}: extra_ramp (the talons) is required when covering is 'feathers', "
+                f"got extra_ramp={self.extra_ramp!r}"
+            )
 
 
 # fmt: off
