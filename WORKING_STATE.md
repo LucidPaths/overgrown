@@ -12,7 +12,7 @@ Last updated: 2026-10-12
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 → UIX-002 (sonnet) → TEC-020 → TEC-021 (sonnet)
+5. ✅ CMB-002 #25 → ✅ UIX-002 #26 → TEC-020 (#27, Fable fix pending re-gate) → TEC-021 (spec on branch)
 6. M1 E2E
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
@@ -30,7 +30,11 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Waves 1–4 + CMB-002 merged (#15–#25). UIX-002 worker running. Then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also: check a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); record stall numbers vs a no-ground baseline (software GL halves fps here); verify characters animate in-game (TEC-022's KIND_FRAMES wiring is only smoke-tested). Open follow-ups outside M1: ART-023, OVR-005.
+**PAUSED 2026-10-12 ~12:45 UTC at Lucid's request. Resume exactly here:**
+1. PR #27 (TEC-020, branch tec-020-dpr-cap): Fable round 1 found `measure-startup.mjs` turning missing measurements into 0. The worker fixed it in f381a54 (verified: normal run exit 0, median 4630 ms; broken instrumentation → exit 1 naming the keys). Still to do: critic re-check of f381a54 → re-run verification → Fable round 2 on the new head → merge if PASS and CI green.
+2. TEC-021 (branch tec-021-startup, spec committed, NOT dispatched): dispatch a sonnet worker after #27 merges. Before opening its PR, drop `docs/orchestration/m1-contracts.md` from that branch (only parked there so the sheet survives a container reset). Pass along: fix the main.ts TDZ pattern (a constructor failure after `app.ticker.add` gets overwritten by a ReferenceError on the next tick); first-frame baseline 4.63 s, bar ≤ 3 s (OQ-028); spawn search costs ≤ ~236 ms; the CMB-001 AC12 `phoneCanvas` constant is now 541×1201 after TEC-020.
+3. Then the M1 E2E (docs/agents/E2E.md + MILESTONES M1 checklist). Extra items: a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); stall numbers vs a no-ground baseline (SwiftShader halves fps here); characters animate in-game (TEC-022 wiring only smoke-tested); the ≤ 3 s first frame; touch emulation walk.
+Merged so far: #12–#26 (OVR-006/007, M1 design lock, and 12 of 14 M1 tasks). Remaining M1: TEC-020 (#27), TEC-021.
 
 ## Decisions (accumulate)
 
