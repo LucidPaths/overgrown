@@ -11,14 +11,13 @@ from lib.context import Context
 NAME = "debug"
 ATLAS = "core"
 
-GREEN_LIGHT = (106, 190, 48, 255)
-GREEN_DARK = (55, 120, 40, 255)
 
-
-def _checker16() -> Image.Image:
+def _checker16(ctx: Context) -> Image.Image:
+    grass = ctx.palette("meadow").ramp("grass")
+    green_dark, green_light = grass[1], grass[3]
     ys, xs = np.mgrid[0:16, 0:16]
     light = ((xs // 4 + ys // 4) % 2 == 0)[..., None]
-    px = np.where(light, np.array(GREEN_LIGHT, np.uint8), np.array(GREEN_DARK, np.uint8))
+    px = np.where(light, np.array(green_light, np.uint8), np.array(green_dark, np.uint8))
     return Image.fromarray(px.astype(np.uint8), "RGBA")
 
 
@@ -36,12 +35,12 @@ def _mover32(ctx: Context) -> Image.Image:
     outline = disk & (d2 > 22**2)  # outermost 1 px ring
     px = np.zeros((32, 32, 4), np.uint8)
     px[disk] = _rgba(hue, 0.9)
-    px[outline] = _rgba(hue, 0.45)
+    px[outline] = ctx.palette("pop").ramp("shadow")[0]
     return Image.fromarray(px, "RGBA")
 
 
 def generate(ctx: Context) -> list[Frame]:
     return [
-        Frame(f"{NAME}/checker16", _checker16()),
+        Frame(f"{NAME}/checker16", _checker16(ctx)),
         Frame(f"{NAME}/mover32", _mover32(ctx)),
     ]

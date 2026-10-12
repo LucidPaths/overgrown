@@ -1,0 +1,14 @@
+{
+  "name": "meadow",
+  "ramps": {
+    "grass": ["#2e6b34", "#3f8a3a", "#58a83c", "#78c244", "#9ad95a"],
+    "grass_dry": ["#8a7a2e", "#b09a3c", "#d2bc5a", "#ecdc86"],
+    "dirt": ["#4a2f20", "#6b4530", "#8c5e3e", "#ae7d54", "#cc9d72"],
+    "stone": ["#4e5260", "#6c7080", "#8d91a0", "#b0b4c0"],
+    "water": ["#1d5d96", "#2f82c0", "#52a9dc", "#8ccdf0", "#c4e8fa"],
+    "wood": ["#3d2616", "#5c3a20", "#7e5430", "#a2763f"],
+    "leaf": ["#1f5a3a", "#2c7a4a", "#3f9c58", "#62bc6c"],
+    "flower_warm": ["#c4402a", "#e8683a", "#f59a4a", "#fcc86a"],
+    "flower_cool": ["#5a4ab8", "#7c6ad8", "#a08ef0", "#c8baff"]
+  }
+}

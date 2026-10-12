@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+from lib.palette import Palette, load_palette
 from lib.rng import Rng, derive_seed, hash_string
 
 
@@ -14,3 +15,7 @@ class Context:
         """Independent stream for (art_seed, generator_name, *parts); str parts are hashed."""
         ints = [hash_string(p) if isinstance(p, str) else p for p in parts]
         return Rng(derive_seed(self.art_seed, hash_string(self.generator_name), *ints))
+
+    def palette(self, name: str) -> Palette:
+        """Named palette from tools/art/palettes (validated on load, cached per process)."""
+        return load_palette(name)
