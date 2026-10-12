@@ -41,6 +41,7 @@ Or "none — <reason>" (e.g. pure rendering, covered by milestone E2E).
 
 ## Verification commands
 Copy-paste commands. The worker, the critic and the orchestrator all run them.
+Page-level checks: `npm -w @overgrown/client run preview -- --port <port> &` then `node scripts/check-page.mjs http://localhost:<port>/ [shot.png] [waitMs]`.
 
 ## Files
 Allowed to change: …
