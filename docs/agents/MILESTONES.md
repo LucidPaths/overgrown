@@ -34,7 +34,7 @@ Design locked by OQ-018 to OQ-028 (2026-10-12); TEC-020, TEC-021 and TEC-022 joi
 ECO-001 · ECO-002 · CHR-002 · CHR-004 · CHR-005 · CMB-003 · CMB-004 · CMB-005 · CMB-007 · CMB-008 · CMB-009 · ITM-001 · ITM-002 · UIX-001 · AUD-001
 
 **E2E checklist**
-- Find and fight monsters with a sword on desktop and touch.
+- Find and fight monsters with a sword on desktop (touch dropped, OQ-029).
 - Stamina drains and regens; dodge gives i-frames; hits have flash, hitstop and knockback.
 - Over many hits, the damage distribution shifts upward as mastery rises.
 - Kills grant XP and level-ups; monster stats follow their age.

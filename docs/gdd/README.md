@@ -17,7 +17,7 @@ The GDD is the single source of truth for what the game is. Code that contradict
 | 08 | [Items & economy](08-items-economy.md) | `ITM` | Loot, crafting, materials, trade, stalls, corpses |
 | 09 | [Housing, camps & taming](09-housing-taming.md) | `HSG` | Claim & furnish, camps, beds, taming |
 | 10 | [Art & audio pipeline](10-art-audio.md) | `ART` / `AUD` | Procedural sprites, paper doll, palettes, VFX, synth audio |
-| 11 | [UI & UX](11-ui-ux.md) | `UIX` | HUD, menus, touch layout, onboarding |
+| 11 | [UI & UX](11-ui-ux.md) | `UIX` | HUD, menus, onboarding (touch layout retired, OQ-029) |
 | 12 | [Content catalogs (DRAFT)](12-catalogs.md) | `CAT` | Weapons, traits, abilities, teachings, species, monsters, biomes, stations |
 | 13 | [Open questions](13-open-questions.md) | `OQ` | Undecided things, with a default until decided |
 
