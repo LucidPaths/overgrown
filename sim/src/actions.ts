@@ -15,7 +15,7 @@ const DODGE_SPEED = (DODGE_DISTANCE * TICK_HZ) / DODGE_TICKS; // px/s
 const PRESSES = IntentButton.AttackPress | IntentButton.DodgePress;
 
 /** Unit vector of each facing (y-down). */
-const FACING_UNIT: Record<FacingValue, readonly [number, number]> = {
+export const FACING_UNIT: Record<FacingValue, readonly [number, number]> = {
   [Facing.Down]: [0, 1],
   [Facing.Left]: [-1, 0],
   [Facing.Right]: [1, 0],

@@ -3,7 +3,9 @@ import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
 import { Application, Container, Text, TextStyle, TextureStyle } from "pixi.js";
 import { loadCoreAtlas } from "./assets";
+import { HostInput } from "./input/host-input";
 import { KeyboardMouseInput } from "./input/keyboard-mouse";
+import { TouchInput } from "./input/touch";
 import { actorFrameNames } from "./render/actor-frames";
 import { layoutCamera } from "./render/camera";
 import { ChunkLayer } from "./render/chunk-layer";
@@ -138,7 +140,13 @@ try {
   });
   const init: HostToSim = { type: "init", seed: seedFromUrl() };
   worker.postMessage(init);
-  const input = new KeyboardMouseInput(app.canvas, (msg) => worker.postMessage(msg));
+  const hostInput = new HostInput(
+    (msg) => worker.postMessage(msg),
+    window.matchMedia("(pointer: coarse)").matches ? "touch" : "keyboard-mouse",
+  );
+  const input = new KeyboardMouseInput(app.canvas, hostInput);
+  // No per-frame call yet: bind it to a name when UIX-002 reads `stick` and `buttonsDown`.
+  new TouchInput(app.canvas, hostInput, frame);
 } catch (error) {
   showFatal("overgrown couldn't start the renderer", error);
 }
