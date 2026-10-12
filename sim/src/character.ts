@@ -17,8 +17,8 @@ export interface CharacterComponents {
   /**
    * What the character wants to do this tick. moveX/moveY: desired move direction, magnitude 0..1
    * (movement clamps larger values to 1). aimX/aimY: aim offset from the character in world px.
-   * buttons: a bitfield whose bits CMB-001 defines. CHR-001 never writes Intent after spawn and
-   * never reads aim or buttons.
+   * buttons: a bitfield of IntentButton bits (below). Written by the host input latch (later AI);
+   * stepActions reads aim and the press bits, stepMovement reads Sprint.
    */
   intent: Component<{ moveX: "f32"; moveY: "f32"; aimX: "f32"; aimY: "f32"; buttons: "u8" }>;
   /** ActionValue + the tick it started. */
@@ -28,6 +28,12 @@ export interface CharacterComponents {
   /** KindValue */
   kind: Component<{ kind: "u16" }>;
 }
+
+/**
+ * Intent.buttons bits. Sprint mirrors what is held now. *Press bits are edges: set by whoever writes the
+ * Intent (the host input latch, later AI), consumed or dropped by stepActions.
+ */
+export const IntentButton = { Sprint: 1, AttackPress: 2, DodgePress: 4 } as const;
 
 /** The ECS world plus the character components registered in it. */
 export interface CharacterWorld {

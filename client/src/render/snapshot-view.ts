@@ -38,7 +38,8 @@ export class SnapshotView {
         this.layer.addChild(sprite);
         this.sprites.set(id, sprite);
       }
-      sprite.position.set(s.x[i]!, s.y[i]!);
+      // Whole art px × integer scale + integer origin = every texel on whole device px (10-art-audio: no sub-pixel jitter).
+      sprite.position.set(Math.round(s.x[i]!), Math.round(s.y[i]!));
     }
     for (const [id, sprite] of this.sprites) {
       if (!present.has(id)) {

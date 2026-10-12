@@ -48,7 +48,7 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 - [x] **ART-001** `[proto]` Pipeline scaffold: `build.py` → atlas PNG + JSON, consumed by the client (→ TEC-005). — #7
 - [x] **ART-002** `[proto]` Palette system: biome palettes + global pop palette. — #9
 - [x] **ART-003** `[proto]` Primitive drawing library: shapes, outlines, shading ramps, dithering. — #10
-- [ ] **ART-004** `[proto]` Ground tiles: grass, dirt, sand, stone, cliff, water depths, with autotile transitions; one palette per biome (OQ-018, OQ-027).
+- [x] **ART-004** `[proto]` Ground tiles: grass, dirt, sand, stone, cliff, water depths, with autotile transitions; one palette per biome (OQ-018, OQ-027). — #19
 - [x] **ART-005** `[proto]` Character body generator per species, 4 directions. All 9 species share one humanoid skeleton and differ by parameters; new actor palette (OQ-020, OQ-027). — #17
 - [ ] **ART-006** `[proto]` Animation sets: idle, walk, attack per weapon family, dodge, hurt, death. M1 ships blades + unarmed attacks with no weapon pixels; frames carry a hand anchor (OQ-022).
 - [ ] **ART-007** Props: trees, rocks, bushes, fences, crates, with break states and topple frames.
