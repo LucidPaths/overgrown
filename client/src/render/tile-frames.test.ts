@@ -59,7 +59,7 @@ describe("tileFrames", () => {
       }
     }
     const expected = expectedFrames();
-    expect(expected.size).toBe(1100);
+    expect(expected.size).toBe(1220);
     expect(seen).toEqual(expected);
   });
 

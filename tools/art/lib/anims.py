@@ -46,6 +46,10 @@ class Pose:
     hand_r: Offset = (0, 0)
     foot_l: Offset = (0, 0)  # feet ignore body and chest
     foot_r: Offset = (0, 0)
+    tail: Offset = (
+        0,
+        0,
+    )  # cosmetic shift of the tail drawing; the tail_root joint itself never moves
 
     def __post_init__(self) -> None:
         _check_range("body", self.body, 0, 3)
@@ -53,8 +57,9 @@ class Pose:
         _check_offset("head", self.head, (-1, 1), (0, 3))
         _check_offset("hand_l", self.hand_l, (-10, 10), (-10, 10))
         _check_offset("hand_r", self.hand_r, (-10, 10), (-10, 10))
-        _check_offset("foot_l", self.foot_l, (-2, 2), (-2, 0))
-        _check_offset("foot_r", self.foot_r, (-2, 2), (-2, 0))
+        _check_offset("foot_l", self.foot_l, (-3, 3), (-3, 0))
+        _check_offset("foot_r", self.foot_r, (-3, 3), (-3, 0))
+        _check_offset("tail", self.tail, (-2, 2), (-2, 2))
         if self.foot_l[1] != 0 and self.foot_r[1] != 0:
             raise ValueError(
                 f"pose foot_l/foot_r: dy {self.foot_l[1]} and {self.foot_r[1]}; "
@@ -97,37 +102,47 @@ _AUTHORED = ("down", "left", "up")  # right is the mirror of left
 
 # fmt: off
 ANIMS: dict[str, dict[str, tuple[Pose, ...]]] = {
-    "idle": {  # 0 base pose (must stay Pose()); 1 breath: chest sinks 1
-        "down": (Pose(), Pose(chest=1)),
-        "left": (Pose(), Pose(chest=1)),
-        "up":   (Pose(), Pose(chest=1)),
+    "idle": {  # 0 base pose (must stay Pose()); 1 breath: chest sinks 1, tail and ears catch up a frame later
+        "down": (Pose(), Pose(chest=1, tail=(0, -1))),
+        "left": (Pose(), Pose(chest=1, tail=(0, -1))),
+        "up":   (Pose(), Pose(chest=1, tail=(0, -1))),
     },
-    "walk": {  # down/up: 0 lift L foot + R hand forward, 1 contact bob, 2 lift R foot + L hand, 3 bob
+    "walk": {  # down/up: 0 lift L foot (R hand forward), 1 contact (body low), 2 lift R foot, 3 contact
                # left: 0 contact stride (near foot forward), 1 passing, 2 other stride, 3 passing
-        "down": (Pose(foot_l=(0, -1), hand_r=(0, -1)), Pose(body=1),
-                 Pose(foot_r=(0, -1), hand_l=(0, -1)), Pose(body=1)),
-        "left": (Pose(body=1, foot_l=(-2, 0), foot_r=(2, 0), hand_l=(2, -1), hand_r=(-2, -1)),
-                 Pose(foot_r=(0, -2)),
-                 Pose(body=1, foot_l=(2, 0), foot_r=(-2, 0), hand_l=(-2, -1), hand_r=(2, -1)),
-                 Pose(foot_l=(0, -2))),
-        "up":   (Pose(foot_l=(0, -1), hand_r=(0, -1)), Pose(body=1),
-                 Pose(foot_r=(0, -1), hand_l=(0, -1)), Pose(body=1)),
+        "down": (Pose(foot_l=(0, -2), hand_r=(0, 1), hand_l=(0, -1)),
+                 Pose(body=1, tail=(0, -1)),
+                 Pose(foot_r=(0, -2), hand_l=(0, 1), hand_r=(0, -1)),
+                 Pose(body=1, tail=(0, -1))),
+        "left": (Pose(body=1, foot_l=(-3, 0), foot_r=(3, 0), hand_l=(3, -1), hand_r=(-3, -1), tail=(0, -1)),
+                 Pose(foot_r=(-1, -2)),
+                 Pose(body=1, foot_l=(3, 0), foot_r=(-3, 0), hand_l=(-3, -1), hand_r=(3, -1), tail=(0, -1)),
+                 Pose(foot_l=(1, -2))),
+        "up":   (Pose(foot_l=(0, -2), hand_r=(0, 1), hand_l=(0, -1)),
+                 Pose(body=1, tail=(0, -1)),
+                 Pose(foot_r=(0, -2), hand_l=(0, 1), hand_r=(0, -1)),
+                 Pose(body=1, tail=(0, -1))),
     },
     "attack_blade": {  # 0 wind-up (main hand high, outside), 1 overhead, 2 strike across the front + lunge, 3 recover
-        "down": (Pose(hand_r=(-2, -9), hand_l=(0, -1)), Pose(hand_r=(2, -6)),
-                 Pose(body=1, hand_r=(7, 0)), Pose(hand_r=(3, -1))),
+        "down": (Pose(hand_r=(-2, -9), hand_l=(0, -1)), Pose(hand_r=(2, -7)),
+                 Pose(body=2, hand_r=(7, 0), head=(0, 1)), Pose(body=1, hand_r=(3, -1))),
         "left": (Pose(hand_l=(3, -9)), Pose(hand_l=(-3, -9)),
-                 Pose(body=1, hand_l=(-6, -3), foot_l=(-1, 0)), Pose(hand_l=(-2, -1))),
+                 Pose(body=2, hand_l=(-7, -3), foot_l=(-2, 0), foot_r=(2, 0), head=(-1, 1)), Pose(body=1, hand_l=(-2, -1))),
         "up":   (Pose(hand_r=(2, -9), hand_l=(0, -1)), Pose(hand_r=(-2, -8)),
-                 Pose(body=1, hand_r=(-7, -2)), Pose(hand_r=(-3, -1))),
+                 Pose(body=2, hand_r=(-7, -2), head=(0, 1)), Pose(body=1, hand_r=(-3, -1))),
     },
-    "attack_unarmed": {  # 0 chamber (fist pulled up), 1 jab, 2 full extension, 3 recover
-        "down": (Pose(hand_r=(0, -4)), Pose(body=1, hand_r=(3, 0)),
-                 Pose(body=1, hand_r=(4, 1)), Pose(hand_r=(1, -1))),
-        "left": (Pose(hand_l=(2, -4)), Pose(body=1, hand_l=(-5, -5), foot_l=(-1, 0)),
-                 Pose(body=1, hand_l=(-6, -5), foot_l=(-1, 0)), Pose(hand_l=(-2, -2))),
-        "up":   (Pose(hand_r=(0, -3)), Pose(body=1, hand_r=(-2, -6)),
-                 Pose(body=1, hand_r=(-3, -7)), Pose(hand_r=(-1, -2))),
+    "attack_unarmed": {  # 0 chamber (fist pulled up and back), 1 swing in, 2 full extension + lunge (held), 3 recover
+        "down": (Pose(hand_r=(-1, -5), hand_l=(0, -1)),
+                 Pose(body=1, hand_r=(4, -2)),
+                 Pose(body=2, hand_r=(6, 0), head=(0, 1)),
+                 Pose(body=1, hand_r=(3, -1))),
+        "left": (Pose(hand_l=(3, -6), foot_l=(1, 0)),
+                 Pose(body=1, hand_l=(-2, -4), foot_l=(-1, 0)),
+                 Pose(body=2, hand_l=(-7, -3), foot_l=(-2, 0), foot_r=(2, 0), head=(-1, 1)),
+                 Pose(body=1, hand_l=(-3, -1), foot_l=(-1, 0))),
+        "up":   (Pose(hand_r=(1, -5), hand_l=(0, -1)),
+                 Pose(body=1, hand_r=(0, -8)),
+                 Pose(body=2, hand_r=(-1, -9), head=(0, 1)),
+                 Pose(body=1, hand_r=(0, -3))),
     },
     "dodge": {  # 0 crouch, 1 tuck into a ball, 2 deepest tuck (head down), 3 rise
         "down": (Pose(body=2, hand_l=(-1, -2), hand_r=(1, -2)),
@@ -146,11 +161,11 @@ ANIMS: dict[str, dict[str, tuple[Pose, ...]]] = {
                  Pose(body=1, hand_l=(0, -1), hand_r=(0, -1))),
     },
     "hurt": {  # 0 flinch (head knocked back, arms up), 1 sag
-        "down": (Pose(head=(0, 1), hand_l=(1, -2), hand_r=(-1, -2)),
+        "down": (Pose(head=(0, 1), hand_l=(1, -2), hand_r=(-1, -2), tail=(1, -1)),
                  Pose(body=1, chest=1, head=(0, 1))),
-        "left": (Pose(head=(1, 0), hand_l=(2, -2), hand_r=(2, -2), foot_l=(1, 0)),
+        "left": (Pose(head=(1, 0), hand_l=(2, -2), hand_r=(2, -2), foot_l=(1, 0), tail=(1, -1)),
                  Pose(body=1, chest=1, head=(1, 1))),
-        "up":   (Pose(head=(0, 1), hand_l=(-1, -2), hand_r=(1, -2)),
+        "up":   (Pose(head=(0, 1), hand_l=(-1, -2), hand_r=(1, -2), tail=(1, -1)),
                  Pose(body=1, chest=1, head=(0, 1))),
     },
     "death": {  # 0 flinch, 1 knees buckle, 2 kneel, 3 slumped heap with hands on the ground (held by the renderer)
@@ -211,11 +226,24 @@ def pose_skeleton(species: Species, anim: str, direction: str, index: int) -> Sk
         raise ValueError(
             f"{where}: leg {species.leg} minus body {pose.body} leaves under 2 rows of leg"
         )
-    if species.torso - pose.chest < 3:
+    if species.torso - pose.chest < 2:
         raise ValueError(
-            f"{where}: torso {species.torso} minus chest {pose.chest} leaves under 3 rows of torso"
+            f"{where}: torso {species.torso} minus chest {pose.chest} leaves under 2 rows of torso"
         )
     return apply_pose(base_skeleton(species, direction), pose)
+
+
+def pose_for(anim: str, direction: str, index: int) -> Pose:
+    """The Pose of an authored frame (down, left or up); right frames are mirrors and have none of their own."""
+    if anim not in ANIMS:
+        raise ValueError(f"anims: unknown anim {anim!r}; expected one of {ANIM_KEYS}")
+    if direction not in _AUTHORED:
+        raise ValueError(f"anims: pose_for takes one of {_AUTHORED}, got {direction!r}")
+    if not 0 <= index < frame_count(anim):
+        raise ValueError(
+            f"anims: {anim}/{direction}/{index}: index out of range 0..{frame_count(anim) - 1}"
+        )
+    return ANIMS[anim][direction][index]
 
 
 MAIN_HAND = {"down": "hand_r", "left": "hand_l", "right": "hand_r", "up": "hand_r"}

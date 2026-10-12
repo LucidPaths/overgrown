@@ -1,28 +1,20 @@
 """The 9 playable species as one data table over the shared humanoid skeleton (OQ-020).
 
-Species differ only through these rows: body dimensions in pixels, feature choices and actor
-palette ramps. Geometric fit in the 32x32 cell is checked by gen/actor.py, not here.
+Species differ only through these rows: body dimensions in pixels, the covering, the tail kind and the actor
+palette ramps. Their heads and tails are hand-authored pixel templates in gen/heads.py, keyed by `key`.
+Geometric fit in the 32x32 cell is checked by gen/actor.py, not here.
+
+Dimensions follow docs/art/DIRECTION.md section 5 (chibi, 2.2 to 2.8 heads tall).
 """
 
 from dataclasses import dataclass
 from typing import Literal, get_args
 
-HeadShape = Literal["round", "square"]
-Ears = Literal["none", "pointed", "fox", "rabbit", "bear"]
-Face = Literal["plain", "tusks", "muzzle", "snout_fox", "snout_bear", "snout_lizard", "beak"]
-Tail = Literal["none", "fox", "rabbit", "bear", "lizard"]
+Tail = Literal["none", "fox", "rabbit", "bear", "lizard", "bird"]
 Covering = Literal["skin", "fur", "feathers", "scales"]
-Hair = Literal["none", "short", "long", "short_beard", "crest"]
 
-_DIMENSIONS = ("leg", "torso", "arm", "head_w", "head_h", "shoulder", "hip")
-_FEATURES = {
-    "head_shape": HeadShape,
-    "ears": Ears,
-    "face": Face,
-    "tail": Tail,
-    "covering": Covering,
-    "hair": Hair,
-}
+_DIMENSIONS = ("leg", "torso", "arm", "shoulder", "hip", "leg_w", "arm_w", "depth")
+_FEATURES = {"tail": Tail, "covering": Covering}
 
 
 @dataclass(frozen=True)
@@ -31,19 +23,19 @@ class Species:
     leg: int  # rows from hip to sole
     torso: int  # rows from neck to hip
     arm: int  # rows from shoulder to hand, inclusive
-    head_w: int
-    head_h: int
-    shoulder: int  # half-span of the shoulders from the centre line
-    hip: int  # half-span of the hips
-    head_shape: HeadShape
-    ears: Ears
-    face: Face
+    shoulder: int  # torso half-width at the shoulders, columns on each side of the centre line
+    hip: int  # distance from the centre line to the outer edge of a leg
+    leg_w: int  # leg width in columns
+    arm_w: int  # arm width in columns
+    depth: int  # torso depth in profile, columns
     tail: Tail
     covering: Covering
-    hair: Hair
     body_ramp: str  # actors ramp for skin, fur, feathers or scales
-    accent_ramp: str | None  # snout or muzzle, tail tip or puff, sleeve fringe; None iff skin
-    hair_ramp: str | None  # None iff hair == "none"
+    accent_ramp: str | None  # muzzle, belly, tail tip; None iff skin
+    hair_ramp: str | None  # None iff the species has no hair
+    extra_ramp: str | None  # beak, inner ear...: a second accent; None when unused
+    cloth_ramp: str  # the base tunic
+    legwear_ramp: str  # the base shorts
 
     def __post_init__(self) -> None:
         for name in _DIMENSIONS:
@@ -63,26 +55,19 @@ class Species:
                 f"species {self.key}: accent_ramp must be None iff covering is 'skin', "
                 f"got accent_ramp={self.accent_ramp!r} with covering={self.covering!r}"
             )
-        if (self.hair_ramp is None) != (self.hair == "none"):
-            raise ValueError(
-                f"species {self.key}: hair_ramp must be None iff hair is 'none', "
-                f"got hair_ramp={self.hair_ramp!r} with hair={self.hair!r}"
-            )
 
 
-# Tuned from the ART-005 starting values: even head widths keep the down and up views symmetric
-# about the centre line, and dwarf torso 7 / rabbitfolk torso 8 keep the dwarf the shortest.
 # fmt: off
 SPECIES: tuple[Species, ...] = (
-    #       key           leg  torso  arm  head_w  head_h  shoulder  hip  head_shape  ears       face            tail      covering    hair           body_ramp       accent_ramp  hair_ramp
-    Species("human",      7,   8,     9,   10,     10,     5,        4,   "round",    "none",    "plain",        "none",   "skin",     "short",       "skin_human",   None,        "hair_brown"),
-    Species("elf",        8,   9,     10,  8,      10,     4,        3,   "round",    "pointed", "plain",        "none",   "skin",     "long",        "skin_elf",     None,        "hair_blond"),
-    Species("dwarf",      5,   7,     8,   10,     10,     6,        5,   "square",   "none",    "plain",        "none",   "skin",     "short_beard", "skin_dwarf",   None,        "hair_red"),
-    Species("orc",        7,   9,     10,  12,     9,      6,        5,   "square",   "pointed", "tusks",        "none",   "skin",     "short",       "skin_orc",     None,        "hair_black"),
-    Species("foxfolk",    6,   8,     9,   10,     9,      4,        3,   "round",    "fox",     "snout_fox",    "fox",    "fur",      "none",        "fur_fox",      "cream",     None),
-    Species("bearfolk",   6,   9,     10,  12,     10,     7,        6,   "round",    "bear",    "snout_bear",   "bear",   "fur",      "none",        "fur_bear",     "cream",     None),
-    Species("rabbitfolk", 6,   8,     8,   10,     9,      4,        3,   "round",    "rabbit",  "muzzle",       "rabbit", "fur",      "none",        "fur_rabbit",   "cream",     None),
-    Species("birdfolk",   7,   8,     9,   10,     9,      4,        3,   "round",    "none",    "beak",         "none",   "feathers", "crest",       "feather_bird", "cream",     "feather_bird"),
-    Species("lizardfolk", 7,   8,     9,   10,     9,      5,        4,   "round",    "none",    "snout_lizard", "lizard", "scales",   "none",        "scale_lizard", "cream",     None),
+    #       key           leg torso arm shoulder hip leg_w arm_w depth tail      covering    body_ramp       accent_ramp     hair_ramp     extra_ramp  cloth_ramp       legwear_ramp
+    Species("human",      7,  7,    7,  4,       4,  3,    3,    7,    "none",   "skin",     "skin_human",   None,           "hair_brown", None,       "cloth_crimson", "cloth_ochre"),
+    Species("elf",        8,  8,    8,  3,       3,  3,    2,    6,    "none",   "skin",     "skin_elf",     None,           "hair_blond", None,       "cloth_violet",  "cloth_moss"),
+    Species("dwarf",      5,  7,    6,  6,       5,  4,    4,    8,    "none",   "skin",     "skin_dwarf",   None,           "hair_red",   None,       "cloth_sky",     "cloth_leather"),
+    Species("orc",        6,  8,    8,  6,       5,  4,    4,    8,    "none",   "skin",     "skin_orc",     None,           "hair_black", None,       "cloth_leather", "cloth_ochre"),
+    Species("foxfolk",    7,  7,    7,  4,       4,  3,    3,    7,    "fox",    "fur",      "fur_fox",      "cream",        None,         None,       "cloth_teal",    "cloth_leather"),
+    Species("bearfolk",   5,  8,    7,  7,       6,  4,    5,    9,    "bear",   "fur",      "fur_bear",     "cream",        None,         None,       "cloth_moss",    "cloth_leather"),
+    Species("rabbitfolk", 6,  7,    6,  3,       3,  3,    2,    6,    "rabbit", "fur",      "fur_rabbit",   "cream",        None,         "pink",     "cloth_rose",    "cloth_leather"),
+    Species("birdfolk",   8,  6,    7,  4,       3,  2,    3,    6,    "bird",   "feathers", "feather_bird", "cream",        None,         "beak",     "cloth_ochre",   "cloth_leather"),
+    Species("lizardfolk", 7,  7,    7,  4,       4,  3,    3,    7,    "lizard", "scales",   "scale_lizard", "belly_lizard", None,         None,       "cloth_linen",   "cloth_leather"),
 )
 # fmt: on
