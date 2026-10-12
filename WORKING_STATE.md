@@ -12,7 +12,7 @@ Last updated: 2026-10-12
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 → TEC-021 (sonnet, in flight)
+5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 · TEC-021 #28
 6. M1 E2E
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
@@ -30,9 +30,9 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-**Resumed 2026-10-12 ~19:40 UTC.** TEC-020 merged as #27 (Fable round 2 PASS on 911107f). In flight: TEC-021 (branch tec-021-startup, sonnet worker; spec docs/specs/TEC-021.md). Pass along: fix the main.ts TDZ pattern (a constructor failure after `app.ticker.add` gets overwritten by a ReferenceError on the next tick); the CMB-001 AC12 `phoneCanvas` constant is 541×1201 after TEC-020.
-Next: M1 E2E (docs/agents/E2E.md + MILESTONES M1 checklist). Extra items: a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); stall numbers vs a no-ground baseline (SwiftShader halves fps here); characters animate in-game (TEC-022 wiring only smoke-tested); the ≤ 3 s first frame; touch emulation walk; a screenshot of every species and biome for an art-polish task (Lucid finds the graphics weak; known: thin side profiles, orc ears read as horns, rabbit reads as cat, dull mountain palette, death ends kneeling).
-Merged so far: #12–#27. Remaining M1: TEC-021, then the E2E.
+**2026-10-12 ~20:00 UTC.** All 14 M1 tasks merged (#15–#28; TEC-021 #28: first frame 2852 ms median, WebP atlas). In flight:
+- **M1 E2E** (branch m1-e2e, sonnet E2E agent) → docs/e2e/M1.md + docs/e2e/M1/*.png. Extra items: a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); stall numbers vs a no-ground baseline (SwiftShader halves fps here); characters animate in-game (TEC-022 wiring only smoke-tested); the ≤ 3 s first frame; touch emulation walk; a screenshot of every biome.
+- **ART-024** art direction pass (Lucid's request; branch art-024-direction, sonnet; spec docs/specs/ART-024.md on that branch): research → docs/art/RESEARCH.md, art bible docs/art/DIRECTION.md, redraw actors/tiles/palettes with full creative freedom inside the frame/cell/determinism contracts. Preview images go on a separate branch art-024-previews (docs/art/previews/ + README), its own PR (Lucid: no scratchpad). Lucid finds the M1 graphics weak; known: thin side profiles, orc ears read as horns, rabbit reads as cat, dull mountain palette, death ends kneeling.
 
 ## Decisions (accumulate)
 
