@@ -13,7 +13,7 @@ Launch set:
 - **Grassland / meadow:** spawn-friendly, open, readable.
 - **Forest:** cover, dens, falling trees.
 - **River:** crossings, fishing, swimming.
-- **Mountains:** cliffs, caves, cold peaks.
+- **Mountains:** cliffs, caves, cold peaks. Cliffs are blocking cliff tiles on steep elevation, drawn with a 3/4 rock face; there are no height levels (OQ-018).
 - **Ocean:** coastlines, boats, deep-water monsters.
 
 Later: swamp/marsh, tundra, desert/badlands, volcanic (→ CAT biomes).
@@ -60,6 +60,7 @@ These are the main source of "feel", so give them real visual budget.
 
 ## Water
 
+- Shallow water is walkable at reduced speed. Deep and very deep water block movement until swimming exists (WLD-017). Rivers are mostly shallow, with deep water only in wide stretches and seeded fords, so a spawn can't be enclosed (OQ-019).
 - Swimming drains stamina. If stamina runs out you take drowning damage.
 - Boats can be crafted or bought, used for river and ocean travel.
 - Deep water holds monsters. You can try to swim across the ocean. Good luck.
@@ -75,7 +76,7 @@ These are the main source of "feel", so give them real visual budget.
 - [ ] **WLD-001** `[proto]` Chunk generator: seed + coordinates → tile layer (deterministic, tested).
 - [ ] **WLD-002** `[proto]` Biome map from layered noise (temperature, moisture, elevation); grassland, forest, river, mountain, ocean.
 - [ ] **WLD-003** `[proto]` Chunk streaming: load and unload around players; cache generated chunks.
-- [ ] **WLD-004** `[proto]` Tile collision and walkability; water depth layer.
+- [ ] **WLD-004** `[proto]` Tile collision and walkability; water depth layer; cliff tiles block, shallow water slows, deep water blocks (OQ-018, OQ-019).
 - [ ] **WLD-005** River and coastline generation that stays continuous across chunk borders.
 - [ ] **WLD-006** Structure placement: settlements, dens, dungeon sites, rift sites (seeded, with minimum spacing).
 - [ ] **WLD-007** Creature level distribution as a function of distance from origin, plus local modifiers.

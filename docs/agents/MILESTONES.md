@@ -1,4 +1,4 @@
-# Milestones (DRAFT, needs Lucid's sign-off)
+# Milestones (M0 and M1 signed off by Lucid; M2+ still draft)
 
 A milestone is a batch of GDD tasks that together make something you can play-test end to end. The E2E agent runs once per milestone ([E2E.md](E2E.md)). Only `[proto]` tasks are scheduled so far.
 
@@ -18,7 +18,9 @@ OVR-001 · OVR-002 · OVR-003 · TEC-001 · TEC-002 · TEC-003 · TEC-004 · TEC
 
 ## M1 — Walk the world
 
-WLD-001 · WLD-002 · WLD-003 · WLD-004 · ART-004 · ART-005 · ART-006 · CHR-001 · CMB-001 · CMB-002 · UIX-002
+WLD-001 · WLD-002 · WLD-003 · WLD-004 · ART-004 · ART-005 · ART-006 · CHR-001 · CMB-001 · CMB-002 · UIX-002 · TEC-020 · TEC-021 · TEC-022
+
+Design locked by OQ-018 to OQ-027 (2026-10-12).
 
 **E2E checklist**
 - Create a world from a seed and walk with the keyboard, then with touch emulation.
