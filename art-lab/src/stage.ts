@@ -2,7 +2,7 @@
 // actors as the game; only the clock and the placement are fixed. ?mode=stage&view=lineup&anim=walk&t=0.25
 import { attack, clearPose, death, dodge, hurt, idle, locomotion, newPose, ATTACK_S, DODGE_S, type Pose } from "./actors/anim";
 import { SPECIES } from "./actors/species";
-import { ActorLayer, type ActorDraw } from "./render/actor-layer";
+import { ActorLayer, setTilt, type ActorDraw } from "./render/actor-layer";
 import { PropLayer } from "./render/prop-layer";
 import { Renderer } from "./render/renderer";
 import { TerrainLayer } from "./render/terrain-layer";
@@ -23,6 +23,8 @@ export function runStage(canvas: HTMLCanvasElement, q: URLSearchParams): void {
   clearings.push({ tx: Math.floor(fx / 16), ty: Math.floor(fz / 16), r: Number(q.get("clear") ?? 6) });
 
   const r = new Renderer(canvas);
+  if (q.has("lean")) r.lean = Number(q.get("lean"));
+  if (q.has("tilt")) setTilt(Number(q.get("tilt")));
   applyTime(r, Number(q.get("hour") ?? 10.5));
   const ground = new Ground(seed);
   const terrain = new TerrainLayer(r.gl, ground);

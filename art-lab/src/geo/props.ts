@@ -10,7 +10,7 @@ const BARK = hex(0x6e4c3c), BARK_DARK = hex(0x553a30);
 const OAK_LEAF = [hex(0x3f8a4c), hex(0x5aa652), hex(0x86c45c)];
 const PINE_LEAF = [hex(0x2c6450), hex(0x3a7f5e), hex(0x55a070)];
 const BIRCH_LEAF = [hex(0x8fb84e), hex(0xb0d05e), hex(0xd2e27a)];
-const ROCK = hex(0x8e8a88), MOSS = hex(0x6f9a4a);
+const ROCK = hex(0x8e8a88), MOSS = hex(0x7d9455), SNOW = hex(0xeef3fa);
 
 type R = (k: number) => number;
 const rng = (seed: number): R => (k: number) => hash01(seed, k, 7);
@@ -125,12 +125,12 @@ function flowers(seed: number): Geo {
   return g;
 }
 
-function rock(seed: number, big: boolean): Geo {
+function rock(seed: number, big: boolean, snow = false): Geo {
   const g = new Geo();
   const r = rng(seed);
   const s = big ? 9 + r(1) * 5 : 3 + r(1) * 3;
   const m = compose(0, s * 0.35, 0, r(2) * 6, (r(3) - 0.5) * 0.4, 0, s * (1 + r(4) * 0.4), s * 0.75, s);
-  g.blob(m, big ? 1 : 0, 0.22, seed, (n) => ({ col: n[1]! > 0.55 && big ? mixc(MOSS, ROCK, r(5) * 0.4) : shade(ROCK, 0.9 + n[1]! * 0.15), mat: MAT.Prop }));
+  g.blob(m, big ? 1 : 0, 0.22, seed, (n) => ({ col: n[1]! > 0.55 && big ? (snow ? SNOW : mixc(MOSS, ROCK, 0.25 + r(5) * 0.4)) : shade(ROCK, 0.9 + n[1]! * 0.15), mat: MAT.Prop }));
   if (big) {
     const m2 = compose(s * 0.7, s * 0.2, s * 0.3, r(6) * 6, 0, 0, s * 0.45, s * 0.4, s * 0.45);
     g.blob(m2, 0, 0.25, seed + 9, { col: shade(ROCK, 0.95), mat: MAT.Prop });
@@ -280,8 +280,8 @@ export function propGeo(kind: number, variant: number, alt = 0): Geo | undefined
     case P.Birch: g = birch(seed); break;
     case P.Bush: g = bush(seed, variant % 3 === 0); break;
     case P.Flowers: g = flowers(seed); break;
-    case P.Rock: g = rock(seed, false); break;
-    case P.Boulder: g = rock(seed, true); break;
+    case P.Rock: g = rock(seed, false, alt === 1); break;
+    case P.Boulder: g = rock(seed, true, alt === 1); break;
     case P.Fern: g = fern(seed); break;
     case P.Mushroom: g = mushroom(seed); break;
     case P.Reeds: g = reeds(seed); break;

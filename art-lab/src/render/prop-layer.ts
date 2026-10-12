@@ -52,6 +52,7 @@ export class PropLayer implements Drawable {
         let alt = 0;
         if (pl.kind === P.Pine && b === B.Mountain && this.ground.fields.elevation(tx, ty) > 0.645) alt = 1;
         if (pl.kind === P.Oak && b === B.Grassland) alt = 1;
+        if ((pl.kind === P.Boulder || pl.kind === P.Rock) && this.ground.fields.elevation(tx, ty) > 0.73) alt = 1; // snow caps
         if (pl.kind === P.TallGrass && (b === B.Ocean || b === B.Mountain || r.tile[(ly + 2) * 36 + (lx + 2)] === T.Dirt)) alt = 1;
         const variant = Math.floor(pl.v * VARIANTS);
         const geo = propGeo(pl.kind, variant, alt);

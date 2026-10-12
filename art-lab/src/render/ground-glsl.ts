@@ -102,9 +102,11 @@ vec3 rockFaceAt(vec3 wp, vec2 cell) {
 }
 
 vec3 snowAt(vec2 p, vec2 cell) {
-  float t = vnoise(p / 6.0);
-  vec3 c = t > 0.62 ? vec3(0.97, 0.98, 1.0) : vec3(0.9, 0.92, 0.98);
-  if (hash12(cell + 5.0) > 0.992) c = vec3(1.0);
+  // mostly one white; soft blue hollows at a large scale, wind-packed streaks, rare sparkles
+  float hol = fbm2(p / 40.0);
+  vec3 c = hol < 0.42 ? vec3(0.86, 0.89, 0.97) : vec3(0.95, 0.96, 0.99);
+  if (step(0.86, vnoise(vec2(p.x / 14.0, p.y / 3.0))) > 0.5) c = vec3(0.99, 0.99, 1.0);
+  if (hash12(cell + 5.0) > 0.994) c = vec3(1.0);
   return c;
 }
 `;

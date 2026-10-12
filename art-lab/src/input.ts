@@ -15,7 +15,7 @@ export function createInput(canvas: HTMLCanvasElement, post: (m: InputMessage) =
   let last = "";
   let mouse: [number, number] | null = null;
   let stick: { id: number; ox: number; oy: number; x: number; y: number } | null = null;
-  const host: InputHost = { msg, touchActive: false, frame };
+  const host: InputHost = { msg, touchActive: matchMedia("(pointer: coarse)").matches, frame };
 
   const press = (k: "attackPresses" | "dodgePresses") => { msg[k] = (msg[k] + 1) >>> 0; };
   window.addEventListener("keydown", (e) => {
@@ -39,7 +39,10 @@ export function createInput(canvas: HTMLCanvasElement, post: (m: InputMessage) =
   // touch: a floating stick on the left half; the right half has an attack and a dodge button
   const ui = document.createElement("div");
   ui.className = "touch";
-  ui.innerHTML = `<div class="stick"><div class="knob"></div></div><button class="b atk" aria-label="attack"></button><button class="b dodge" aria-label="dodge"></button>`;
+  // icons drawn as pixel rects (crispEdges SVG): a sword and a roll arrow, in the outline colour
+  const sword = `<svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="#20202c" d="M9 1h2v2h-1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h1v-1h1v-1h1v-1h1zM3 7h1v1h1v1h1v1h-1v1h-1v-1h-1v1h-2v-2h1v-1h-1v-1h2z"/></svg>`;
+  const roll = `<svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="#20202c" d="M4 2h4v1h1v1h1v4h-1v1h-1v-2h1v-3h-1v-1h-3v1h-1v1h2v1h-4v-4h1v1h1z"/></svg>`;
+  ui.innerHTML = `<div class="stick"><div class="knob"></div></div><button class="b atk" aria-label="attack">${sword}</button><button class="b dodge" aria-label="dodge">${roll}</button>`;
   document.body.appendChild(ui);
   const stickEl = ui.querySelector(".stick") as HTMLDivElement, knob = ui.querySelector(".knob") as HTMLDivElement;
   const btn = (sel: string, k: "attackPresses" | "dodgePresses") =>

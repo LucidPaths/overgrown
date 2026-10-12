@@ -48,7 +48,7 @@ void main() {
   // non-rock steep banks show soil
   albedo = mix(albedo, dirtAt(p, cell, dth) * 0.82, face * (1.0 - step(0.2, vW.z + steep)));
   // snow on high ground: flat tops first, faces stay rock
-  float snow = smoothstep(0.715, 0.76, elev + (fbm2(p / 24.0) - 0.5) * 0.05 + (dth - 0.5) * 0.012) * (1.0 - steep * 0.85);
+  float snow = step(0.5, smoothstep(0.715, 0.76, elev + (fbm2(p / 24.0) - 0.5) * 0.06) + (dth - 0.5) * 0.25) * (1.0 - step(0.5, steep));
   albedo = mix(albedo, snowAt(p, cell), snow);
 
   vec3 c = light(albedo, n, vWp, 0.6, 0.06);

@@ -140,7 +140,9 @@ interface RigMesh {
 const TRAIL_SAMPLES = 10;
 /** Characters tilt back toward the camera by this much (on top of the world's lean): see ACTOR_VS. */
 export const TILT = (18 * Math.PI) / 180;
-const TILT_C = Math.cos(TILT), TILT_S = Math.sin(TILT);
+let TILT_C = Math.cos(TILT), TILT_S = Math.sin(TILT);
+/** For comparison captures only (?tilt=deg). */
+export function setTilt(deg: number): void { TILT_C = Math.cos((deg * Math.PI) / 180); TILT_S = Math.sin((deg * Math.PI) / 180); }
 function tilt(p: number[], fx: number, fy: number, fz: number): number[] {
   const ry = p[1]! - fy, rz = p[2]! - fz;
   return [p[0]!, fy + ry * TILT_C + rz * TILT_S, fz - ry * TILT_S + rz * TILT_C];
