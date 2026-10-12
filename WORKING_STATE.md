@@ -12,7 +12,7 @@ Last updated: 2026-10-12
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. CMB-002 → UIX-002 (sonnet) · TEC-020/TEC-021 (sonnet)
+5. ✅ CMB-002 #25 → UIX-002 (sonnet) → TEC-020 → TEC-021 (sonnet)
 6. M1 E2E
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
@@ -30,7 +30,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Waves 1–4 merged (#15–#24). CMB-002 worker running. Then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also: check a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); record stall numbers vs a no-ground baseline (software GL halves fps here); verify characters animate in-game (TEC-022's KIND_FRAMES wiring is only smoke-tested). Open follow-ups outside M1: ART-023, OVR-005.
+Waves 1–4 + CMB-002 merged (#15–#25). UIX-002 worker running. Then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also: check a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); record stall numbers vs a no-ground baseline (software GL halves fps here); verify characters animate in-game (TEC-022's KIND_FRAMES wiring is only smoke-tested). Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
