@@ -88,6 +88,8 @@ One source of truth each. Add to this table when a new one appears.
 | Actor poses: per-frame joint offsets on `base_skeleton` (only head, hands and feet move in x; `tail_root` never moves), `pose_skeleton`, main-hand anchor `hand_anchor` | `tools/art/lib/anims.py` | `gen/actor.py`, weapons (ART-009), paper doll (ART-010) |
 | Chunk streaming: `chunk`/`unchunk` messages (fresh copies, buffers transferred; the sim keeps its own), `ChunkAnchor` tag = characters a host input channel drives, load radius 2 / unload beyond 3 (Chebyshev, chunks), at most `GEN_PER_TICK` generations per tick, `tileAt` generates on demand (never undefined) | `sim/src/world/chunk-store.ts`, `sim/src/protocol.ts` (`ChunkMessage`, `UnchunkMessage`, `chunkBuffers`) | `sim/src/sim.ts`, `client/src/sim-worker.ts`, `client/src/main.ts`, `client/src/render/chunk-layer.ts`; later WLD-004 (`tileAt`), TEC-011 (anchors) |
 | Ground rendering: one 512×512 RenderTexture per held chunk at world px (cx*512+8, cy*512+8) (dual grid); missing east/south/south-east corners use the chunk's own clamped edge tile until that neighbour arrives, then the chunk is re-baked | `client/src/render/chunk-layer.ts` | `client/src/main.ts`; later props, lighting |
+| Tile walkability, speed factor and water depth (one `Record<TileValue, TileRule>`); foot-box collision: half-open box, x then y with sliding, only newly entered tiles checked, speed from the tile under the box centre, same for every character and action | `sim/src/world/walkability.ts` (`TILE_RULES`), `sim/src/world/collision.ts` | `sim/src/movement.ts`, `sim/src/world/spawn.ts`; later NPC pathing, WLD-017 swimming |
+| Spawn point: nearest walkable Grassland to tile (0,0) by Chebyshev ring, ties (d², ty, tx), throws beyond `SPAWN_SEARCH_RADIUS` | `sim/src/world/spawn.ts` | `sim/src/sim.ts`; later respawn, TEC-011 joins |
 
 ## Project traps
 
@@ -104,3 +106,4 @@ Add each one here as it's discovered.
 - **Engine-dependent float math.** `Math.sin/cos/pow/exp/log`, `**` and friends can differ between JS engines; only `+ - * /` (and `sqrt`) are exactly rounded. Seeded sim code must avoid them. ESLint enforces this in `sim/src/world/`; elsewhere it's on you.
 - **Sprites snap to whole art pixels.** A frame's anchor × size must be a whole number (e.g. even sizes with anchor 0.5), or it is drawn half an art pixel off.
 - **Render resolution is fixed at load.** Moving the window to a screen with another devicePixelRatio leaves the canvas resampled until reload (TEC-020 owns DPR handling).
+- **Collision only checks tiles a box newly enters.** A character placed overlapping a blocked tile can walk out but is never pushed out. Anything that places or teleports a character must put its foot box on walkable ground (`findSpawn` does).
