@@ -441,7 +441,8 @@ def _face_muzzle(b: _Body) -> None:
     eye = b.pal.color("eye")
     if b.view == "front":
         b.shade(
-            b.head_mask() & draw.ellipse_mask(CELL, CELL, CENTRE_X, b.ey + 2.5, 2.6, 1.8), b.accent
+            b.head_mask() & draw.ellipse_mask(CELL, CELL, float(b.hx), b.ey + 2.5, 2.6, 1.8),
+            b.accent,
         )
         b.fill(_box(b.hx - 1, b.ey + 1, b.hx, b.ey + 1), eye)
     else:
@@ -468,7 +469,7 @@ def _face_snout_fox(b: _Body) -> None:
 def _face_snout_bear(b: _Body) -> None:
     eye = b.pal.color("eye")
     if b.view == "front":
-        b.shade(draw.ellipse_mask(CELL, CELL, CENTRE_X, b.ey + 2.5, 3.0, 2.0), b.accent)
+        b.shade(draw.ellipse_mask(CELL, CELL, float(b.hx), b.ey + 2.5, 3.0, 2.0), b.accent)
         b.fill(_box(b.hx - 1, b.ey + 1, b.hx, b.ey + 1), eye)
     else:
         _snout(
