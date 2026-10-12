@@ -9,6 +9,12 @@
     "wood": ["#3d2616", "#5c3a20", "#7e5430", "#a2763f"],
     "leaf": ["#1f5a3a", "#2c7a4a", "#3f9c58", "#62bc6c"],
     "flower_warm": ["#c4402a", "#e8683a", "#f59a4a", "#fcc86a"],
-    "flower_cool": ["#5a4ab8", "#7c6ad8", "#a08ef0", "#c8baff"]
+    "flower_cool": ["#5a4ab8", "#7c6ad8", "#a08ef0", "#c8baff"],
+    "sand": ["#b8934f", "#d4b068", "#e8cb84", "#f6e2a6"],
+    "cliff": ["#3f3848", "#5a5064", "#786d80", "#9a8e9c", "#bcb0bc"],
+    "shallow_water": ["#2f82c0", "#4a9fd6", "#6cbbe8", "#98d6f4", "#cdeefc"],
+    "deep_water": ["#173f78", "#1d5090", "#2868a8"],
+    "very_deep_water": ["#0c224c", "#102c5e", "#16396f"],
+    "detail": ["#c8352e", "#f0833a", "#f7d24a", "#fff2d2"]
   }
 }
