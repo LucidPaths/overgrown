@@ -5,7 +5,7 @@
 - **A desktop game for Lucid and a few friends** (typically 2, up to ~4), hosted on one machine. There is no phone, browser-link or viral-X target, so first-load size and slow networks are not metrics (OQ-029).
 - **The stack stays web-tech:** the TypeScript sim in a Web Worker plus a web-tech client (Vite, WebGL), run as a desktop app. Which desktop shell (a local browser, Tauri or Electron) is a later task; until then the dev server or `vite preview` in a desktop browser is the way to play (OQ-029).
 - **A fast start on the reference machine,** Lucid's AMD Strix Halo (see Performance budgets).
-- **No backend services.** One machine hosts the world and friends join over LAN or the internet; no signaling service is needed (OQ-029).
+- **No signaling or other mandatory backend service.** One machine hosts the world and friends join over LAN or the internet; no signaling service is needed (OQ-029).
 - **Every asset is authored by us** (Lucid or overgrown's Claude agents) by any method, never downloaded or third-party. Seeded output stays deterministic (OQ-030).
 
 ## Stack

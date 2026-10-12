@@ -9,7 +9,7 @@ Real-time hack-and-slash with physical weight, closer to Valheim and Metin2 than
 - 1–6 abilities and teachings on a hotbar · E interact · Tab inventory
 - **Optional click-to-move scheme** (Metin2-style), toggled in settings: LMB on ground moves, LMB on an enemy moves into range and attacks
 
-**Touch (day one) (retired, OQ-029):**
+**Touch (day one; retired, OQ-029):**
 - Left virtual stick moves. A big attack button attacks toward the stick direction, with soft auto-aim at the nearest target in a cone.
 - Dodge button; ability ring of 4–6 buttons around attack; hold attack for a heavy attack or charge.
 - Tapping an enemy hard-targets it; tapping empty ground clears the target.
