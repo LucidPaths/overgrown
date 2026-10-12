@@ -4,6 +4,7 @@ import { createCharacterWorld, IntentButton, spawnCharacter, type CharacterWorld
 import { World, type EntityId } from "./ecs";
 import { stepMovement } from "./movement";
 import { Action, Facing, Species } from "./protocol";
+import { openGround } from "./world/test-ground";
 
 interface IntentPatch {
   move?: [number, number];
@@ -30,7 +31,7 @@ function setIntent(world: CharacterWorld, id: EntityId, patch: IntentPatch): voi
 /** One sim tick without the input latch: actions, then movement. */
 function tickOnce(world: CharacterWorld, tick: number): void {
   stepActions(world, tick);
-  stepMovement(world, tick);
+  stepMovement(world, tick, openGround);
 }
 
 function state(world: CharacterWorld, id: EntityId) {

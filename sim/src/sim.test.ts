@@ -11,6 +11,8 @@ import {
 } from "./protocol";
 import { createSim, type Sim } from "./sim";
 import { generateChunk } from "./world/chunk-gen";
+import { createChunkStore } from "./world/chunk-store";
+import { findSpawn } from "./world/spawn";
 
 function input(patch: Partial<InputMessage>): InputMessage {
   return { type: "input", moveX: 0, moveY: 0, aimX: 0, aimY: 0, sprint: false, attackPresses: 0, dodgePresses: 0, ...patch };
@@ -29,7 +31,7 @@ function episodes(sim: Sim, n: number, action: ActionValue): Set<number> {
 }
 
 describe("createSim", () => {
-  it("createSim spawns one Human character at (0,0) and `you` names it", () => {
+  it("createSim spawns one Human character at findSpawn's point and `you` names it", () => {
     const s = createSim(1).snapshot();
     expect(s.count).toBe(1);
     expect(s.you).not.toBe(-1);
@@ -38,8 +40,11 @@ describe("createSim", () => {
     expect(s.species[0]).toBe(Species.Human);
     expect(s.facing[0]).toBe(Facing.Down);
     expect(s.action[0]).toBe(Action.Idle);
-    expect(s.x[0]).toBe(0);
-    expect(s.y[0]).toBe(0);
+    // Seed 1's origin is Forest, so the spawn search moves the character off (0, 0).
+    const spawn = findSpawn(createChunkStore(1));
+    expect(s.x[0]).toBe(spawn.x);
+    expect(s.y[0]).toBe(spawn.y);
+    expect([s.x[0], s.y[0]]).not.toEqual([0, 0]);
   });
 
   it("snapshotBuffers transfers every snapshot column", () => {

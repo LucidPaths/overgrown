@@ -3,6 +3,7 @@
 import { CHUNK_TILES, TILE_PX } from "../constants";
 import type { ChunkStreamMessage } from "../protocol";
 import { generateChunk, type ChunkData } from "./chunk-gen";
+import type { BiomeValue } from "./biome";
 import type { TileValue } from "./tile";
 
 // Chebyshev radius, in chunks, around each anchor's chunk that is loaded and sent to the host.
@@ -90,6 +91,8 @@ export interface ChunkStore {
   // The tile at world tile (tx, ty). Generates the chunk synchronously if it isn't cached, so it is never undefined.
   // RangeError naming tx or ty unless it is an integer; generateChunk's RangeError for chunks outside its range.
   tileAt(tx: number, ty: number): TileValue;
+  // Like tileAt, for the biome layer (spawn search, WLD-004).
+  biomeAt(tx: number, ty: number): BiomeValue;
   // One tick of streaming for these anchors: queues unchunk then chunk messages.
   stream(anchors: readonly AnchorPos[]): void;
   // Returns the messages queued since the last call, in order, and clears the queue.
@@ -126,15 +129,23 @@ export function createChunkStore(seed: number, generate: GenerateChunk = generat
     return d;
   }
 
+  // Validates (tx, ty) and returns the chunk holding it with the local index.
+  function locate(name: string, tx: number, ty: number): [ChunkData, number] {
+    if (!Number.isInteger(tx)) throw new RangeError(`${name}: tx must be an integer, got ${tx}`);
+    if (!Number.isInteger(ty)) throw new RangeError(`${name}: ty must be an integer, got ${ty}`);
+    const cx = Math.floor(tx / CHUNK_TILES);
+    const cy = Math.floor(ty / CHUNK_TILES);
+    return [lookup(cx, cy), (ty - cy * CHUNK_TILES) * CHUNK_TILES + (tx - cx * CHUNK_TILES)];
+  }
+
   return {
     tileAt(tx, ty) {
-      if (!Number.isInteger(tx)) throw new RangeError(`tileAt: tx must be an integer, got ${tx}`);
-      if (!Number.isInteger(ty)) throw new RangeError(`tileAt: ty must be an integer, got ${ty}`);
-      const cx = Math.floor(tx / CHUNK_TILES);
-      const cy = Math.floor(ty / CHUNK_TILES);
-      const lx = tx - cx * CHUNK_TILES;
-      const ly = ty - cy * CHUNK_TILES;
-      return lookup(cx, cy).tiles[ly * CHUNK_TILES + lx] as TileValue;
+      const [chunk, i] = locate("tileAt", tx, ty);
+      return chunk.tiles[i] as TileValue;
+    },
+    biomeAt(tx, ty) {
+      const [chunk, i] = locate("biomeAt", tx, ty);
+      return chunk.biomes[i] as BiomeValue;
     },
     stream(anchors) {
       const plan = planStream(anchors, loaded.values());
