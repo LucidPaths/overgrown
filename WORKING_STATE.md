@@ -8,7 +8,7 @@ Last updated: 2026-10-12
 ## Current phase
 
 **M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
-1. ✅ WLD-001 #15 · CHR-001 (opus) · ART-005 (opus)
+1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 (opus)
 2. WLD-002 (sonnet) · ART-004 (sonnet) · CMB-001 (opus)
 3. WLD-003 (opus) · ART-006 (sonnet)
 4. WLD-004 (sonnet) · TEC-022 (sonnet)
@@ -30,7 +30,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Wave 1: WLD-001 merged (#15); CHR-001 in PR; ART-005 with its worker. Wave 2 specs (WLD-002, ART-004, CMB-001) being drafted. Open follow-ups outside M1: ART-023, OVR-005.
+Wave 1: WLD-001 #15, CHR-001 #16 merged; ART-005 in PR. Wave 2 workers done or running: CMB-001 (opus), ART-004 (sonnet), WLD-002 (sonnet). Wave 3 specs (WLD-003, ART-006) being drafted. Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
