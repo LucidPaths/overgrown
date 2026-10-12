@@ -31,7 +31,7 @@ const median = (values) => {
   const mid = s.length >> 1;
   return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
 };
-const isAtlas = (u) => u.endsWith("generated/core.json") || u.endsWith("generated/core.png");
+const isAtlas = (u) => u.endsWith("generated/core.json") || u.endsWith("generated/core.webp");
 
 const errors = [];
 const results = [];

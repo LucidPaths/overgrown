@@ -1,4 +1,4 @@
-// Loads the art pipeline's atlas (TexturePacker JSON Hash + PNG) with Pixi's built-in spritesheet support.
+// Loads the art pipeline's atlas (TexturePacker JSON Hash + lossless WebP) with Pixi's built-in spritesheet support.
 import { Assets, Spritesheet } from "pixi.js";
 
 // Relative URL: works under the Pages subpath (vite base "./").
