@@ -8,13 +8,13 @@
 - **Resolution:** characters and monsters on a **32×32** base cell (big creatures use 64×64 or more). Ground tiles are **16×16**. 32 px gives room for fashion, visible gear and aging details.
 - **Directions:** 4 (down, up, left, right; right mirrors left where the design allows).
 - **Rendering:** integer scaling, nearest-neighbor, no sub-pixel jitter on sprites.
-- **Palette:** **per biome**, so each biome has a mood ramp. A global **pop palette** for magic, hits, loot glints, rarity colors and UI keeps those readable in every biome. The overall vibe is saturated, cozy and lighthearted.
+- **Palette:** **per biome**, so each biome has a mood ramp. A global **pop palette** for magic, hits, loot glints, rarity colors and UI keeps those readable in every biome. Characters use a shared **actor palette** (skin, fur, feathers, scales, cloth), since they aren't bound to a biome (OQ-027). The overall vibe is saturated, cozy and lighthearted.
 
 ## Pipeline
 
 ```
 tools/art/  (Python)
-  palettes/        biome + pop palettes (data)
+  palettes/        biome + pop + actor palettes (data)
   lib/             primitives: shapes, outlines, shading ramps, dithering, noise
   gen/             one generator per asset family (tiles, bodies, armor, weapons, monsters, props, vfx, icons)
   build.py         runs all generators → atlases/*.png + atlases/*.json
@@ -48,9 +48,9 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 - [x] **ART-001** `[proto]` Pipeline scaffold: `build.py` → atlas PNG + JSON, consumed by the client (→ TEC-005). — #7
 - [x] **ART-002** `[proto]` Palette system: biome palettes + global pop palette. — #9
 - [x] **ART-003** `[proto]` Primitive drawing library: shapes, outlines, shading ramps, dithering. — #10
-- [ ] **ART-004** `[proto]` Ground tiles: grass, dirt, sand, stone, water depths, with autotile transitions.
-- [ ] **ART-005** `[proto]` Character body generator per species body plan, 4 directions.
-- [ ] **ART-006** `[proto]` Animation sets: idle, walk, attack per weapon family, dodge, hurt, death.
+- [ ] **ART-004** `[proto]` Ground tiles: grass, dirt, sand, stone, cliff, water depths, with autotile transitions; one palette per biome (OQ-018, OQ-027).
+- [ ] **ART-005** `[proto]` Character body generator per species, 4 directions. All 9 species share one humanoid skeleton and differ by parameters; new actor palette (OQ-020, OQ-027).
+- [ ] **ART-006** `[proto]` Animation sets: idle, walk, attack per weapon family, dodge, hurt, death. M1 ships blades + unarmed attacks with no weapon pixels; frames carry a hand anchor (OQ-022).
 - [ ] **ART-007** Props: trees, rocks, bushes, fences, crates, with break states and topple frames.
 - [ ] **ART-008** Monster generators per body plan (quadruped, biped, avian, insectoid, serpent, blob).
 - [ ] **ART-009** Weapon sprites per family, drawn from parameters (length, head shape, material).
