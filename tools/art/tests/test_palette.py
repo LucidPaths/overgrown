@@ -4,11 +4,9 @@ import json
 import re
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 from gen import debug
-from lib.context import Context
 from lib.palette import load_all, load_file
 
 
@@ -83,10 +81,6 @@ def test_all_shipped_palettes_load():
         pop.color("nope")
 
 
-def test_checker16_uses_meadow_grass_and_debug_has_no_hex_literals():
-    grass = {tuple(c) for c in Context(1, "debug").palette("meadow").ramp("grass")}
-    checker = next(f for f in debug.generate(Context(1, "debug")) if f.name == "debug/checker16")
-    pixels = {tuple(int(v) for v in px) for px in np.asarray(checker.image).reshape(-1, 4)}
-    assert len(pixels) == 2 and pixels <= grass
+def test_debug_has_no_hex_literals():
     source = (Path(debug.__file__)).read_text()
     assert not re.search(r"#[0-9a-fA-F]{6}\b", source)

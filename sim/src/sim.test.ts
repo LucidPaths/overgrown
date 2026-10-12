@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { Action, Facing, Kind, snapshotBuffers, Species, type ActionValue, type InputMessage } from "./protocol";
+import {
+  Action,
+  Facing,
+  Kind,
+  snapshotBuffers,
+  Species,
+  type ActionValue,
+  type InputMessage,
+  type Snapshot,
+} from "./protocol";
 import { createSim, type Sim } from "./sim";
+import { generateChunk } from "./world/chunk-gen";
 
 function input(patch: Partial<InputMessage>): InputMessage {
   return { type: "input", moveX: 0, moveY: 0, aimX: 0, aimY: 0, sprint: false, attackPresses: 0, dodgePresses: 0, ...patch };
@@ -109,5 +119,49 @@ describe("createSim", () => {
       record();
     }
     expect(actions).toEqual([...Array<ActionValue>(7).fill(Action.Dodge), Action.Idle]);
+  });
+  it("determinism: the same seed and inputs give identical snapshots and chunk messages", () => {
+    type Logged =
+      | { type: "chunk"; cx: number; cy: number; tiles: number[]; biomes: number[] }
+      | { type: "unchunk"; cx: number; cy: number };
+
+    function run(seed: number): { snapshots: Snapshot[]; chunks: Logged[] } {
+      const sim = createSim(seed);
+      const snapshots: Snapshot[] = [];
+      const chunks: Logged[] = [];
+      const script: [ticks: number, msg: InputMessage][] = [
+        [100, input({ moveX: 1, sprint: true })],
+        [140, input({ moveX: 1, sprint: true, attackPresses: 1 })], // one attack on the way east
+        [230, input({ moveX: -1, sprint: true, attackPresses: 1 })],
+      ];
+      for (const [ticks, msg] of script) {
+        sim.input(msg);
+        for (let k = 0; k < ticks; k++) {
+          sim.step();
+          snapshots.push(sim.snapshot());
+          for (const m of sim.drainChunkMessages()) {
+            if (m.type === "unchunk") {
+              chunks.push({ type: "unchunk", cx: m.cx, cy: m.cy });
+              continue;
+            }
+            const expected = generateChunk(seed, m.cx, m.cy);
+            expect(m.tiles).toEqual(expected.tiles);
+            expect(m.biomes).toEqual(expected.biomes);
+            chunks.push({ type: "chunk", cx: m.cx, cy: m.cy, tiles: [...m.tiles], biomes: [...m.biomes] });
+            m.tiles.fill(255); // the host owns these arrays and may do anything with them
+            m.biomes.fill(255);
+          }
+        }
+      }
+      return { snapshots, chunks };
+    }
+
+    const a = run(1);
+    expect(run(1)).toEqual(a);
+    expect(run(8).chunks).not.toEqual(a.chunks);
+
+    expect(a.chunks.some((m) => m.type === "unchunk")).toBe(true);
+    const sent = a.chunks.flatMap((m) => (m.type === "chunk" ? [`${m.cx},${m.cy}`] : []));
+    expect(new Set(sent).size).toBeLessThan(sent.length); // a chunk reloaded after its unchunk
   });
 });

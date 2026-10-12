@@ -84,6 +84,8 @@ One source of truth each. Add to this table when a new one appears.
 | Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
 | Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
 | Ground tile frames `tile/<palette>/<terrain>/<mask>/<variant>`, mask bits TL1 TR2 BL4 BR8, terrain precedence, variant counts, Biome→palette, dual-grid cell = TL tile's biome | `contracts/tile-frames.json` (checked by both suites); impls `client/src/render/tile-frames.ts` ↔ `tools/art/gen/tiles.py` | WLD-003 chunk baking |
+| Chunk streaming: `chunk`/`unchunk` messages (fresh copies, buffers transferred; the sim keeps its own), `ChunkAnchor` tag = characters a host input channel drives, load radius 2 / unload beyond 3 (Chebyshev, chunks), at most `GEN_PER_TICK` generations per tick, `tileAt` generates on demand (never undefined) | `sim/src/world/chunk-store.ts`, `sim/src/protocol.ts` (`ChunkMessage`, `UnchunkMessage`, `chunkBuffers`) | `sim/src/sim.ts`, `client/src/sim-worker.ts`, `client/src/main.ts`, `client/src/render/chunk-layer.ts`; later WLD-004 (`tileAt`), TEC-011 (anchors) |
+| Ground rendering: one 512×512 RenderTexture per held chunk at world px (cx*512+8, cy*512+8) (dual grid); missing east/south/south-east corners use the chunk's own clamped edge tile until that neighbour arrives, then the chunk is re-baked | `client/src/render/chunk-layer.ts` | `client/src/main.ts`; later props, lighting |
 
 ## Project traps
 
@@ -93,7 +95,8 @@ Add each one here as it's discovered.
 - **EntityId generations wrap at 4096.** After 4096 destroy/create cycles of one slot, an old ID becomes valid again. Never store EntityIds long-term (saves, network, quest targets) without a separate stable identity.
 - **RNG inputs must be safe integers** (|v| ≤ 2^53−1). Both languages reject anything else, so they can't diverge.
 - **`npm run dev` builds the art first.** Pass Vite args after `--` (`npm run dev -- --port 4183`).
-- **`debug/*` frames are placeholders.** `debug/checker16` (unreferenced; WLD-003 removes it) and `debug/character32` (Kind.Character until TEC-022). Delete `gen/debug.py` when nothing references it.
+- **`debug/character32` is the last placeholder frame** (Kind.Character until TEC-022). Delete `gen/debug.py` when nothing references it.
+- **Chunk buffers are transferred to the main thread.** Never post an array the sim still uses: `chunk` messages carry `slice()` copies. A posted cache array is detached in the sim and reads as length 0.
 - **Snapshot x/y are f32 absolute world px** (sim positions are f64). Resolution is 1/8 px at ±2^20 px (~2048 chunks) and 2 px at ±2^24. Make snapshot coordinates relative to an origin before anything lets players go past ~2^20 px.
 - **Cloud sessions (claude.ai/code):** `gh` has no valid token there and the git proxy refuses branch deletion. Use the GitHub connector tools for PRs, comments and merges; Lucid deletes branches in the GitHub UI. Locally, `gh` works normally.
 - **Engine-dependent float math.** `Math.sin/cos/pow/exp/log`, `**` and friends can differ between JS engines; only `+ - * /` (and `sqrt`) are exactly rounded. Seeded sim code must avoid them. ESLint enforces this in `sim/src/world/`; elsewhere it's on you.
