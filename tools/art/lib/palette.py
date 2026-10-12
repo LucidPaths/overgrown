@@ -72,10 +72,22 @@ def _section(path: Path, data: dict, section: str, required: bool) -> dict:
     return value
 
 
+def _no_duplicates(path: Path):
+    def hook(pairs: list[tuple[str, object]]) -> dict:
+        seen: set[str] = set()
+        for key, _ in pairs:
+            if key in seen:
+                raise ValueError(f"{path.name}: {key}: duplicate key")
+            seen.add(key)
+        return dict(pairs)
+
+    return hook
+
+
 def load_file(path: Path) -> Palette:
     """Parse and fully validate one palette file."""
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_no_duplicates(path))
     except (OSError, json.JSONDecodeError) as e:
         raise ValueError(f"{path.name}: cannot read palette: {e}") from e
     if not isinstance(data, dict):

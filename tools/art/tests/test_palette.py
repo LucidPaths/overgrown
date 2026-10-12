@@ -36,6 +36,10 @@ def _too_short(d: dict) -> None:
     d["ramps"]["grass"] = ["#102010"]
 
 
+def _equal_shades(d: dict) -> None:
+    d["ramps"]["grass"] = ["#102010", "#102010"]
+
+
 @pytest.mark.parametrize(
     ("mutate", "key"),
     [
@@ -44,6 +48,7 @@ def _too_short(d: dict) -> None:
         (_unknown_key, "extra"),
         (_name_mismatch, "name"),
         (_too_short, "ramps.grass"),
+        (_equal_shades, "ramps.grass[1]"),
     ],
 )
 def test_bad_palette_names_file_and_key(tmp_path, mutate, key):
@@ -55,6 +60,15 @@ def test_bad_palette_names_file_and_key(tmp_path, mutate, key):
         load_file(path)
     assert "t.json" in str(err.value)
     assert key in str(err.value)
+
+
+def test_duplicate_key_names_file_and_key(tmp_path):
+    path = tmp_path / "t.json"
+    path.write_text(
+        '{"name": "t", "ramps": {"grass": ["#102010", "#40a040"], "grass": ["#000000", "#ffffff"]}}'
+    )
+    with pytest.raises(ValueError, match=r"t\.json: grass: duplicate key"):
+        load_file(path)
 
 
 def test_all_shipped_palettes_load():
