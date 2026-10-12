@@ -1,29 +1,28 @@
 // The simulation entry point. Browser-free: runs in a Web Worker and in Node.
-import { TICK_HZ } from "./constants";
-import { spawnDebugMovers, stepDebugMovers, type MoverComponents } from "./debug-movers";
+import { createCharacterWorld, spawnCharacter } from "./character";
 import { World } from "./ecs";
-import type { Snapshot } from "./protocol";
-import { deriveSeed, hashString, Rng } from "./rng";
+import { stepMovement } from "./movement";
+import { Species, type Snapshot } from "./protocol";
 
 export interface Sim {
   readonly tick: number;
   /** Advances exactly one tick (dt = 1 / TICK_HZ seconds). */
   step(): void;
-  /** Fresh typed arrays (length = count) of every entity with Position and Kind. */
+  /** Fresh typed arrays (length = count) of every entity with Position, Kind, Facing, Action and Species. */
   snapshot(): Snapshot;
 }
 
 export function createSim(seed: number): Sim {
-  const world = new World();
-  const components: MoverComponents = {
-    position: world.register("Position", { x: "f32", y: "f32" }),
-    velocity: world.register("Velocity", { vx: "f32", vy: "f32" }),
-    kind: world.register("Kind", { kind: "u16" }),
-  };
-  spawnDebugMovers(world, components, new Rng(deriveSeed(seed, hashString("debug-movers"))));
+  // The seed's only use until world generation consumes it: reject what main.ts would reject.
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    throw new RangeError(`createSim: seed must be an integer 0..4294967295, got ${seed}`);
+  }
+  const ecs = new World();
+  const world = createCharacterWorld(ecs);
+  const player = spawnCharacter(world, { x: 0, y: 0, species: Species.Human, tick: 0 });
 
-  const dt = 1 / TICK_HZ;
-  const visible = [components.position, components.kind];
+  const c = world.components;
+  const visible = [c.position, c.kind, c.facing, c.action, c.species];
   let tick = 0;
 
   return {
@@ -31,12 +30,12 @@ export function createSim(seed: number): Sim {
       return tick;
     },
     step() {
-      stepDebugMovers(world, components, dt);
       tick += 1;
+      stepMovement(world, tick);
     },
     snapshot() {
       let count = 0;
-      world.each(visible, () => {
+      ecs.each(visible, () => {
         count += 1;
       });
       const s: Snapshot = {
@@ -46,15 +45,27 @@ export function createSim(seed: number): Sim {
         x: new Float32Array(count),
         y: new Float32Array(count),
         kind: new Uint16Array(count),
+        facing: new Uint8Array(count),
+        action: new Uint8Array(count),
+        actionStart: new Uint32Array(count),
+        species: new Uint8Array(count),
+        you: player,
       };
-      const { x, y } = components.position.store;
-      const kind = components.kind.store.kind;
+      const { x, y } = c.position.store;
+      const { kind } = c.kind.store;
+      const { dir } = c.facing.store;
+      const { state, start } = c.action.store;
+      const { species } = c.species.store;
       let i = 0;
-      world.each(visible, (id, index) => {
+      ecs.each(visible, (id, index) => {
         s.ids[i] = id;
         s.x[i] = x[index]!;
         s.y[i] = y[index]!;
         s.kind[i] = kind[index]!;
+        s.facing[i] = dir[index]!;
+        s.action[i] = state[index]!;
+        s.actionStart[i] = start[index]!;
+        s.species[i] = species[index]!;
         i += 1;
       });
       return s;

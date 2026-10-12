@@ -71,7 +71,8 @@ One source of truth each. Add to this table when a new one appears.
 | Atlas JSON schema (TexturePacker JSON Hash, Pixi-native) | `tools/art/lib/atlas.py::write_atlas` | `client/src/assets.ts` (Pixi `Spritesheet`) |
 | Kind → atlas frame | `client/src/render/kind-frames.ts` (`Record<KindValue,string>`, tsc-enforced) | `client/src/render/snapshot-view.ts` |
 | Palette file format | `tools/art/lib/palette.py` (validated on every build) | all generators via `ctx.palette()` |
-| Host ↔ sim messages, Snapshot, Kind | `sim/src/protocol.ts` | `client/src/sim-worker.ts`, `client/src/main.ts`, renderer |
+| Host ↔ sim messages, Snapshot (incl. facing/action/actionStart/species; `you` = local player's EntityId or -1), Kind/Facing/Action/Species enums | `sim/src/protocol.ts` | `client/src/sim-worker.ts`, `client/src/main.ts`, renderer |
+| Character components, `spawnCharacter`, Position = feet point, collider box | `sim/src/character.ts` | `sim/src/movement.ts`, `sim/src/sim.ts`; later CMB-001 (Intent), WLD-004 (Collider), NPC-001 |
 | Tick rate | `sim/src/constants.ts` (`TICK_HZ`) | sim, worker adapter, render interpolation |
 
 ## Project traps
@@ -82,5 +83,6 @@ Add each one here as it's discovered.
 - **EntityId generations wrap at 4096.** After 4096 destroy/create cycles of one slot, an old ID becomes valid again. Never store EntityIds long-term (saves, network, quest targets) without a separate stable identity.
 - **RNG inputs must be safe integers** (|v| ≤ 2^53−1). Both languages reject anything else, so they can't diverge.
 - **`npm run dev` builds the art first.** Pass Vite args after `--` (`npm run dev -- --port 4183`).
-- **Debug movers are temporary scaffolding** (`sim/src/debug-movers.ts`, `debug/*` frames). Remove them when real entities land in M1/M2.
+- **`debug/*` frames are placeholders.** `debug/checker16` (unreferenced; WLD-003 removes it) and `debug/character32` (Kind.Character until TEC-022). Delete `gen/debug.py` when nothing references it.
+- **Snapshot x/y are f32 absolute world px** (sim positions are f64). Resolution is 1/8 px at ±2^20 px (~2048 chunks) and 2 px at ±2^24. Make snapshot coordinates relative to an origin before anything lets players go past ~2^20 px.
 - **Cloud sessions (claude.ai/code):** `gh` has no valid token there and the git proxy refuses branch deletion. Use the GitHub connector tools for PRs, comments and merges; Lucid deletes branches in the GitHub UI. Locally, `gh` works normally.

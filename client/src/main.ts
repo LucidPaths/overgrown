@@ -1,8 +1,7 @@
 import { TICK_MS } from "@overgrown/sim/constants";
-import { MOVER_AREA_H, MOVER_AREA_W } from "@overgrown/sim/debug-movers";
 import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
-import { Application, Text, TextStyle, TextureStyle, TilingSprite } from "pixi.js";
+import { Application, Container, Text, TextStyle, TextureStyle } from "pixi.js";
 import { loadCoreAtlas } from "./assets";
 import { createFrame, interpolate } from "./render/interpolate";
 import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
@@ -48,14 +47,12 @@ try {
   root.appendChild(app.canvas);
 
   const sheet = await loadCoreAtlas();
-  const backdropFrame = "debug/checker16";
-  requireFrames(sheet, [...Object.values(KIND_FRAMES), backdropFrame]);
+  requireFrames(sheet, Object.values(KIND_FRAMES));
 
-  // Checker backdrop over the mover area, behind the entities.
-  const backdrop = new TilingSprite({ texture: sheet.textures[backdropFrame]!, width: MOVER_AREA_W, height: MOVER_AREA_H });
-  app.stage.addChild(backdrop);
-
-  const view = new SnapshotView(app.stage, sheet);
+  // World-space layer, added before debugText so it draws behind the text.
+  const world = new Container();
+  app.stage.addChild(world);
+  const view = new SnapshotView(world, sheet);
 
   const debugText = new Text({
     text: `overgrown · sim v${SIM_VERSION}`,
@@ -74,6 +71,8 @@ try {
     if (curr === null) return;
     try {
       interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
+      // Fixed origin, not a camera: world (0,0) is the screen centre. CMB-001 replaces this with the follow camera.
+      world.position.set(Math.round(app.screen.width / 2), Math.round(app.screen.height / 2));
       view.update(frame);
     } catch (error) {
       app.ticker.stop();
