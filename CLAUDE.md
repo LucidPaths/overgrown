@@ -80,6 +80,8 @@ One source of truth each. Add to this table when a new one appears.
 | Actor skeleton joints, l/r = character's own side, `SOLE_Y` | `tools/art/lib/skeleton.py` | `gen/actor.py` (ART-005/006), weapons (ART-009), paper doll (ART-010) |
 | Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
 | Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
+| Actor animation frame counts per anim (plus the species and dir key lists); display timing `ticksPerFrame`/`loop` lives only in TS | `contracts/actor-anims.json` (checked by both suites); impls `tools/art/lib/anims.py` (`ANIMS`) ↔ `client/src/render/actor-anims.ts` (`ACTOR_ANIMS`) | TEC-022 |
+| Actor poses: per-frame joint offsets on `base_skeleton` (only head, hands and feet move in x; `tail_root` never moves), `pose_skeleton`, main-hand anchor `hand_anchor` | `tools/art/lib/anims.py` | `gen/actor.py`, weapons (ART-009), paper doll (ART-010) |
 
 ## Project traps
 

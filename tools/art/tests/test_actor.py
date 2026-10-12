@@ -1,27 +1,21 @@
 """Actor body generator: the frame-name contract, mirrored handedness and the cell check."""
 
 import dataclasses
+import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from gen import actor
+from lib.anims import hand_anchor
 from lib.context import Context
 from lib.skeleton import Point, base_skeleton
 from lib.species import SPECIES
 
-CONTRACT_SPECIES = [
-    "human",
-    "elf",
-    "dwarf",
-    "orc",
-    "foxfolk",
-    "bearfolk",
-    "rabbitfolk",
-    "birdfolk",
-    "lizardfolk",
-]
-CONTRACT_DIRS = ["down", "left", "right", "up"]
+CONTRACT = json.loads(
+    (Path(__file__).resolve().parents[3] / "contracts" / "actor-anims.json").read_text("utf-8")
+)
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +24,13 @@ def frames() -> dict[str, np.ndarray]:
 
 
 def test_actor_frames_match_contract(frames):
-    want = {f"actor/{s}/idle/{d}/0" for s in CONTRACT_SPECIES for d in CONTRACT_DIRS}
+    want = {
+        f"actor/{s}/{a}/{d}/{i}"
+        for s in CONTRACT["species"]
+        for d in CONTRACT["dirs"]
+        for a, n in CONTRACT["frames"].items()
+        for i in range(n)
+    }
     assert set(frames) == want
     for name, img in frames.items():
         assert img.shape == (32, 32, 4), name
@@ -38,9 +38,14 @@ def test_actor_frames_match_contract(frames):
 
 def test_right_mirrors_left_with_sides_swapped(frames):
     for sp in SPECIES:
-        left_img = frames[actor.frame_name(sp.key, "idle", "left", 0)]
-        right_img = frames[actor.frame_name(sp.key, "idle", "right", 0)]
-        assert np.array_equal(right_img, np.fliplr(left_img)), sp.key
+        for anim, count in CONTRACT["frames"].items():
+            for i in range(count):
+                where = f"{sp.key}/{anim}/{i}"
+                left_img = frames[actor.frame_name(sp.key, anim, "left", i)]
+                right_img = frames[actor.frame_name(sp.key, anim, "right", i)]
+                assert np.array_equal(right_img, np.fliplr(left_img)), where
+                left = hand_anchor(sp, anim, "left", i)
+                assert hand_anchor(sp, anim, "right", i) == Point(31 - left.x, left.y), where
 
         left, right = base_skeleton(sp, "left"), base_skeleton(sp, "right")
         assert right["hand_r"] == Point(31 - left["hand_l"].x, left["hand_l"].y), sp.key
