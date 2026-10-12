@@ -11,7 +11,7 @@ Last updated: 2026-10-11
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
 1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
-2. OVR-002 rng (opus) · TEC-001 Pixi + Pages deploy (sonnet) · TEC-004 ECS (opus)
+2. ✅ OVR-002 #5 · TEC-001 #3 · TEC-004 #4
 3. ART-001 pipeline + atlas schema (opus, needs OVR-002) · TEC-002 sim worker + snapshot (opus, needs TEC-001, TEC-004)
 4. ART-002 palettes (sonnet) · TEC-003 fixed timestep + interpolation (sonnet, needs TEC-002)
 5. ART-003 primitives (sonnet, needs ART-002) · TEC-005 asset loader (sonnet, needs ART-001, TEC-003)
@@ -23,7 +23,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Wave 2.
+Wave 3.
 
 ## Decisions (accumulate)
 

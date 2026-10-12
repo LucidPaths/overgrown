@@ -59,10 +59,10 @@ client (main thread)            sim worker                    peers
 
 ## Tasks
 
-- [ ] **TEC-001** `[proto]` Vite + TS strict + PixiJS client boots a blank scene, with a deploy to static hosting.
+- [x] **TEC-001** `[proto]` Vite + TS strict + PixiJS client boots a blank scene, with a deploy to static hosting. — #3
 - [ ] **TEC-002** `[proto]` Sim runs in a Web Worker; snapshot message protocol to the renderer.
 - [ ] **TEC-003** `[proto]` Fixed-timestep sim loop (20 Hz); render interpolates between snapshots.
-- [ ] **TEC-004** `[proto]` ECS-style entity storage on typed arrays.
+- [x] **TEC-004** `[proto]` ECS-style entity storage on typed arrays. — #4
 - [ ] **TEC-005** `[proto]` Asset loader for pipeline atlases + JSON metadata.
 - [ ] **TEC-006** World save/load to IndexedDB (seed + diffs + sim state).
 - [ ] **TEC-007** Character save/load, export/import as file.
