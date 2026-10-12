@@ -3,6 +3,8 @@ import type { Snapshot } from "@overgrown/sim/protocol";
 
 export interface Frame {
   count: number;
+  /** Tick of `curr`: the snapshot whose discrete columns (action, actionStart, facing, species) this frame shows. */
+  tick: number;
   ids: Uint32Array;
   x: Float32Array;
   y: Float32Array;
@@ -18,6 +20,7 @@ export interface Frame {
 export function createFrame(): Frame {
   return {
     count: 0,
+    tick: 0,
     ids: new Uint32Array(0),
     x: new Float32Array(0),
     y: new Float32Array(0),
@@ -80,5 +83,6 @@ export function interpolate(prev: Snapshot | null, curr: Snapshot, alpha: number
     }
   }
   out.count = curr.count;
+  out.tick = curr.tick;
   out.you = curr.you;
 }

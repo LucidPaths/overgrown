@@ -4,10 +4,11 @@ import { SIM_VERSION } from "@overgrown/sim/version";
 import { Application, Container, Text, TextStyle, TextureStyle } from "pixi.js";
 import { loadCoreAtlas } from "./assets";
 import { KeyboardMouseInput } from "./input/keyboard-mouse";
+import { actorFrameNames } from "./render/actor-frames";
 import { layoutCamera } from "./render/camera";
 import { ChunkLayer } from "./render/chunk-layer";
 import { createFrame, interpolate } from "./render/interpolate";
-import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
+import { requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
 
 const DEFAULT_SEED = 1;
@@ -52,7 +53,7 @@ try {
   root.appendChild(app.canvas);
 
   const sheet = await loadCoreAtlas();
-  requireFrames(sheet, Object.values(KIND_FRAMES));
+  requireFrames(sheet, actorFrameNames());
 
   // World-space layer, added before debugText so it draws behind the text.
   const world = new Container();

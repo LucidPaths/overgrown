@@ -1,5 +1,5 @@
 """Explicit generator registry. Each module has NAME: str, ATLAS: str, generate(ctx) -> list[Frame]."""
 
-from gen import actor, debug, tiles
+from gen import actor, tiles
 
-GENERATORS = [debug, tiles, actor]
+GENERATORS = [tiles, actor]

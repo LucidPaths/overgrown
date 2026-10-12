@@ -1,12 +1,9 @@
 """Palette loading, validation and generator use."""
 
 import json
-import re
-from pathlib import Path
 
 import pytest
 
-from gen import debug
 from lib.palette import load_all, load_file
 
 
@@ -79,8 +76,3 @@ def test_all_shipped_palettes_load():
         meadow.ramp("nope")
     with pytest.raises(KeyError, match="pop.*nope"):
         pop.color("nope")
-
-
-def test_debug_has_no_hex_literals():
-    source = (Path(debug.__file__)).read_text()
-    assert not re.search(r"#[0-9a-fA-F]{6}\b", source)
