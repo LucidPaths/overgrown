@@ -82,11 +82,17 @@ try {
         const atlas = performance.getEntriesByType("resource").find((e) => e.name.split("?")[0].endsWith("generated/core.json"));
         return {
           firstFrameMs: performance.getEntriesByName(mark)[0].startTime,
-          atlasJsonEndMs: atlas ? atlas.responseEnd : 0,
+          atlasJsonEndMs: atlas ? atlas.responseEnd : undefined,
           ...window.__startup,
         };
       }, MARK);
-      results.push(Object.fromEntries(KEYS.map((k) => [k, Math.round(read[k] ?? 0)])));
+      // A missing measurement is an error, never a 0 (e.g. the sim worker moved and no longer matches "sim-worker").
+      const missing = KEYS.filter((k) => read[k] === undefined);
+      if (missing.length > 0) {
+        errors.push(`run ${run + 1}: missing measurement(s): ${missing.join(", ")}`);
+      } else {
+        results.push(Object.fromEntries(KEYS.map((k) => [k, Math.round(read[k])])));
+      }
       if (run === runs - 1 && screenshotPath) {
         await page.waitForTimeout(SHOT_WAIT_MS);
         await page.screenshot({ path: screenshotPath });
