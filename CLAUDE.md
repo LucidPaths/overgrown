@@ -18,18 +18,32 @@ An open-source, browser-first, top-down sandbox hack-and-slash RPG. All art and 
 - **Undecided things:** `docs/gdd/13-open-questions.md`. Follow the stated default; never guess.
 - **Review standard:** `docs/PRINCIPLE_LATTICE.md` (5 principles: Modularity · Simplicity Wins · Errors Are Answers · Fix The Pattern · Secrets Stay Secret).
 
-## Layout (planned; created by OVR-001)
+## Layout
 
 ```
-client/        TypeScript + PixiJS + Vite (renderer, input, UI, sim worker, net)
-tools/art/     Python asset pipeline → atlases (PNG + JSON) and audio
-services/      tiny signaling service (WebSocket)
+sim/           @overgrown/sim — pure TS simulation. Sees NO browser APIs (lib ES2022, types []). Runs in a Web Worker and in Node.
+client/        @overgrown/client — Vite + PixiJS app (renderer, input, UI, worker adapter, net)
+tools/art/     Python asset pipeline → client/public/generated/ (gitignored build output)
+contracts/     cross-language fixtures (e.g. RNG test vectors) shared by TS and Python tests
+services/      (later) tiny signaling service
 docs/          gdd/, agents/, specs/, e2e/, PRINCIPLE_LATTICE.md
 ```
 
+No barrel files: import modules by path (`@overgrown/sim/version`), never through an `index.ts`.
+
 ## Commands
 
-None yet. OVR-001 adds build, typecheck, lint and test commands here.
+Activate a Python env with `tools/art/requirements-dev.txt` installed first (in the orchestrator's container: `source /home/claude/.venv-og/bin/activate`).
+
+```
+npm ci              install (lockfile committed)
+npm run check       typecheck sim + client, eslint, ruff check, ruff format --check
+npm test            vitest (TS) + pytest (tools/art)
+npm run build       art pipeline, then client production build → client/dist/
+npm run dev         Vite dev server
+```
+
+CI (`.github/workflows/ci.yml`) runs check, test and build on every push to main and every PR.
 
 ## Hard rules
 
@@ -56,3 +70,6 @@ One source of truth each. Add to this table when a new one appears.
 ## Project traps
 
 Add each one here as it's discovered.
+
+- **TypeScript is pinned to 6.x** because typescript-eslint doesn't support TS 7 yet (Oct 2026). Don't bump TS alone; bump both together.
+- **GitHub from the agent container:** GraphQL and branch deletion are blocked by the proxy. Use REST (`gh api repos/LucidPaths/overgrown/...`) for PRs, comments and merges.

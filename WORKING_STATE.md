@@ -7,18 +7,23 @@ Last updated: 2026-10-11
 
 ## Current phase
 
-**Definition, not dispatch.** Lucid wants things defined properly before any worker runs. No code exists yet.
+**M0 dispatch** (approved by Lucid 2026-10-12: "just get me the results", so specs aren't shown to him first).
 
-Waiting on Lucid:
-- Review `docs/gdd/12-catalogs.md` (draft content, including the new mage section, OQ-017). A copy is in the claude.ai Project under `review/`.
-- Sign off `docs/agents/MILESTONES.md` (draft).
-- OQ-002 (final name) is the only original open question left; it doesn't block anything.
+Wave plan (dependencies → waves; parallel only on disjoint files):
+1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
+2. OVR-002 rng (opus) · TEC-001 Pixi + Pages deploy (sonnet) · TEC-004 ECS (opus)
+3. ART-001 pipeline + atlas schema (opus, needs OVR-002) · TEC-002 sim worker + snapshot (opus, needs TEC-001, TEC-004)
+4. ART-002 palettes (sonnet) · TEC-003 fixed timestep + interpolation (sonnet, needs TEC-002)
+5. ART-003 primitives (sonnet, needs ART-002) · TEC-005 asset loader (sonnet, needs ART-001, TEC-003)
+6. M0 E2E
 
-Next once cleared: write specs for M0 and dispatch.
+Mechanics: worktrees in /home/claude/wt/<id>; shared Python venv /home/claude/.venv-og; PR bodies in the scratchpad; PRs, comments and merges via `gh api` REST (squash merge works).
+
+Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions) for TEC-001's deploy; a stray `probe-workflow` branch the proxy wouldn't let me delete.
 
 ## In flight
 
-None.
+Wave 2.
 
 ## Decisions (accumulate)
 
@@ -29,6 +34,9 @@ None.
 - 2026-10-11 Two gates: a sonnet critic per task, then a context-free **fable** gate on the PR (spec + diff + lattice). Fable findings → PR review comment → same worker goes back. Fable PASS → orchestrator merges automatically and ticks the GDD box.
 - 2026-10-11 Tests only where they guard something that would silently break. E2E runs **per milestone**, not per PR.
 - 2026-10-11 OQ-001 to OQ-016 resolved with Lucid (see `docs/gdd/13-open-questions.md` § Resolved). The architecture-relevant ones: MIT license; a Node dedicated host is planned, so **the sim must stay browser-API-free** (TEC-019, in M0); X sign-in is optional forever; hardcore mode is solo-only; there's a downed state with a ~10 s revive; untouched chunks get dropped and regenerated from the seed.
+
+- 2026-10-12 OVR-001 also implemented TEC-019 in one PR (#1): the guard *is* the sim tsconfig, so a separate PR would have been a no-op. Allowed exception to one-task-per-PR.
+- 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)
 

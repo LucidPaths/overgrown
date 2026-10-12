@@ -77,4 +77,4 @@ client (main thread)            sim worker                    peers
 - [ ] **TEC-016** Load-time CI check: fail if the initial bundle exceeds budget.
 - [ ] **TEC-017** Open Graph/X card meta tags so shared links render a preview image (summary card, not a player card).
 - [ ] **TEC-018** Dedicated host: run the sim worker code in Node.js with storage and network adapters, so a server can host an always-on world joined via share link.
-- [ ] **TEC-019** `[proto]` CI guard: the sim package builds with no DOM/browser types available, so browser API use in the sim fails the build.
+- [x] **TEC-019** `[proto]` CI guard: the sim package builds with no DOM/browser types available, so browser API use in the sim fails the build. — #1
