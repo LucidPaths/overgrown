@@ -9,6 +9,8 @@ import { tileFrames } from "./tile-frames";
 
 /** Wall-clock ms per frame spent baking (at least one bake per frame when any is queued). Tunable. */
 export const BAKE_BUDGET_MS = 4;
+/** Most chunks baked per frame. BAKE_BUDGET_MS can't see GPU raster cost; this cap bounds it. Tunable. */
+export const BAKES_PER_FRAME = 1;
 
 const CHUNK_PX = CHUNK_TILES * TILE_PX;
 const LAYER_LENGTH = CHUNK_TILES * CHUNK_TILES;
@@ -81,13 +83,15 @@ export class ChunkLayer {
     // No re-bakes: chunk data never changes, so a neighbour's edge stays correct.
   }
 
-  /** Once per frame: bakes queued chunks oldest first until BAKE_BUDGET_MS has elapsed. */
+  /** Once per frame: bakes queued chunks oldest first until BAKE_BUDGET_MS has elapsed or BAKES_PER_FRAME are done. */
   update(): void {
     const start = performance.now();
+    let baked = 0;
     for (const key of this.queue) {
       this.queue.delete(key);
       this.bake(this.held.get(key)!); // remove() dequeues, so every queued key is held
-      if (performance.now() - start >= BAKE_BUDGET_MS) break;
+      baked += 1;
+      if (baked >= BAKES_PER_FRAME || performance.now() - start >= BAKE_BUDGET_MS) break;
     }
   }
 
