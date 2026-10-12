@@ -3,6 +3,8 @@ import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
 import { Application, Container, Text, TextStyle, TextureStyle } from "pixi.js";
 import { loadCoreAtlas } from "./assets";
+import { KeyboardMouseInput } from "./input/keyboard-mouse";
+import { layoutCamera } from "./render/camera";
 import { createFrame, interpolate } from "./render/interpolate";
 import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
@@ -66,13 +68,25 @@ try {
   let curr: Snapshot | null = null;
   let currReceivedAt = 0;
   const frame = createFrame();
+  // Camera target: the `you` character, or the last place it was seen.
+  let targetX = 0;
+  let targetY = 0;
   // An error thrown inside a ticker callback never reaches the try/catch below, so it is caught here.
   app.ticker.add(() => {
     if (curr === null) return;
     try {
       interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
-      // Fixed origin, not a camera: world (0,0) is the screen centre. CMB-001 replaces this with the follow camera.
-      world.position.set(Math.round(app.screen.width / 2), Math.round(app.screen.height / 2));
+      const i = frame.ids.subarray(0, frame.count).indexOf(frame.you);
+      if (i >= 0) {
+        targetX = frame.x[i]!;
+        targetY = frame.y[i]!;
+      }
+      // Follow camera in device px (the real backing store), mapped back to stage units: one unit = `r` device px.
+      const layout = layoutCamera(app.canvas.width, app.canvas.height, targetX, targetY);
+      const r = app.renderer.resolution;
+      world.scale.set(layout.scale / r);
+      world.position.set(layout.originX / r, layout.originY / r);
+      input.setLayout(layout);
       view.update(frame);
     } catch (error) {
       app.ticker.stop();
@@ -98,6 +112,7 @@ try {
   });
   const init: HostToSim = { type: "init", seed: seedFromUrl() };
   worker.postMessage(init);
+  const input = new KeyboardMouseInput(app.canvas, (msg) => worker.postMessage(msg));
 } catch (error) {
   showFatal("overgrown couldn't start the renderer", error);
 }

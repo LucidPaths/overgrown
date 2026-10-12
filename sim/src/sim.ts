@@ -1,13 +1,17 @@
 // The simulation entry point. Browser-free: runs in a Web Worker and in Node.
+import { stepActions } from "./actions";
 import { createCharacterWorld, spawnCharacter } from "./character";
 import { World } from "./ecs";
+import { assertInputMessage, createInputLatch, latchInput } from "./input";
 import { stepMovement } from "./movement";
-import { Species, type Snapshot } from "./protocol";
+import { Species, type InputMessage, type Snapshot } from "./protocol";
 
 export interface Sim {
   readonly tick: number;
   /** Advances exactly one tick (dt = 1 / TICK_HZ seconds). */
   step(): void;
+  /** Validates `msg` (RangeError naming the field) and keeps it as the newest input for the local player's character; the next step() latches it. */
+  input(msg: InputMessage): void;
   /** Fresh typed arrays (length = count) of every entity with Position, Kind, Facing, Action and Species. */
   snapshot(): Snapshot;
 }
@@ -20,6 +24,7 @@ export function createSim(seed: number): Sim {
   const ecs = new World();
   const world = createCharacterWorld(ecs);
   const player = spawnCharacter(world, { x: 0, y: 0, species: Species.Human, tick: 0 });
+  const latch = createInputLatch();
 
   const c = world.components;
   const visible = [c.position, c.kind, c.facing, c.action, c.species];
@@ -31,7 +36,13 @@ export function createSim(seed: number): Sim {
     },
     step() {
       tick += 1;
+      latchInput(latch, world, player); // the only player-specific line: every system below is shared
+      stepActions(world, tick);
       stepMovement(world, tick);
+    },
+    input(msg) {
+      assertInputMessage(msg);
+      latch.latest = msg;
     },
     snapshot() {
       let count = 0;
