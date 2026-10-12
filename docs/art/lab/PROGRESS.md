@@ -21,15 +21,17 @@ Explorations (killed or kept), images in `art-lab/out/` (to be copied into docs/
 - D voxel diorama: chunky, reads as Minecraft-derivative; stair-stepped rivers look wrong on a free 2D sim.
 
 ## Done
-- d766fe8: sandbox, sketches A/B, diorama core: seeded relief from the real sim chunks (terraces for
-  mountains, water surfaces), terrain + water shaders, 17 prop kinds, wind, shadow map, outline post.
-- 8657813: WIP actor rig (13 rigid bones) and nine species definitions; voxel sketch D.
+- d766fe8: sandbox, sketches A/B, diorama core (seeded relief, terrain + water shaders, 17 prop kinds, wind, shadows, outlines).
+- 8657813: WIP rig (13 rigid bones) + nine species; voxel sketch D.
+- 0d25072..631c812 (this resume): actor layer (CPU-posed bones, procedural clips idle/walk/run/attack/dodge/hurt/death,
+  stencil-masked x-ray silhouettes, slash ribbon), the LEAN (upright things stretched up 0.3 px/px, depth upright) and
+  actor TILT (18 deg toward camera; faces read), time of day table (sky.ts), stage mode (`?mode=stage`, motion sheets
+  with `ts=`), static mode, live game (`src/game.ts`) with lab sim worker (`src/sim/lab-world.ts`: real sim systems +
+  NPC brains + hit stand-in), input (keys/mouse/touch), camera; ground material pass (ground-glsl.ts), cliff ridges,
+  water depth bands; FX layer (sparks, dust, splash, ripples, fireflies); point lights (lanterns, glowing mushrooms).
+- Perf (tools/measure.mjs, phone+slow4G+4xCPU, SwiftShader): first frame median ~2.46 s, ~37 KB gz JS; fps 4.9 desktop / 3.2 phone (software GL).
 
-## Next (in order)
-1. Actor layer: pose solver + animation clips (idle, walk, run, attack, dodge, hurt, death) and a render layer.
-2. Lab sim worker: real sim systems (spawnCharacter, stepActions, stepMovement, chunk store, findSpawn) with
-   lab NPC wanderers writing Intent; snapshot interpolation; player input (keyboard + touch); camera follow.
-3. Biome passes: mountain cliffs/terraces, ocean/beach, forest density; biome borders.
-4. Time of day (dawn/day/dusk/night) and FX: hit flash, slash arc, dust, splash.
-5. Captures: desktop/phone, biomes, species lineup, motion sheets, explorations. Docs: DIRECTION, RESEARCH,
-   EXPLORATION, INTEGRATION, README. Perf numbers (payload, first frame slow-4G + 4x CPU, headless fps).
+## Next
+1. Phone capture + touch overlay check; final captures into docs/art/lab/img (keep < 15 MB).
+2. Docs: README (art-lab), docs README with images, DIRECTION, RESEARCH, EXPLORATION, INTEGRATION.
+3. Polish if time: hurt/death sheets check, species lineup sheet, HUD look.
