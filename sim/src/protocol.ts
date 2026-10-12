@@ -67,7 +67,27 @@ export interface Snapshot {
   you: number;
 }
 
-export type SimToHost = { type: "snapshot"; snapshot: Snapshot } | { type: "error"; message: string };
+/** A loaded chunk, sent once per load (M1 contract "Chunk transport"). The host owns these arrays: they are copies, and the worker transfers their buffers. */
+export interface ChunkMessage {
+  type: "chunk";
+  cx: number;
+  cy: number;
+  /** TileValue per tile, local index ly * CHUNK_TILES + lx, length CHUNK_TILES². */
+  tiles: Uint8Array<ArrayBuffer>;
+  /** BiomeValue per tile, same indexing. */
+  biomes: Uint8Array<ArrayBuffer>;
+}
+
+/** The host may drop chunk (cx, cy); the sim sends a new ChunkMessage if it loads it again. */
+export interface UnchunkMessage {
+  type: "unchunk";
+  cx: number;
+  cy: number;
+}
+
+export type ChunkStreamMessage = ChunkMessage | UnchunkMessage;
+
+export type SimToHost = { type: "snapshot"; snapshot: Snapshot } | ChunkStreamMessage | { type: "error"; message: string };
 
 /** The transfer list for postMessage: every buffer the snapshot owns, so nothing is copied. */
 export function snapshotBuffers(s: Snapshot): ArrayBuffer[] {
@@ -81,4 +101,9 @@ export function snapshotBuffers(s: Snapshot): ArrayBuffer[] {
     s.actionStart.buffer,
     s.species.buffer,
   ];
+}
+
+/** The transfer list for postMessage: both layers, so nothing is copied twice. */
+export function chunkBuffers(m: ChunkMessage): ArrayBuffer[] {
+  return [m.tiles.buffer, m.biomes.buffer];
 }

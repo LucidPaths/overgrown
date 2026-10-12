@@ -5,6 +5,7 @@ import { Application, Container, Text, TextStyle, TextureStyle } from "pixi.js";
 import { loadCoreAtlas } from "./assets";
 import { KeyboardMouseInput } from "./input/keyboard-mouse";
 import { layoutCamera } from "./render/camera";
+import { ChunkLayer } from "./render/chunk-layer";
 import { createFrame, interpolate } from "./render/interpolate";
 import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
@@ -56,6 +57,8 @@ try {
   // World-space layer, added before debugText so it draws behind the text.
   const world = new Container();
   app.stage.addChild(world);
+  // Ground first, so it draws under the characters. The background colour shows until the first chunk is baked.
+  const ground = new ChunkLayer(world, sheet, app.renderer);
   const view = new SnapshotView(world, sheet);
 
   const debugText = new Text({
@@ -89,6 +92,7 @@ try {
       world.scale.set(layout.scale / r);
       world.position.set(layout.originX / r, layout.originY / r);
       input.setLayout(layout);
+      ground.update();
       view.update(frame);
     } catch (error) {
       app.ticker.stop();
@@ -100,12 +104,31 @@ try {
   const worker = new Worker(new URL("./sim-worker.ts", import.meta.url), { type: "module" });
   worker.addEventListener("message", (event: MessageEvent<SimToHost>) => {
     const msg = event.data;
-    if (msg.type === "snapshot") {
-      prev = curr;
-      curr = msg.snapshot;
-      currReceivedAt = performance.now();
-    } else {
-      showFatal("overgrown's simulation stopped", new Error(msg.message));
+    try {
+      switch (msg.type) {
+        case "snapshot":
+          prev = curr;
+          curr = msg.snapshot;
+          currReceivedAt = performance.now();
+          break;
+        case "chunk":
+          ground.add(msg);
+          break;
+        case "unchunk":
+          ground.remove(msg.cx, msg.cy);
+          break;
+        case "error":
+          showFatal("overgrown's simulation stopped", new Error(msg.message));
+          break;
+        default: {
+          const unknown: never = msg;
+          throw new Error(`unknown sim message type: ${(unknown as { type: unknown }).type}`);
+        }
+      }
+    } catch (error) {
+      app.ticker.stop();
+      worker.terminate();
+      showFatal("overgrown couldn't draw the world", error);
     }
   });
   // Failures before the worker's own try/catch exists (e.g. its module fails to load).

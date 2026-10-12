@@ -10,7 +10,7 @@ Last updated: 2026-10-12
 **M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
-3. WLD-003 (opus) · ART-006 (sonnet)
+3. WLD-003 (opus) · ✅ ART-006 #21
 4. WLD-004 (sonnet) · TEC-022 (sonnet)
 5. CMB-002 → UIX-002 (sonnet) · TEC-020/TEC-021 (sonnet)
 6. M1 E2E
@@ -30,7 +30,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Wave 1 merged (#15, #16, #17). Wave 2 merged (#18, #19, #20). Wave 3: ART-006 in PR; WLD-003 worker running. Specs for WLD-004, TEC-022, CMB-002, UIX-002, TEC-020, TEC-021 being drafted. Wave 3 specs (WLD-003, ART-006) being drafted. Open follow-ups outside M1: ART-023, OVR-005.
+Waves 1–2 and ART-006 merged (#15–#21). WLD-003 in PR. Next: WLD-004 ∥ TEC-022, then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also check a chunk border where terrain changes (WLD-003's re-bake rule has no automated guard) and record stall numbers vs a no-ground baseline (software GL halves fps here). Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
@@ -45,6 +45,8 @@ Wave 1 merged (#15, #16, #17). Wave 2 merged (#18, #19, #20). Wave 3: ART-006 in
 - 2026-10-12 OVR-001 also implemented TEC-019 in one PR (#1): the guard *is* the sim tsconfig, so a separate PR would have been a no-op. Allowed exception to one-task-per-PR.
 - 2026-10-12 Session moved to a claude.ai/code cloud container. Fable is available to subagents (probe → "OK"). Lucid chose to copy the claude.md-workflow skills (without its hooks) into `.claude/skills/` (OVR-007); where they differ, this repo's pipeline docs win.
 - 2026-10-12 Direct commits to `main` are refused by this session's permission classifier, so GDD ticks and WORKING_STATE updates ride in the next task PR; a PR merges only on the exact head Fable passed, so its own tick lands in the following PR.
+- 2026-10-12 Lucid: atlas → lossless WebP and M1 first-frame bar ≤ 3 s; the 2 s target moves to TEC-012 (OQ-028, lands with TEC-021).
+- 2026-10-12 WLD-003 AC8: in headless SwiftShader, displaying baked ground alone halves fps; stall numbers are recorded vs a no-ground baseline, and the hard stall bar moves to TEC-020's real-GPU step and the M1 E2E (orchestrator spec amendment).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)

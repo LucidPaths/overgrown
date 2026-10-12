@@ -4,7 +4,8 @@ import { createCharacterWorld, spawnCharacter } from "./character";
 import { World } from "./ecs";
 import { assertInputMessage, createInputLatch, latchInput } from "./input";
 import { stepMovement } from "./movement";
-import { Species, type InputMessage, type Snapshot } from "./protocol";
+import { Species, type ChunkStreamMessage, type InputMessage, type Snapshot } from "./protocol";
+import { createChunkStore, type AnchorPos } from "./world/chunk-store";
 
 export interface Sim {
   readonly tick: number;
@@ -14,21 +15,38 @@ export interface Sim {
   input(msg: InputMessage): void;
   /** Fresh typed arrays (length = count) of every entity with Position, Kind, Facing, Action and Species. */
   snapshot(): Snapshot;
+  /** Chunk and unchunk messages produced by the steps since the last call, in order. The caller owns their arrays. */
+  drainChunkMessages(): ChunkStreamMessage[];
 }
 
 export function createSim(seed: number): Sim {
-  // The seed's only use until world generation consumes it: reject what main.ts would reject.
+  // Checked here too, so a bad seed is one early, readable error before any chunk is generated.
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
     throw new RangeError(`createSim: seed must be an integer 0..4294967295, got ${seed}`);
   }
   const ecs = new World();
   const world = createCharacterWorld(ecs);
+  const chunkAnchor = ecs.register("ChunkAnchor", {});
+  const chunks = createChunkStore(seed);
   const player = spawnCharacter(world, { x: 0, y: 0, species: Species.Human, tick: 0 });
   const latch = createInputLatch();
+  // ChunkAnchor marks characters a host input channel drives (the local player now; every peer's character in TEC-011).
+  // Streaming reads only this tag, never the player id.
+  ecs.add(player, chunkAnchor);
 
   const c = world.components;
   const visible = [c.position, c.kind, c.facing, c.action, c.species];
+  const anchored = [c.position, chunkAnchor];
   let tick = 0;
+
+  function streamChunks(): void {
+    const anchors: AnchorPos[] = [];
+    const { x, y } = c.position.store;
+    ecs.each(anchored, (_id, index) => {
+      anchors.push({ x: x[index]!, y: y[index]! });
+    });
+    chunks.stream(anchors);
+  }
 
   return {
     get tick() {
@@ -39,6 +57,7 @@ export function createSim(seed: number): Sim {
       latchInput(latch, world, player); // the only player-specific line: every system below is shared
       stepActions(world, tick);
       stepMovement(world, tick);
+      streamChunks(); // last, so it sees this tick's positions
     },
     input(msg) {
       assertInputMessage(msg);
@@ -80,6 +99,9 @@ export function createSim(seed: number): Sim {
         i += 1;
       });
       return s;
+    },
+    drainChunkMessages() {
+      return chunks.drain();
     },
   };
 }

@@ -13,16 +13,6 @@ NAME = "debug"
 ATLAS = "core"
 
 
-def _checker16(ctx: Context) -> Image.Image:
-    grass = ctx.palette("meadow").ramp("grass")
-    dark, light = grass[0], grass[-1]
-    img = draw.canvas(16, 16)
-    for by in range(4):
-        for bx in range(4):
-            draw.rect(img, bx * 4, by * 4, 4, 4, light if (bx + by) % 2 == 0 else dark)
-    return draw.to_image(img)
-
-
 def _character32(ctx: Context) -> Image.Image:
     """An upright figure whose feet reach the bottom row in the centre columns (anchor = feet point)."""
     ramp = ctx.palette("pop").ramp("frost")
@@ -47,6 +37,5 @@ def _character32(ctx: Context) -> Image.Image:
 
 def generate(ctx: Context) -> list[Frame]:
     return [
-        Frame(f"{NAME}/checker16", _checker16(ctx)),
         Frame(f"{NAME}/character32", _character32(ctx)),
     ]

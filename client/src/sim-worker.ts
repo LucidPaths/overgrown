@@ -2,7 +2,7 @@
 // The only module that touches worker globals.
 import { TICK_MS } from "@overgrown/sim/constants";
 import { advance, type StepClock } from "@overgrown/sim/fixed-step";
-import { snapshotBuffers, type HostToSim, type SimToHost } from "@overgrown/sim/protocol";
+import { chunkBuffers, snapshotBuffers, type HostToSim, type SimToHost } from "@overgrown/sim/protocol";
 import { createSim, type Sim } from "@overgrown/sim/sim";
 
 // The client compiles against the DOM lib, not WebWorker, so type the slice of
@@ -36,6 +36,8 @@ function start(seed: number): void {
       const steps = advance(clock, now - last);
       last = now;
       for (let i = 0; i < steps; i++) created.step();
+      // Before the snapshot, so the renderer has a tick's chunks before its snapshot. The copies are ours to transfer.
+      for (const m of created.drainChunkMessages()) scope.postMessage(m, m.type === "chunk" ? chunkBuffers(m) : []);
       if (steps > 0) {
         const snapshot = created.snapshot(); // only the newest: the renderer never needs the skipped ones
         scope.postMessage({ type: "snapshot", snapshot }, snapshotBuffers(snapshot));
