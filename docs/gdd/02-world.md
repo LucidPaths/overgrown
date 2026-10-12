@@ -13,7 +13,7 @@ Launch set:
 - **Grassland / meadow:** spawn-friendly, open, readable.
 - **Forest:** cover, dens, falling trees.
 - **River:** crossings, fishing, swimming.
-- **Mountains:** cliffs, caves, cold peaks. Cliffs are blocking cliff tiles on steep elevation, drawn with a 3/4 rock face; there are no height levels (OQ-018).
+- **Mountains:** cliffs, caves, cold peaks. Cliffs are blocking cliff tiles on steep elevation, drawn with a 3/4 rock face; no height-level system for now (OQ-018).
 - **Ocean:** coastlines, boats, deep-water monsters.
 
 Later: swamp/marsh, tundra, desert/badlands, volcanic (→ CAT biomes).
@@ -60,7 +60,7 @@ These are the main source of "feel", so give them real visual budget.
 
 ## Water
 
-- Shallow water is walkable at reduced speed. Deep and very deep water block movement until swimming exists (WLD-017). Rivers are mostly shallow, with deep water only in wide stretches and seeded fords, so a spawn can't be enclosed (OQ-019).
+- Shallow water is walkable at reduced speed. Deep and very deep water block movement until swimming exists (WLD-017). Rivers are mostly shallow, with deep water only in wide stretches, plus seeded shallow fords so a spawn can't be enclosed (OQ-019).
 - Swimming drains stamina. If stamina runs out you take drowning damage.
 - Boats can be crafted or bought, used for river and ocean travel.
 - Deep water holds monsters. You can try to swim across the ocean. Good luck.

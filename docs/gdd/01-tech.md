@@ -78,6 +78,6 @@ client (main thread)            sim worker                    peers
 - [ ] **TEC-017** Open Graph/X card meta tags so shared links render a preview image (summary card, not a player card).
 - [ ] **TEC-018** Dedicated host: run the sim worker code in Node.js with storage and network adapters, so a server can host an always-on world joined via share link.
 - [x] **TEC-019** `[proto]` CI guard: the sim package builds with no DOM/browser types available, so browser API use in the sim fails the build. — #1
-- [ ] **TEC-020** Cap the render device-pixel-ratio (e.g. ≤ 2) and measure fps on a real mid-range phone GPU; record the numbers (found in M0 E2E: software-GL fps fell to 15 at DPR 3).
-- [ ] **TEC-021** Cut the startup waterfall: start the sim worker in parallel with the atlas load, and reduce Pixi's chunk fan-out; target first frame ≤ 2 s on emulated slow 4G + 4× CPU (found in M0 E2E: 2.65–2.79 s).
+- [ ] **TEC-020** `[proto]` Cap the render device-pixel-ratio (e.g. ≤ 2) and measure fps on a real mid-range phone GPU; record the numbers (found in M0 E2E: software-GL fps fell to 15 at DPR 3).
+- [ ] **TEC-021** `[proto]` Cut the startup waterfall: start the sim worker in parallel with the atlas load, and reduce Pixi's chunk fan-out; target first frame ≤ 2 s on emulated slow 4G + 4× CPU (found in M0 E2E: 2.65–2.79 s).
 - [ ] **TEC-022** `[proto]` Animated actor rendering: map each character's species, facing and action (with its start tick) from the snapshot to atlas frames, replacing the one-frame-per-Kind lookup for characters (→ CHR-001, ART-006).

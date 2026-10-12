@@ -1,4 +1,4 @@
-# Milestones (M0 and M1 signed off by Lucid; M2+ still draft)
+# Milestones (M1 signed off by Lucid; M2+ still draft)
 
 A milestone is a batch of GDD tasks that together make something you can play-test end to end. The E2E agent runs once per milestone ([E2E.md](E2E.md)). Only `[proto]` tasks are scheduled so far.
 
@@ -25,7 +25,7 @@ Design locked by OQ-018 to OQ-027 (2026-10-12).
 **E2E checklist**
 - Create a world from a seed and walk with the keyboard, then with touch emulation.
 - Chunks stream in and out; walking 10 chunks in any direction doesn't stall.
-- Water and cliffs block movement; biomes are visibly distinct.
+- Deep water and cliffs block movement, shallow water slows; biomes are visibly distinct.
 - The same seed gives the same world after a reload.
 - Load size and first-frame time are within budget.
 
