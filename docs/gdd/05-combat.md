@@ -9,10 +9,11 @@ Real-time hack-and-slash with physical weight, closer to Valheim and Metin2 than
 - 1–6 abilities and teachings on a hotbar · E interact · Tab inventory
 - **Optional click-to-move scheme** (Metin2-style), toggled in settings: LMB on ground moves, LMB on an enemy moves into range and attacks
 
-**Touch (day one):**
+**Touch (day one) (retired, OQ-029):**
 - Left virtual stick moves. A big attack button attacks toward the stick direction, with soft auto-aim at the nearest target in a cone.
 - Dodge button; ability ring of 4–6 buttons around attack; hold attack for a heavy attack or charge.
 - Tapping an enemy hard-targets it; tapping empty ground clears the target.
+- Retired: the touch input that shipped (CMB-002, UIX-002) stays in the code and gets no further work. Keyboard, mouse and gamepad are the inputs (OQ-029).
 
 ## Resources
 
@@ -81,7 +82,7 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 
 - [x] **CMB-001** `[proto]` Desktop input: WASD movement, mouse aim, LMB attack, Space dodge, Shift sprint. M1: attack, dodge and sprint are animation-only with no stamina (OQ-021); movement and facing defaults in OQ-025. — #20
 - [x] **CMB-002** `[proto]` Touch input: virtual stick, attack button with soft auto-aim, dodge button. M1 scoping in OQ-021; auto-aim defaults in OQ-026. — #25
-- [ ] **CMB-003** `[proto]` Ability hotbar (keys 1–6 / touch ring).
+- [ ] **CMB-003** `[proto]` Ability hotbar (keys 1–6; the touch ring is dropped, OQ-029).
 - [ ] **CMB-004** `[proto]` Stamina pool: costs per action, regen after a pause.
 - [ ] **CMB-005** `[proto]` Dodge roll with invulnerability frames.
 - [ ] **CMB-006** Mana pool and regen hooked to the mana trait.

@@ -2,14 +2,14 @@
 
 ## Principles
 
-- **The first click is the game.** Open the link, see the world within seconds. Sign in with X is optional and never blocks play. Character creation is short (species + appearance) and can be skipped with a random roll.
+- **The first click is the game.** Launch it, see the world within seconds. There are no accounts; identity is a local profile name (OQ-029). Character creation is short (species + appearance) and can be skipped with a random roll.
 - **Diegetic where possible.** Danger is read from sprites (size, scars, grey fur) before numbers. Numbers appear as your perception trait grows.
-- **Touch and mouse are equals.** Every action works with both.
+- ~~**Touch and mouse are equals.** Every action works with both.~~ (retired, OQ-029: keyboard, mouse and gamepad are the inputs; the shipped touch layout stays in the code with no further work)
 
 ## HUD
 
 - HP, stamina and mana bars, plus an ability fatigue indicator.
-- Hotbar (desktop) / ability ring (touch).
+- Hotbar (the touch ability ring is retired, OQ-029).
 - Minimap showing explored areas only; a full map shows explored chunks, discovered settlements, dungeons and rifts.
 - Clock and season indicator; weather icon.
 - Damage numbers (toggleable).
@@ -25,7 +25,7 @@
 ## Menus
 
 - Inventory + paper doll · character sheet (traits, abilities, teachings, level points) · crafting · trade/barter · stall management · map · quest log · faction reputation.
-- World menu: create world (seed; mode: Respawn / Permadeath / Hardcore, where Hardcore is solo-only; PvP is always on), load, export/import, open to friends (share link; hidden for Hardcore), kick/ban.
+- World menu: create world (seed; mode: Respawn / Permadeath / Hardcore, where Hardcore is solo-only; PvP is always on), load, export/import, open to friends (friends join the host over LAN or the internet, OQ-029; hidden for Hardcore), kick/ban.
 - Settings include the optional click-to-move control scheme.
 
 ## Onboarding
