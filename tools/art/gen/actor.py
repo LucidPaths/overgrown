@@ -10,10 +10,11 @@ from dataclasses import dataclass
 import numpy as np
 
 from lib import draw
+from lib.anims import ANIM_KEYS, frame_count, pose_skeleton
 from lib.atlas import Frame
 from lib.context import Context
 from lib.palette import Palette
-from lib.skeleton import CELL, CENTRE_X, SOLE_Y, Point, Skeleton, base_skeleton
+from lib.skeleton import CELL, CENTRE_X, SOLE_Y, Point, Skeleton
 from lib.species import SPECIES, Species
 
 NAME = "actor"
@@ -665,9 +666,18 @@ def draw_body(ctx: Context, species: Species, skel: Skeleton, direction: str) ->
 def generate(ctx: Context) -> list[Frame]:
     frames = []
     for species in SPECIES:
-        images = {d: draw_body(ctx, species, base_skeleton(species, d), d) for d in DRAWN}
-        images["right"] = np.fliplr(images["left"]).copy()
-        for direction in ("down", "left", "right", "up"):
-            name = frame_name(species.key, "idle", direction, 0)
-            frames.append(Frame(name, draw.to_image(images[direction])))
+        for anim in ANIM_KEYS:
+            for index in range(frame_count(anim)):
+                images: dict[str, np.ndarray] = {}
+                for direction in DRAWN:
+                    try:
+                        skel = pose_skeleton(species, anim, direction, index)
+                        images[direction] = draw_body(ctx, species, skel, direction)
+                    except ValueError as err:
+                        name = frame_name(species.key, anim, direction, index)
+                        raise ValueError(f"{name}: {err}") from err
+                images["right"] = np.fliplr(images["left"]).copy()  # A-24: mirrored, never drawn
+                for direction in ("down", "left", "right", "up"):
+                    name = frame_name(species.key, anim, direction, index)
+                    frames.append(Frame(name, draw.to_image(images[direction])))
     return frames
