@@ -30,9 +30,8 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-**2026-10-12 ~21:00 UTC.** M1 done; the M1 E2E PR carries this update. In flight:
-- **ART-024** art direction pass (Lucid's request): code PR #30 (branch art-024-direction, critic PASS with notes, fixed in b7dbfcf; Fable gate running), previews PR #29 (branch art-024-previews, images + README only; merge together with #30). WebP atlas 124 KB → 85 KB.
-Not yet decided with Lucid (from the ART-024 and M1 E2E reports): a `?species=` dev parameter so all 9 species show in-game (only Humans spawn); biome-border colour band (renderer picks the TL tile's biome per dual-grid cell); ground shadows (ART-018); props first for empty ground (ART-007); compact atlas JSON (core.json 634 KB raw, ~13 KB gzipped); a 6-frame walk; an opt-in state hook for M2 E2E; first-frame margin is thin (2754 ms vs 3000 ms) before M2 assets.
+**2026-10-12 ~21:20 UTC.** M1 done (#31). ART-024 merged as #30 (art bible `docs/art/DIRECTION.md`, research `docs/art/RESEARCH.md`, redrawn actors/tiles/palettes; core.webp 124 KB → 85 KB); its previews land with this PR (#29, `docs/art/previews/`). Nothing in flight.
+Not yet decided with Lucid (from the ART-024 and M1 E2E reports): a `?species=` dev parameter so all 9 species show in-game (only Humans spawn); biome-border colour band (renderer picks the TL tile's biome per dual-grid cell); ground shadows (ART-018); props first for empty ground (ART-007); compact atlas JSON (core.json 634 KB raw, ~13 KB gzipped); a 6-frame walk; an opt-in state hook for M2 E2E; first-frame margin is thin (2754 ms vs 3000 ms) before M2 assets; adopting the pixel-art skills ART-024 recommended (omer-metin pixel-art, anthropics canvas-design) as reviewer aids.
 Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it off first).
 
 ## Decisions (accumulate)
@@ -50,6 +49,7 @@ Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it
 - 2026-10-12 Direct commits to `main` are refused by this session's permission classifier, so GDD ticks and WORKING_STATE updates ride in the next task PR; a PR merges only on the exact head Fable passed, so its own tick lands in the following PR.
 - 2026-10-12 Lucid: atlas → lossless WebP and M1 first-frame bar ≤ 3 s; the 2 s target moves to TEC-012 (OQ-028, lands with TEC-021).
 - 2026-10-12 WLD-003 AC8: in headless SwiftShader, displaying baked ground alone halves fps; stall numbers are recorded vs a no-ground baseline, and the hard stall bar moves to TEC-020's real-GPU step and the M1 E2E (orchestrator spec amendment).
+- 2026-10-12 Lucid: ART-024 art direction pass with full creative freedom inside the frame/cell/determinism contracts; preview images go in their own PR, not the scratchpad. After 3 Fable loops on #30 Lucid chose "fix both, merge" (fixes verified locally, no 4th gate).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)
