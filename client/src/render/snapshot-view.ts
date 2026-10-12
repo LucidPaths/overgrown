@@ -34,7 +34,7 @@ export class SnapshotView {
       let sprite = this.sprites.get(id);
       if (sprite === undefined) {
         sprite = new Sprite(this.textureFor(s.kind[i]!));
-        sprite.anchor.set(0.5);
+        sprite.anchor.set(0.5, 1); // bottom centre on Position, the feet point
         this.layer.addChild(sprite);
         this.sprites.set(id, sprite);
       }

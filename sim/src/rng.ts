@@ -5,13 +5,18 @@
 const U32_MAX = 0xffffffff;
 const GOLDEN = 0x9e3779b9;
 
-function fmix32(x: number): number {
+export function fmix32(x: number): number {
   x ^= x >>> 16;
   x = Math.imul(x, 0x85ebca6b);
   x ^= x >>> 13;
   x = Math.imul(x, 0xc2b2ae35);
   x ^= x >>> 16;
   return x >>> 0;
+}
+
+/** One deriveSeed combine step, UNCHECKED (hot paths only): part must be an integer in -2^31..2^32-1. */
+export function mixSeedPart(h: number, part: number): number {
+  return (fmix32(h ^ fmix32(part >>> 0)) + GOLDEN) >>> 0;
 }
 
 function rotl32(x: number, r: number): number {
@@ -92,8 +97,7 @@ export function deriveSeed(seed: number, ...parts: number[]): number {
         `parts[${i}] must be an integer in -2147483648..4294967295, got ${p}`,
       );
     }
-    const u = p >>> 0; // two's complement: -1 -> 0xFFFFFFFF
-    h = (fmix32(h ^ fmix32(u)) + GOLDEN) >>> 0;
+    h = mixSeedPart(h, p);
   });
   return h;
 }

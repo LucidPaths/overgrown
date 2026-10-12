@@ -58,7 +58,7 @@ Head, chest, legs, feet, hands, back (cape or quiver), main hand, off hand (shie
 
 ## Tasks
 
-- [ ] **CHR-001** `[proto]` Character entity shared by players and NPCs (same component set). Movement and collider defaults in OQ-025.
+- [x] **CHR-001** `[proto]` Character entity shared by players and NPCs (same component set). Movement and collider defaults in OQ-025. — #16
 - [ ] **CHR-002** `[proto]` XP and level-up with a soft-cap curve (tunable table).
 - [ ] **CHR-003** Level point pool: earned 1 per level; spent on learning and ranking abilities; on de-level, the most recent spend goes dormant until the level is regained.
 - [ ] **CHR-004** `[proto]` Trait system core: use events → trait XP → rank, with diminishing returns.
