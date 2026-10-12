@@ -12,6 +12,7 @@ import { ChunkLayer } from "./render/chunk-layer";
 import { createFrame, interpolate } from "./render/interpolate";
 import { requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
+import { TouchOverlay } from "./ui/touch-overlay";
 
 const DEFAULT_SEED = 1;
 
@@ -81,8 +82,9 @@ try {
   let targetY = 0;
   // An error thrown inside a ticker callback never reaches the try/catch below, so it is caught here.
   app.ticker.add(() => {
-    if (curr === null) return;
     try {
+      overlay.update(hostInput.active === "touch", touch.stick, touch.buttonsDown);
+      if (curr === null) return;
       interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
       const i = frame.ids.subarray(0, frame.count).indexOf(frame.you);
       if (i >= 0) {
@@ -145,8 +147,8 @@ try {
     window.matchMedia("(pointer: coarse)").matches ? "touch" : "keyboard-mouse",
   );
   const input = new KeyboardMouseInput(app.canvas, hostInput);
-  // No per-frame call yet: bind it to a name when UIX-002 reads `stick` and `buttonsDown`.
-  new TouchInput(app.canvas, hostInput, frame);
+  const touch = new TouchInput(app.canvas, hostInput, frame);
+  const overlay = new TouchOverlay(appRoot);
 } catch (error) {
   showFatal("overgrown couldn't start the renderer", error);
 }

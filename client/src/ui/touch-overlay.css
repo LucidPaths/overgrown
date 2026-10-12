@@ -1,0 +1,49 @@
+/* Touch controls drawn over the canvas. Sizes and positions come from currentTouchLayout() (client/src/input/touch.ts),
+   written inline by touch-overlay.ts; this file only holds the look. No env() here: the safe area is applied once, in
+   the layout, so the drawn circles and the hit circles cannot disagree. Visibility is the `hidden` attribute, so
+   #touch-ui deliberately has no `display` rule. */
+#touch-ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#touch-ui > div {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  border-radius: 50%;
+}
+
+.tu-attack,
+.tu-dodge {
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.tu-attack.tu-down,
+.tu-dodge.tu-down {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Greyed out until CMB-003. */
+.tu-slot {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.tu-stick-base {
+  background: rgba(0, 0, 0, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.tu-stick-knob {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.tu-stick-base.tu-idle,
+.tu-stick-knob.tu-idle {
+  opacity: 0.5;
+}
