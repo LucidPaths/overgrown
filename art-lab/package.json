@@ -1,0 +1,17 @@
+{
+  "name": "overgrown-art-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4230 --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --port 4231 --host 127.0.0.1",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1",
+    "tsx": "4.20.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.4"
+  }
+}
