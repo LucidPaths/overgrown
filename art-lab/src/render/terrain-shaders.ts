@@ -163,7 +163,7 @@ void main() {
     }
   }
   float thresh = mat == 0 ? 7.0 : (mat == 3 ? 2.5 : 4.0);
-  if (mat != 1 && mat != 4 && dd > thresh) {
+  if (mat != 1 && mat != 4 && mat != 6 && dd > thresh) {
     vec3 line = c * vec3(0.42, 0.38, 0.52);
     c = mix(c, line, mat == 0 ? 0.7 : 1.0);
   } else if ((mat == 2 || mat == 3) && nd > 0.35) {

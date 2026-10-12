@@ -33,6 +33,7 @@ uniform float uTime;
 uniform vec2 uCloud;       // cloud drift offset (world px)
 uniform float uCloudAmt;
 uniform vec2 uShadowTexel;
+uniform float uLean;       // clip-space y per px of height above an object's base: upright things lean back to face the camera
 `;
 
 export const LIGHT_FN = `

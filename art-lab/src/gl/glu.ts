@@ -111,8 +111,8 @@ export interface Target {
   h: number;
 }
 
-/** A framebuffer with `colors` RGBA8 attachments and an optional sampleable 24-bit depth texture. */
-export function target(gl: GL, w: number, h: number, colors: number, withDepth: boolean, filter: number = gl.NEAREST): Target {
+/** A framebuffer with `colors` RGBA8 attachments and an optional sampleable 24-bit depth texture (+8-bit stencil). */
+export function target(gl: GL, w: number, h: number, colors: number, withDepth: boolean, filter: number = gl.NEAREST, stencil = false): Target {
   const fbo = gl.createFramebuffer()!;
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
   const color: WebGLTexture[] = [];
@@ -123,8 +123,13 @@ export function target(gl: GL, w: number, h: number, colors: number, withDepth: 
   }
   let depth: WebGLTexture | undefined;
   if (withDepth) {
-    depth = texture(gl, w, h, gl.DEPTH_COMPONENT24, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, gl.NEAREST);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
+    if (stencil) {
+      depth = texture(gl, w, h, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, gl.NEAREST);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
+    } else {
+      depth = texture(gl, w, h, gl.DEPTH_COMPONENT24, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, gl.NEAREST);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depth, 0);
+    }
   }
   if (colors > 0) gl.drawBuffers(color.map((_, i) => gl.COLOR_ATTACHMENT0 + i));
   else gl.drawBuffers([gl.NONE]);

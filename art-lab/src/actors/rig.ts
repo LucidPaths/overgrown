@@ -21,6 +21,8 @@ export interface Rig {
   weapon: Weapon;
   /** height of the top of the head above the feet, for labels and cutaways */
   height: number;
+  /** grip to tip along the weapon bone's +y (0 = unarmed), for the slash trail */
+  weaponLen: number;
 }
 
 const EYE = hex(0x221a2c);
@@ -82,8 +84,8 @@ export function buildRig(speciesIndex: number, dye: number, weapon: Weapon, trou
 
   // --- head (pivot at the neck) ---
   g.blob(compose(0, headC, 0, 0, 0, 0, R, R * 0.92, R * 0.95), 1, 0.0, 5, (n) => st(n[1]! < -0.35 && furred ? mixc(s.skin, s.accent, 0.0) : s.skin, BONE.head), true);
-  const eyeY = headC + R * 0.08, eyeZ = R * 0.86, eyeX = R * 0.4;
-  for (const sx of [-1, 1]) g.box(compose(sx * eyeX, eyeY - 0.9, eyeZ), 1.1, 1.9, 0.9, st(EYE, BONE.head));
+  const eyeY = headC + R * 0.0, eyeZ = R * 0.88, eyeX = R * 0.3;
+  for (const sx of [-1, 1]) g.box(compose(sx * eyeX, eyeY - 1.3, eyeZ, sx * 0.3), 1.25, 2.6, 1.4, st(EYE, BONE.head));
   // cheeks: a warm blush keeps the faces friendly at a glance
   if (!furred || s.snout === "short") for (const sx of [-1, 1]) g.box(compose(sx * R * 0.58, headC - R * 0.25, R * 0.74), 1.4, 0.8, 0.7, st(mixc(s.skin, hex(0xf07a7a), 0.5), BONE.head));
 
@@ -91,13 +93,20 @@ export function buildRig(speciesIndex: number, dye: number, weapon: Weapon, trou
   const hair = s.hair;
   if (hair && s.hairStyle && s.hairStyle !== "none") {
     if (s.hairStyle === "mohawk") {
-      g.box(compose(0, headC + R * 0.6, -R * 0.2, 0, -0.3), 1.6, R * 0.8, R * 1.5, st(hair, BONE.head));
+      // a crest of short blocks along the scalp, front to back
+      for (let i = 0; i < 4; i++) {
+        const a = 0.55 - i * 0.5;
+        g.box(compose(0, headC + Math.cos(a) * R * 0.9, Math.sin(a) * R * 0.9, 0, a), 1.5, 2.6 - Math.abs(i - 1.2) * 0.4, 2.2, st(i % 2 ? hair : shade(hair, 1.25), BONE.head));
+      }
     } else {
-      g.blob(compose(0, headC + R * 0.2, -R * 0.14, 0, 0, 0, R * 1.07, R * 0.9, R * 1.02), 1, 0.06, 9, (n) => st(n[2]! > 0.55 && n[1]! < 0.3 ? s.skin : hair, BONE.head), true);
-      // fringe
-      g.box(compose(0, headC + R * 0.62, R * 0.62, 0, 0.5), R * 1.5, R * 0.42, R * 0.5, st(shade(hair, 1.08), BONE.head));
-      if (s.hairStyle === "long") g.box(compose(0, headC - R * 0.75, -R * 0.62), R * 1.7, R * 1.5, R * 0.5, st(hair, BONE.head));
-      if (s.hairStyle === "bun") g.blob(compose(0, headC + R * 0.95, -R * 0.4, 0, 0, 0, R * 0.42, R * 0.42, R * 0.42), 0, 0, 2, st(hair, BONE.head));
+      // a cap of hair on the crown and the back: the face (front and lower half) stays clear
+      g.blob(compose(0, headC + R * 0.3, -R * 0.24, 0, 0, 0, R * 1.08, R * 0.82, R * 0.98), 1, 0.06, 9, st(hair, BONE.head), true);
+      // fringe: a short brim over the brow, tilted forward
+      g.box(compose(R * 0.12, headC + R * 0.66, R * 0.56, 0, 0.7, -0.12), R * 1.4, R * 0.3, R * 0.5, st(shade(hair, 1.1), BONE.head));
+      // side locks frame the face
+      if (s.hairStyle === "long") for (const sx of [-1, 1]) g.box(compose(sx * R * 0.88, headC - R * 0.1, -R * 0.05), R * 0.3, R * 1.0, R * 0.7, st(hair, BONE.head));
+      if (s.hairStyle === "long") g.box(compose(0, headC - R * 0.85, -R * 0.62), R * 1.75, R * 1.7, R * 0.55, st(hair, BONE.head));
+      if (s.hairStyle === "bun") g.blob(compose(0, headC + R * 1.0, -R * 0.45, 0, 0, 0, R * 0.45, R * 0.45, R * 0.45), 0, 0, 2, st(shade(hair, 1.1), BONE.head));
     }
   }
   if (s.beard && hair) {
@@ -239,7 +248,7 @@ export function buildRig(speciesIndex: number, dye: number, weapon: Weapon, trou
       break;
   }
 
-  rest[BONE.hips] = [0, s.leg, 0];
+  rest[BONE.hips] = [0, s.leg - 0.6, 0]; // the soles touch y = 0
   rest[BONE.torso] = [0, 0.8, 0];
   rest[BONE.head] = [0, s.torso + 0.4, 0];
   rest[BONE.armL] = [tw + s.limb * 0.55, s.torso - 1.2, 0];
@@ -249,5 +258,6 @@ export function buildRig(speciesIndex: number, dye: number, weapon: Weapon, trou
   rest[BONE.tail1] = [0, 1.6, -td * 0.85];
   rest[BONE.tail2] = s.tail === "fox" ? [0, 1.6, -6.6] : [0, -2.2, -6.1];
   rest[BONE.weapon] = [0, -s.arm + 0.7, 0.2];
-  return { species: s, rest, geo: g, headC, tailLen, weapon, height: s.leg + 0.8 + s.torso + 0.4 + headC + R };
+  const weaponLen = { none: 0, sword: 15, axe: 12.5, spear: 18.2, dagger: 6.8 }[weapon];
+  return { species: s, rest, geo: g, headC, tailLen, weapon, height: s.leg + 0.2 + s.torso + 0.4 + headC + R, weaponLen };
 }

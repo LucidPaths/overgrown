@@ -64,7 +64,10 @@ export class PropLayer implements Drawable {
         // trees keep a near-upright yaw-only transform so their light stays consistent
         const m = compose(x, y, z, yaw, 0, 0, sc, sc * (0.92 + hash01(s, tx, ty, 203) * 0.16), sc);
         const hue = (hash01(s, tx, ty, 204) - 0.5) * 0.12;
+        const first = g.vertexCount;
         g.append(geo, m, (c: RGB) => [c[0] * (1 + hue), c[1] * (1 + hue * 0.3), c[2] * (1 - hue * 0.5)]);
+        // height above the prop's base, for the lean (u8 px)
+        for (let v = first; v < g.vertexCount; v++) g.aux[v * 4 + 2] = Math.max(0, Math.min(255, Math.round(g.pos[v * 3 + 1]! - y)));
         if (pl.kind === P.Oak || pl.kind === P.Pine || pl.kind === P.Birch || pl.kind === P.Palm) tall.push({ kind: pl.kind, x, y, z });
       }
     }

@@ -35,6 +35,8 @@ export interface FrameInfo {
   up: Vec3;
   back: Vec3;
   lighting: Lighting;
+  /** clip-space y per px of height (see LEAN) */
+  lean: number;
   /** Called by drawables: sets the shared light uniforms on a program that is in use. */
   setLight(p: Program): void;
 }
@@ -42,9 +44,17 @@ export interface FrameInfo {
 export interface Drawable {
   shadow?(gl: GL, f: FrameInfo): void;
   main(gl: GL, f: FrameInfo): void;
+  /** After every main(): see-through effects that test against the finished depth. */
+  overlay?(gl: GL, f: FrameInfo): void;
 }
 
 export const PITCH_DEG = 52;
+/**
+ * Upright things (characters, trees, props) are drawn stretched upward by LEAN px per px of height above their base,
+ * with their depth left upright. The ground stays a 52 deg map; characters read like a ~36 deg front view, so faces
+ * show. (The trick A Link Between Worlds uses: lean the world back toward the camera.)
+ */
+export const LEAN = 0.3;
 
 export class Renderer {
   readonly gl: GL;
@@ -65,6 +75,7 @@ export class Renderer {
   private subTexel: [number, number] = [0, 0];
   readonly basis = lookBasis([0, -Math.sin((PITCH_DEG * Math.PI) / 180), -Math.cos((PITCH_DEG * Math.PI) / 180)]);
   stats = { drawCalls: 0 };
+  lean = LEAN;
   /** >1 renders the same framing at more texels per world px (used by the smooth/voxel explorations). */
   zoom = 1;
 
@@ -82,13 +93,14 @@ export class Renderer {
     const gl = this.gl;
     this.canvas.width = devW;
     this.canvas.height = devH;
-    const scale = forcedScale > 0 ? forcedScale : Math.max(1, Math.round(Math.min(devW / 320, devH / 360)));
+    // the long axis always shows ~440 texels: a hack-and-slash framing (~27 tiles across), on desktop and phone alike
+    const scale = forcedScale > 0 ? forcedScale : Math.max(1, Math.round(Math.max(devW, devH) / 440));
     const iw = Math.ceil(devW / scale) + 2, ih = Math.ceil(devH / scale) + 2;
     if (scale === this.scale && iw === this.iw && ih === this.ih && this.g) return;
     this.scale = scale; this.iw = iw; this.ih = ih;
     if (this.g) deleteTarget(gl, this.g);
     if (this.post) deleteTarget(gl, this.post);
-    this.g = target(gl, iw, ih, 2, true);
+    this.g = target(gl, iw, ih, 2, true, gl.NEAREST, true);
     this.post = target(gl, iw, ih, 1, false);
   }
 
@@ -136,8 +148,9 @@ export class Renderer {
     const lvp = this.lightViewProj();
     const L = this.lighting;
     const self = this;
+    const lean = (2 * this.zoom / this.ih) * this.lean;
     const f: FrameInfo = {
-      viewProj: vp, lightViewProj: lvp, time, lighting: L, ...this.basis,
+      viewProj: vp, lightViewProj: lvp, time, lighting: L, lean, ...this.basis,
       setLight(p: Program) {
         const u = p.u;
         gl.uniformMatrix4fv(u.uViewProj!, false, vp);
@@ -148,6 +161,7 @@ export class Renderer {
         gl.uniform3fv(u.uBounceCol!, L.bounceCol);
         gl.uniform3fv(u.uShadeTint!, L.shadeTint);
         gl.uniform1f(u.uTime!, time);
+        gl.uniform1f(u.uLean!, lean);
         gl.uniform2f(u.uCloud!, self.cloudOffset[0], self.cloudOffset[1]);
         gl.uniform1f(u.uCloudAmt!, L.cloudAmt);
         gl.uniform2f(u.uShadowTexel!, 1 / self.shadowSize, 1 / self.shadowSize);
@@ -173,8 +187,10 @@ export class Renderer {
     gl.viewport(0, 0, g.w, g.h);
     gl.clearBufferfv(gl.COLOR, 0, [...L.clear, 1]);
     gl.clearBufferfv(gl.COLOR, 1, [0.5, 0.5, 4 / 255, 1]);
-    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.clearStencil(0);
+    gl.clear(gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
     for (const d of this.drawables) d.main(gl, f);
+    for (const d of this.drawables) d.overlay?.(gl, f);
     gl.disable(gl.CULL_FACE);
     gl.disable(gl.DEPTH_TEST);
 

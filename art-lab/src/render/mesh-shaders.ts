@@ -36,6 +36,7 @@ void main() {
   wp += wind(aPos, aAux.x, uTime);
   vWp = wp; vN = aNrm; vCol = aCol;
   gl_Position = uViewProj * vec4(wp, 1.0);
+  gl_Position.y += uLean * aAux.z * 255.0;
 }`;
 
 export const PROP_SHADOW_VS = `${HEADER}

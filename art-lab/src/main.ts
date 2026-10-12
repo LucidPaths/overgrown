@@ -4,6 +4,10 @@ import { Ground } from "./world/ground";
 import { PropLayer } from "./render/prop-layer";
 
 const q = new URLSearchParams(location.search);
+if (q.get("mode") === "stage") {
+  (await import("./stage")).runStage(document.getElementById("c") as HTMLCanvasElement, q);
+} else {
+
 const seed = Number(q.get("seed") ?? 22);
 const fx = Number(q.get("x") ?? 1600), fz = Number(q.get("y") ?? 980);
 const canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -28,3 +32,4 @@ const loop = (t: number) => {
   requestAnimationFrame(loop);
 };
 requestAnimationFrame(loop);
+}
