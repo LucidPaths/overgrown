@@ -76,6 +76,9 @@ export class Renderer {
   readonly basis = lookBasis([0, -Math.sin((PITCH_DEG * Math.PI) / 180), -Math.cos((PITCH_DEG * Math.PI) / 180)]);
   stats = { drawCalls: 0 };
   lean = LEAN;
+  /** point lights for this frame: xyz + radius, rgb (see LIGHT_FN) */
+  readonly lights = new Float32Array(32);
+  readonly lightCols = new Float32Array(24);
   /** >1 renders the same framing at more texels per world px (used by the smooth/voxel explorations). */
   zoom = 1;
 
@@ -162,6 +165,8 @@ export class Renderer {
         gl.uniform3fv(u.uShadeTint!, L.shadeTint);
         gl.uniform1f(u.uTime!, time);
         gl.uniform1f(u.uLean!, lean);
+        if (u.uPL) gl.uniform4fv(u.uPL, self.lights);
+        if (u.uPLc) gl.uniform3fv(u.uPLc, self.lightCols);
         gl.uniform2f(u.uCloud!, self.cloudOffset[0], self.cloudOffset[1]);
         gl.uniform1f(u.uCloudAmt!, L.cloudAmt);
         gl.uniform2f(u.uShadowTexel!, 1 / self.shadowSize, 1 / self.shadowSize);

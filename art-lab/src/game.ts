@@ -5,6 +5,7 @@ import type { Weapon } from "./actors/rig";
 import { SPECIES } from "./actors/species";
 import { createInput } from "./input";
 import { ActorLayer, type ActorDraw, type ActorLook } from "./render/actor-layer";
+import { FxLayer } from "./render/fx-layer";
 import { PropLayer } from "./render/prop-layer";
 import { Renderer } from "./render/renderer";
 import { applyTime } from "./render/sky";
@@ -29,8 +30,12 @@ interface Vis {
   /** blend weight of the action layer, eased in so clips don't pop */
   act: number;
   lastAction: number;
+  step: number;
+  rippleAt: number;
   draw: ActorDraw;
 }
+
+const FACING_VEC: Record<number, [number, number]> = { [Facing.Down]: [0, 1], [Facing.Left]: [-1, 0], [Facing.Right]: [1, 0], [Facing.Up]: [0, -1] };
 
 export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Promise<void> {
   const seed = Number(q.get("seed") ?? 22);
@@ -59,7 +64,8 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
   const hf = new HeightField();
   terrain.onChunk = (rl) => { props.add(rl); hf.add(rl); };
   terrain.onDrop = (cx, cy) => { props.drop(cx, cy); hf.drop(cx, cy); };
-  r.drawables.push(terrain, props, actors);
+  const fx = new FxLayer(r.gl);
+  r.drawables.push(terrain, props, actors, fx);
   performance.mark("lab:gl");
   const forced = Number(q.get("scale") ?? 0);
   const resize = () => r.resize(Math.round(innerWidth * devicePixelRatio), Math.round(innerHeight * devicePixelRatio), forced);
@@ -109,13 +115,15 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
   };
 
   let lastT = performance.now();
+  let frameN = 0;
   let firstFrame = false;
   const cam = { x: spawn.x, y: r.focus[1], z: spawn.y };
   const loop = (now: number) => {
     const dt = Math.min(0.1, (now - lastT) / 1000);
     lastT = now;
     if (cycle > 0) hour = (hour + (dt * 24) / (cycle * 60)) % 24;
-    applyTime(r, hour);
+    const night = applyTime(r, hour);
+    frameN++;
     r.cloudOffset[0] += dt * 9; r.cloudOffset[1] += dt * 3;
     actors.list.length = 0;
     let you: Vis | null = null, youPos: [number, number, number] = [cam.x, cam.y, cam.z];
@@ -137,7 +145,7 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
         if (!v) {
           const look = lookOf(id, curr.species[i]!, isYou);
           const pose = newPose();
-          v = { yaw: FACING_YAW[curr.facing[i]!]!, phase: hash01(seed, id, 9), speed: 0, look, pose, base: newPose(), seed: hash01(seed, id, 7) * 10, act: 0, lastAction: -1, draw: { look, x, y: 0, z, yaw: 0, pose, sil: isYou ? [1, 0.86, 0.4] : [0.72, 0.84, 1], attackU: -1 } };
+          v = { yaw: FACING_YAW[curr.facing[i]!]!, phase: hash01(seed, id, 9), speed: 0, look, pose, base: newPose(), seed: hash01(seed, id, 7) * 10, act: 0, lastAction: -1, step: 0, rippleAt: 0, draw: { look, x, y: 0, z, yaw: 0, pose, sil: isYou ? [1, 0.62, 0.18] : [0.36, 0.46, 0.78], attackU: -1 } };
           vis.set(id, v);
         }
         const gy = hf.height(x, z);
@@ -166,7 +174,30 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
           clearPose(p); idle(p, rig, now / 1000, v.seed);
         }
         v.draw.attackU = -1;
+        // events -> particles (cosmetic, host only)
+        const wl = hf.water(x, z);
+        const wet = !Number.isNaN(wl) && wl > gy + 0.5;
+        const surf = wet ? wl : gy;
+        const ev = id * 7919 + curr.actionStart[i]!;
+        if (action !== v.lastAction && v.lastAction >= 0) {
+          if (action === Action.Hurt || action === Action.Death) {
+            const fv = FACING_VEC[curr.facing[i]!]!;
+            fx.hit(x, gy, z, -fv[0], -fv[1], ev);
+          }
+          if (action === Action.Dodge || v.lastAction === Action.Dodge) {
+            if (wet) fx.splash(x, surf, z, ev, true); else fx.dust(x, gy, z, ev, 7, 1.2);
+          }
+          if (action === Action.Death) { if (wet) fx.splash(x, surf, z, ev + 1, true); else fx.dust(x, gy, z, ev + 1, 9, 1.5); }
+        }
         if (action !== v.lastAction) { v.act = action === Action.Idle || action === Action.Walk ? v.act : 0.35; v.lastAction = action; }
+        const stepN = Math.floor(v.phase * 2);
+        if (stepN !== v.step) {
+          v.step = stepN;
+          if (wet) fx.ripple(x, surf, z, 0.8);
+          else if (v.speed > 100) fx.dust(x, gy, z, ev + stepN * 31, 2, 0.6);
+          if (wet && v.speed > 100) fx.splash(x, surf, z, ev + stepN * 17);
+        }
+        if (wet && now > v.rippleAt) { v.rippleAt = now + 1100 + hash01(seed, id, stepN) * 600; fx.ripple(x, surf, z, 0.7); }
         if (action === Action.Attack || action === Action.Dodge || action === Action.Hurt || action === Action.Death) {
           v.act = Math.min(1, v.act + dt * 14);
           clearPose(v.base);
@@ -190,6 +221,23 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
     const k = 1 - Math.exp(-dt * 5);
     cam.x += (tx - cam.x) * k; cam.z += (tz - cam.z) * k; cam.y += (youPos[1] - cam.y) * (1 - Math.exp(-dt * 3));
     r.focus = [cam.x, cam.y + 10, cam.z];
+    fx.update(dt, r.basis);
+    { const L = r.lighting; fx.ambient = [0, 1, 2].map((k) => Math.min(1, L.sunCol[k]! * 0.75 * Math.max(0.2, L.sunDir[1]) + L.skyCol[k]! * 0.45)) as [number, number, number]; }
+    // night: the player's lantern, a few NPC lanterns, glowing mushrooms, fireflies over the grass
+    r.lights.fill(0);
+    if (night > 0.05) {
+      const cand: [number, number, number, number, number, number, number, number][] = [];
+      if (you) cand.push([youPos[0], youPos[1] + 16, youPos[2], 60 + 40 * night, 1.0 * night, 0.68 * night, 0.34 * night, 0]);
+      for (const d of actors.list) if (d !== you?.draw && hash01(seed, Math.round(d.look.dye * 7 + d.look.species), 3) < 0.4) cand.push([d.x, d.y + 15, d.z, 46 * night, 0.9 * night, 0.6 * night, 0.3 * night, 1]);
+      for (const list of props.tall.values()) for (const t of list) if (t.kind === 8) cand.push([t.x, t.y + 4, t.z, 26, 0.25 * night, 0.85 * night, 0.8 * night, 2]);
+      cand.sort((a, b) => (a[7] - b[7]) || (Math.hypot(a[0] - cam.x, a[2] - cam.z) - Math.hypot(b[0] - cam.x, b[2] - cam.z)));
+      cand.slice(0, 8).forEach((c, i) => { r.lights.set([c[0], c[1], c[2], c[3]], i * 4); r.lightCols.set([c[4], c[5], c[6]], i * 3); });
+      if (frameN % 6 === 0 && night > 0.4) {
+        const fx0 = cam.x + (hash01(seed, frameN, 1) - 0.5) * r.iw, fz0 = cam.z + (hash01(seed, frameN, 2) - 0.5) * r.ih * 1.3;
+        const gy0 = hf.height(fx0, fz0);
+        if (!Number.isNaN(gy0) && Number.isNaN(hf.water(fx0, fz0))) fx.firefly(fx0, gy0, fz0, frameN);
+      }
+    }
     terrain.update(cam.x, cam.z, 1, 1, 1);
     r.render(now / 1000);
     // aim: the player's feet in CSS px, and CSS px per world px on the ground (x, and y foreshortened by the pitch)
@@ -237,14 +285,15 @@ function showError(msg: string): void {
 function botDriver(post: (m: InputMessage) => void): (now: number) => void {
   const m: InputMessage = { type: "input", moveX: 0, moveY: 0, aimX: 0, aimY: 0, sprint: false, attackPresses: 0, dodgePresses: 0 };
   let step = -1;
+  // walk over to the sparring pair, swing into them, roll out, swing again, then sprint off
   const script: [number, Partial<InputMessage> & { a?: number; d?: number }][] = [
-    [0, { moveX: 1, moveY: 0, aimX: 30, aimY: 0 }], [1400, { moveX: 0, moveY: 1, aimX: 0, aimY: 30 }], [2200, { moveX: 0, moveY: 0, a: 1 }],
-    [2800, { moveX: 1, moveY: 0, aimX: 30, aimY: 0, d: 1 }], [3400, { moveX: 0, moveY: 0, a: 1 }], [4000, { a: 1 }], [4700, { moveX: -1, moveY: -0.4, sprint: true }],
-    [6200, { moveX: 0, moveY: 0, sprint: false }],
+    [0, { moveX: 1, moveY: -0.35, aimX: 30, aimY: -10 }], [700, { moveX: 0, moveY: 0, aimX: 30, aimY: 0, a: 1 }], [1300, { a: 1 }],
+    [1900, { moveX: -1, moveY: 0.6, d: 1 }], [2400, { moveX: 0, moveY: 0, aimX: 30, aimY: -5 }], [2600, { moveX: 1, moveY: 0 }], [3000, { moveX: 0, a: 1 }],
+    [3600, { a: 1 }], [4300, { moveX: -1, moveY: 0.5, sprint: true }], [6000, { moveX: 0, moveY: 0, sprint: false }],
   ];
   let t0 = -1;
   return (now) => {
-    if (t0 < 0) t0 = now + 1500;
+    if (t0 < 0) t0 = now + 300;
     const t = now - t0;
     while (step + 1 < script.length && t >= script[step + 1]![0]) {
       step++;

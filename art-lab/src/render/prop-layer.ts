@@ -68,7 +68,7 @@ export class PropLayer implements Drawable {
         g.append(geo, m, (c: RGB) => [c[0] * (1 + hue), c[1] * (1 + hue * 0.3), c[2] * (1 - hue * 0.5)]);
         // height above the prop's base, for the lean (u8 px)
         for (let v = first; v < g.vertexCount; v++) g.aux[v * 4 + 2] = Math.max(0, Math.min(255, Math.round(g.pos[v * 3 + 1]! - y)));
-        if (pl.kind === P.Oak || pl.kind === P.Pine || pl.kind === P.Birch || pl.kind === P.Palm) tall.push({ kind: pl.kind, x, y, z });
+        if (pl.kind === P.Oak || pl.kind === P.Pine || pl.kind === P.Birch || pl.kind === P.Palm || (pl.kind === P.Mushroom && pl.v < 0.5)) tall.push({ kind: pl.kind, x, y, z });
       }
     }
     const key = `${r.cx},${r.cy}`;

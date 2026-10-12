@@ -61,12 +61,15 @@ void main() {
 // Hidden parts: a 50% dither of a flat team colour, so a character behind a tree is still there, still readable.
 const SIL_FS = `${HEADER}
 uniform vec3 uSil;
+in vec3 vWp; in vec3 vN; in vec4 vCol;
 layout(location=0) out vec4 oColor;
 layout(location=1) out vec4 oAux;
 void main() {
   ivec2 p = ivec2(gl_FragCoord.xy);
   if (((p.x + p.y) & 1) == 0) discard;
-  oColor = vec4(uSil, 1.0);
+  // two tones from a fixed key light, so the hidden figure keeps its form (head, arms) instead of a blob
+  float k = step(0.2, dot(normalize(vN), normalize(vec3(-0.3, 0.8, 0.5))));
+  oColor = vec4(uSil * (0.72 + 0.4 * k), 1.0);
   oAux = vec4(0.5, 0.5, ${MAT.Fx}.0 / 255.0, 1.0);
 }`;
 

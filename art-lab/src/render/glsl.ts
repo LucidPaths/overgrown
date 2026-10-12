@@ -33,7 +33,9 @@ uniform float uTime;
 uniform vec2 uCloud;       // cloud drift offset (world px)
 uniform float uCloudAmt;
 uniform vec2 uShadowTexel;
-uniform float uLean;       // clip-space y per px of height above an object's base: upright things lean back to face the camera
+uniform float uLean;
+uniform vec4 uPL[8];       // point lights: xyz, radius (0 = off)
+uniform vec3 uPLc[8];      // their colours       // clip-space y per px of height above an object's base: upright things lean back to face the camera
 `;
 
 export const LIGHT_FN = `
@@ -52,11 +54,25 @@ float cloudAt(vec3 wp) {
 vec3 light(vec3 albedo, vec3 n, vec3 wp, float bias, float softness) {
   float ndl = dot(n, uSunDir);
   float d = smoothstep(0.0, softness, ndl) * 0.55 + smoothstep(0.38, 0.38 + softness, ndl) * 0.45;
-  float s = shadowAt(wp, bias) * cloudAt(wp);
+  // normal offset + slope-scaled bias: low suns (dawn, dusk) must not stripe the ground with self-shadow
+  float slope = 1.0 - clamp(ndl, 0.0, 1.0);
+  float s = shadowAt(wp + n * (0.8 + 2.5 * slope), bias * (1.0 + 4.0 * slope)) * cloudAt(wp);
   float direct = min(d, s);
   vec3 amb = mix(uBounceCol, uSkyCol, n.y * 0.5 + 0.5);
   vec3 shade = albedo * amb * uShadeTint * 0.72;
   vec3 lit = albedo * (amb * 0.22 + uSunCol * 0.86);
-  return mix(shade, lit, direct);
+  // point lights (lanterns, glowing things): stepped pools, the steps nudged by a 2x2 dither
+  vec3 pl = vec3(0.0);
+  float dj = float((int(gl_FragCoord.x) + int(gl_FragCoord.y)) & 1) * 0.06 - 0.03;
+  for (int i = 0; i < 8; i++) {
+    vec4 L = uPL[i];
+    if (L.w <= 0.0) continue;
+    vec3 dv = L.xyz - wp;
+    float k = 1.0 - length(dv) / L.w + dj;
+    if (k <= 0.0) continue;
+    k = k > 0.55 ? 1.0 : (k > 0.25 ? 0.55 : 0.22);
+    pl += uPLc[i] * k * (0.45 + 0.55 * max(0.0, dot(n, normalize(dv))));
+  }
+  return mix(shade, lit, direct) + albedo * pl;
 }
 `;
