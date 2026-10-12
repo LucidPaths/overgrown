@@ -68,7 +68,7 @@ One source of truth each. Add to this table when a new one appears.
 |---|---|---|
 | Seeded RNG algorithm | `contracts/rng-vectors.json` (checked by both test suites); impls `sim/src/rng.ts` ↔ `tools/art/lib/rng.py` | sim, Python pipeline |
 | Entity IDs / component columns | `sim/src/ecs.ts` | every sim system, snapshot protocol |
-| Atlas JSON schema (TexturePacker JSON Hash, Pixi-native) | `tools/art/lib/atlas.py::write_atlas` | `client/src/assets.ts` (Pixi `Spritesheet`) |
+| Atlas: JSON schema (TexturePacker JSON Hash, Pixi-native) + image `<atlas>.webp`, lossless WebP (OQ-028; name from `image_name()`) | `tools/art/lib/atlas.py::write_atlas` | `client/src/assets.ts` (Pixi `Spritesheet`), `scripts/measure-startup.mjs` (byte classes) |
 | Kind → atlas frame name, per entity row of an interpolated Frame | `client/src/render/kind-frames.ts` (`Record<KindValue, (frame, i) => string>`, tsc-enforced; Character → `actorFrame`) | `client/src/render/snapshot-view.ts` |
 | Palette file format | `tools/art/lib/palette.py` (validated on every build) | all generators via `ctx.palette()` |
 | Host ↔ sim messages, Snapshot (incl. facing/action/actionStart/species; `you` = local player's EntityId or -1), Kind/Facing/Action/Species enums | `sim/src/protocol.ts` | `client/src/sim-worker.ts`, `client/src/main.ts`, renderer |
@@ -113,3 +113,5 @@ Add each one here as it's discovered.
 - **Headless fps is software-rendered** (SwiftShader). It compares fill costs; it is not a phone fps. Real-phone numbers come from the manual check in `docs/perf.md`.
 - **Collision only checks tiles a box newly enters.** A character placed overlapping a blocked tile can walk out but is never pushed out. Anything that places or teleports a character must put its foot box on walkable ground (`findSpawn` does).
 - **A touch tap also fires compatibility `mousedown`/`mousemove`**, but never a `pointerType: "mouse"` pointer event. Detect mouse use only through Pointer Events filtered by `pointerType`; a `mouse*` listener sees every tap as a mouse.
+- **Sim messages can arrive before the renderer exists.** The worker starts first; `main.ts` queues `chunk`/`unchunk` until the ChunkLayer exists, then replays them in order. A new message kind the renderer needs must be queued the same way: chunks are sent once, so a dropped one is a hole in the ground until it unloads.
+- **Atlas bytes depend on Pillow's bundled libwebp.** Rebuilds are byte-identical with the pinned Pillow (12.3.0, libwebp 1.6.0). Bumping Pillow may change `core.webp` bytes once (pixels stay identical: lossless); re-run the byte-identity test after a bump. A stale `core.png` from an older build may sit in `client/public/generated/` and get copied to `dist`; nothing requests it, so delete it.
