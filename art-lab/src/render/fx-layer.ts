@@ -90,7 +90,7 @@ export class FxLayer implements Drawable {
     for (let i = 0; i < n; i++) {
       const a = h(seed, i) * Math.PI * 2;
       const sp = (10 + h(seed, i + 20) * 26) * spread;
-      this.add({ x: x + Math.cos(a) * 3, y: y + 1, z: z + Math.sin(a) * 2, vx: Math.cos(a) * sp, vy: 8 + h(seed, i + 40) * 14, vz: Math.sin(a) * sp * 0.7, g: -4, drag: 4, age: 0, life: 0.35 + h(seed, i + 60) * 0.35, size: 2.5 + h(seed, i + 80) * 2, grow: 3, col, col2: col, ground: y, lit: true });
+      this.add({ x: x + Math.cos(a) * 3, y: y + 1, z: z + Math.sin(a) * 2, vx: Math.cos(a) * sp, vy: 8 + h(seed, i + 40) * 14, vz: Math.sin(a) * sp * 0.7, g: -4, drag: 4, age: 0, life: 0.35 + h(seed, i + 60) * 0.35, size: 1.6 + h(seed, i + 80) * 1.4, grow: 2.5, col, col2: col, ground: y, lit: true });
     }
   }
 

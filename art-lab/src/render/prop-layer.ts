@@ -32,6 +32,8 @@ export class PropLayer implements Drawable {
   /** Tall props per chunk (for the see-through cutaway around characters). */
   readonly tall = new Map<string, PropInstance[]>();
   pushers = new Float32Array(48);
+  /** cutaway around the local player (see PROP_FS) */
+  cut = new Float32Array(4);
   stats = { verts: 0 };
 
   constructor(private gl: GL, private ground: Ground) {
@@ -110,6 +112,7 @@ export class PropLayer implements Drawable {
     gl.useProgram(this.p.prog);
     f.setLight(this.p);
     gl.uniform4fv(this.p.u.uPushers!, this.pushers);
+    gl.uniform4fv(this.p.u.uCut!, this.cut);
     gl.disable(gl.CULL_FACE);
     for (const m of this.meshes.values()) drawMesh(gl, m);
     gl.enable(gl.CULL_FACE);

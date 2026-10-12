@@ -222,6 +222,7 @@ export async function runGame(canvas: HTMLCanvasElement, q: URLSearchParams): Pr
     cam.x += (tx - cam.x) * k; cam.z += (tz - cam.z) * k; cam.y += (youPos[1] - cam.y) * (1 - Math.exp(-dt * 3));
     r.focus = [cam.x, cam.y + 10, cam.z];
     fx.update(dt, r.basis);
+    if (you) { const c = r.toTexel([youPos[0], youPos[1] + 12, youPos[2]], 12); props.cut.set([c[0], c[1], c[2], 26]); }
     { const L = r.lighting; fx.ambient = [0, 1, 2].map((k) => Math.min(1, L.sunCol[k]! * 0.75 * Math.max(0.2, L.sunDir[1]) + L.skyCol[k]! * 0.45)) as [number, number, number]; }
     // night: the player's lantern, a few NPC lanterns, glowing mushrooms, fireflies over the grass
     r.lights.fill(0);

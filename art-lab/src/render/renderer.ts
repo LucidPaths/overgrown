@@ -225,6 +225,15 @@ export class Renderer {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
+  /** World px point (+ `h` px of lean height) -> G-buffer texel xy and window depth. */
+  toTexel(p: Vec3, h = 0): [number, number, number] {
+    const { vp } = this.viewProj();
+    const x = vp[0]! * p[0] + vp[4]! * p[1] + vp[8]! * p[2] + vp[12]!;
+    const y = vp[1]! * p[0] + vp[5]! * p[1] + vp[9]! * p[2] + vp[13]! + ((2 * this.zoom) / this.ih) * this.lean * h;
+    const z = vp[2]! * p[0] + vp[6]! * p[1] + vp[10]! * p[2] + vp[14]!;
+    return [(x * 0.5 + 0.5) * this.iw, (y * 0.5 + 0.5) * this.ih, z * 0.5 + 0.5];
+  }
+
   /** World px point -> CSS px on the canvas (for debug labels). */
   project(p: Vec3): [number, number] {
     const { vp } = this.viewProj();
