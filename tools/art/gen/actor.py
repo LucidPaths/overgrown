@@ -221,6 +221,15 @@ class _Body:
     pose: Pose
 
 
+def _texture(b: _Body, mask: Mask) -> None:
+    """The covering's material on a limb: scales are a sparse diagonal of shaded pixels, feathers a scalloped edge."""
+    body = b.sheet.own == b.sheet.roles["body"]
+    if b.sp.covering == "scales":
+        b.sheet.darken(mask & body & ((_XS + 2 * _YS) % 4 == 0))
+    elif b.sp.covering == "feathers":
+        b.sheet.lighten(mask & body & (_XS % 2 == 0) & _bottom_edge(mask & body))
+
+
 def _outward(b: _Body, joint_x: int) -> int:
     """Which way a limb at joint_x thickens: toward the back in profile, away from the centre line otherwise."""
     if b.view == "side":
@@ -252,6 +261,7 @@ def _draw_legs(b: _Body) -> None:
         if sp.covering == "skin":  # boots: the lower three rows
             boot = leg & (_YS >= foot.y - 2) & (_YS > hip.y + 2)
             sheet.paint(boot, "boot", _shape_shade(boot, light_rows=1, shadow_rows=1))
+        _texture(b, leg)
         if b.view == "side" and i == 0:
             sheet.darken(leg)  # the far leg sits in shade
     # shorts: one garment over both legs, with the crotch filled between them in front and back views
@@ -301,6 +311,7 @@ def _draw_arm(b: _Body, side: str, far: bool) -> None:
     if b.view != "side":  # the inner column faces the torso
         inner = arm & (_XS == shoulder.x)
         sheet.darken(inner & ~(_YS == shoulder.y))
+    _texture(b, arm & (_YS > shoulder.y + 2))
     handpx = arm & (_YS >= hand.y - 1)
     sheet.paint(handpx, "body", np.where(_YS == hand.y, BASE, LIGHT))
     if far:

@@ -33,7 +33,7 @@ PRECEDENCE = (
 )
 WATER = frozenset({"shallow_water", "deep_water", "very_deep_water"})
 TILE_RAMPS = (*PRECEDENCE, "detail", "grass_alt")  # ramps every biome palette must have
-FULL_MASK, FULL_VARIANTS, EDGE_VARIANTS = 15, 6, 2
+FULL_MASK, FULL_VARIANTS, EDGE_VARIANTS = 15, 10, 2
 EDGE_NOISE = 0.26  # amplitude of the low-frequency edge wobble, tunable
 EDGE_FADE = 5  # px from the frame's outer ring over which the wobble fades in
 FACE_H = 4  # cliff face height in px, tunable
@@ -154,38 +154,19 @@ def _stamp(img: np.ndarray, x: int, y: int, shape: list[tuple[int, int, object]]
 
 
 def _grass(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
-    g, alt, det = p["grass"], p["grass_alt"], p["detail"]
+    g, det = p["grass"], p["detail"]
     img[:] = g[2]
-    quiet = v % 6 == 0
-    clumps = [0, 1, 1, 2, 1, 2][v % 6]
-    tufts = [2, 3, 4, 3, 4, 3][v % 6]
-    flowers = [0, 0, 1, 0, 1, 2][v % 6]
-    spots = _scatter(rng, clumps + tufts + flowers, ext=(2, 2), min_d=4)
-    for i, (x, y) in enumerate(spots):
-        if i < clumps:  # a soft patch: cool shadow clump with a lit upper edge
-            _stamp(
-                img,
-                x,
-                y,
-                [
-                    (0, 0, g[3]),
-                    (1, 0, g[3]),
-                    (0, 1, g[1]),
-                    (1, 1, g[1]),
-                    (2, 1, g[1]),
-                    (0, 2, alt[0]),
-                    (1, 2, g[1]),
-                ],
-            )
-        elif i < clumps + tufts:  # a blade tuft seen from above: two lit tips over a shaded root
+    tufts = [2, 2, 3, 2, 3, 2][v % 6]
+    flowers = [0, 0, 0, 0, 0, 1][v % 6]
+    for i, (x, y) in enumerate(_scatter(rng, tufts + flowers, ext=(2, 2), min_d=5)):
+        if i < tufts:  # a blade tuft seen from above: two lit tips over a shaded root
             if rng.int(0, 1):
-                _stamp(img, x, y, [(0, 0, g[3]), (2, 0, g[3]), (1, 1, g[1]), (1, 0, g[2])])
+                _stamp(img, x, y, [(0, 0, g[3]), (2, 0, g[3]), (1, 1, g[1])])
             else:
-                _stamp(img, x, y, [(1, 0, g[4]), (0, 1, g[3]), (2, 1, g[3]), (1, 1, g[1])])
-        else:  # a flower: petal, petal, bright heart
+                _stamp(img, x, y, [(1, 0, g[3]), (0, 1, g[3]), (1, 1, g[1])])
+        else:  # a flower: two petals over a bright heart
             c = det[rng.int(0, 2)]
-            _stamp(img, x, y, [(0, 0, c), (1, 0, c), (0, 1, det[3]), (1, 1, g[1])])
-    del quiet
+            _stamp(img, x, y, [(0, 0, c), (1, 0, c), (0, 1, det[3])])
 
 
 def _dirt(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
