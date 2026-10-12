@@ -73,6 +73,9 @@ One source of truth each. Add to this table when a new one appears.
 | Palette file format | `tools/art/lib/palette.py` (validated on every build) | all generators via `ctx.palette()` |
 | Host ↔ sim messages, Snapshot, Kind | `sim/src/protocol.ts` | `client/src/sim-worker.ts`, `client/src/main.ts`, renderer |
 | Tick rate | `sim/src/constants.ts` (`TICK_HZ`) | sim, worker adapter, render interpolation |
+| Actor skeleton joints, l/r = character's own side, `SOLE_Y` | `tools/art/lib/skeleton.py` | `gen/actor.py` (ART-005/006), weapons (ART-009), paper doll (ART-010) |
+| Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
+| Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
 
 ## Project traps
 
