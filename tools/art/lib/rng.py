@@ -7,6 +7,7 @@ All arithmetic is unsigned 32-bit: mask with M32 after every add, multiply and s
 import math
 
 M32 = 0xFFFFFFFF
+MAX_SAFE = 2**53 - 1  # JS Number.MAX_SAFE_INTEGER; the TS side can't go further exactly
 GOLDEN = 0x9E3779B9
 
 
@@ -33,6 +34,13 @@ def _check_u32(name: str, value: object) -> int:
     if not 0 <= value <= M32:
         raise ValueError(f"{name} must be an integer in 0..4294967295, got {value!r}")
     return value
+
+
+def _check_safe_int(name: str, value: object) -> None:
+    if not _is_int(value):
+        raise TypeError(f"{name} must be an integer, got {value!r}")
+    if not -MAX_SAFE <= value <= MAX_SAFE:
+        raise ValueError(f"{name} must be within -(2^53-1)..2^53-1, got {value!r}")
 
 
 class Rng:
@@ -67,10 +75,8 @@ class Rng:
 
     def int(self, lo: int, hi: int) -> int:
         """Uniform integer in [lo, hi], inclusive."""
-        if not _is_int(lo):
-            raise TypeError(f"lo must be an integer, got {lo!r}")
-        if not _is_int(hi):
-            raise TypeError(f"hi must be an integer, got {hi!r}")
+        _check_safe_int("lo", lo)
+        _check_safe_int("hi", hi)
         if lo > hi:
             raise ValueError(f"lo must be <= hi, got lo={lo} hi={hi}")
         if hi - lo > M32:

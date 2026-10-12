@@ -19,8 +19,16 @@ function rotl32(x: number, r: number): number {
 }
 
 function assertU32(name: string, value: number): void {
-  if (!Number.isInteger(value) || value < 0 || value > U32_MAX) {
+  if (!Number.isSafeInteger(value) || value < 0 || value > U32_MAX) {
     throw new RangeError(`${name} must be an integer in 0..4294967295, got ${value}`);
+  }
+}
+
+// Beyond 2^53 doubles lose integer precision while Python ints stay exact; reject in both.
+function assertSafeInt(name: string, value: number): void {
+  if (!Number.isInteger(value)) throw new TypeError(`${name} must be an integer, got ${value}`);
+  if (!Number.isSafeInteger(value)) {
+    throw new RangeError(`${name} must be within -(2^53-1)..2^53-1, got ${value}`);
   }
 }
 
@@ -64,8 +72,8 @@ export class Rng {
 
   /** Uniform integer in [lo, hi], inclusive. */
   int(lo: number, hi: number): number {
-    if (!Number.isInteger(lo)) throw new TypeError(`lo must be an integer, got ${lo}`);
-    if (!Number.isInteger(hi)) throw new TypeError(`hi must be an integer, got ${hi}`);
+    assertSafeInt("lo", lo);
+    assertSafeInt("hi", hi);
     if (lo > hi) throw new RangeError(`lo must be <= hi, got lo=${lo} hi=${hi}`);
     if (hi - lo > U32_MAX) {
       throw new RangeError(`hi - lo must be < 2^32, got lo=${lo} hi=${hi}`);
@@ -79,7 +87,7 @@ export function deriveSeed(seed: number, ...parts: number[]): number {
   assertU32("seed", seed);
   let h = fmix32(seed);
   parts.forEach((p, i) => {
-    if (!Number.isInteger(p) || p < -0x80000000 || p > U32_MAX) {
+    if (!Number.isSafeInteger(p) || p < -0x80000000 || p > U32_MAX) {
       throw new RangeError(
         `parts[${i}] must be an integer in -2147483648..4294967295, got ${p}`,
       );

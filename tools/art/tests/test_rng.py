@@ -50,3 +50,10 @@ def test_int_rejects_non_integers():
         Rng(1).int(1.5, 6)
     with pytest.raises(TypeError, match="hi must be an integer"):
         Rng(1).int(1, 6.5)
+
+
+def test_int_rejects_beyond_2_pow_53():
+    with pytest.raises(ValueError, match="hi must be within"):
+        Rng(1).int(0, 2**53)
+    with pytest.raises(ValueError, match="lo must be within"):
+        Rng(1).int(-(2**53), 0)

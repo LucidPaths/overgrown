@@ -38,4 +38,9 @@ describe("Rng.int argument validation", () => {
     expect(() => new Rng(1).int(1.5, 6)).toThrow(/lo must be an integer/);
     expect(() => new Rng(1).int(1, 6.5)).toThrow(/hi must be an integer/);
   });
+
+  it("rejects integers beyond 2^53 (doubles diverge from Python there)", () => {
+    expect(() => new Rng(1).int(0, 2 ** 53)).toThrow(/hi must be within/);
+    expect(() => new Rng(1).int(-(2 ** 53), 0)).toThrow(/lo must be within/);
+  });
 });
