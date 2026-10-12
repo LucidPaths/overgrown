@@ -20,8 +20,15 @@ ATLAS_NAME = re.compile(r"^[a-z0-9_]+$")
 def collect(generators: list[ModuleType], art_seed: int) -> dict[str, list[Frame]]:
     """Run generators in order and group their frames by atlas, enforcing the naming rules."""
     owner: dict[str, str] = {}
+    name_owner: dict[str, str] = {}
     atlases: dict[str, list[Frame]] = {}
     for gen in generators:
+        # NAME namespaces the RNG streams too, so a shared NAME would silently share randomness.
+        if gen.NAME in name_owner:
+            raise ValueError(
+                f"duplicate generator NAME {gen.NAME!r} in {name_owner[gen.NAME]} and {gen.__name__}"
+            )
+        name_owner[gen.NAME] = gen.__name__
         if not ATLAS_NAME.match(gen.ATLAS):
             raise ValueError(
                 f"generator {gen.__name__}: ATLAS {gen.ATLAS!r} must match {ATLAS_NAME.pattern}"

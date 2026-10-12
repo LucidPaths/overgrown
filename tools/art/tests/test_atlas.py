@@ -46,11 +46,18 @@ def test_pack_no_overlap_and_in_bounds():
         assert apart, (a, b)
 
 
-def test_duplicate_frame_names_both_generators():
+def test_duplicate_generator_names_both_modules():
     first = _generator("gen.first", "shared", ["shared/a"])
-    second = _generator("gen.second", "shared", ["shared/a"])
-    with pytest.raises(ValueError, match=r"gen\.first.*gen\.second"):
+    second = _generator("gen.second", "shared", ["shared/b"])
+    with pytest.raises(ValueError, match=r"generator NAME 'shared' in gen\.first and gen\.second"):
         collect([first, second], 1)
+
+
+def test_duplicate_frame_name_raises():
+    # Unique NAMEs + the NAME/ prefix rule leave one generator repeating a name as the only clash.
+    solo = _generator("gen.solo", "solo", ["solo/a", "solo/a"])
+    with pytest.raises(ValueError, match=r"duplicate frame 'solo/a' from generators gen\.solo"):
+        collect([solo], 1)
 
 
 def test_oversize_raises():
