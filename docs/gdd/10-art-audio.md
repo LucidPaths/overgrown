@@ -8,7 +8,7 @@
 - **Resolution:** characters and monsters on a **32×32** base cell (big creatures use 64×64 or more). Ground tiles are **16×16**. 32 px gives room for fashion, visible gear and aging details.
 - **Directions:** 4 (down, up, left, right; right mirrors left where the design allows).
 - **Rendering:** integer scaling, nearest-neighbor, no sub-pixel jitter on sprites.
-- **Palette:** **per biome**, so each biome has a mood ramp. A global **pop palette** for magic, hits, loot glints, rarity colors and UI keeps those readable in every biome. The overall vibe is saturated, cozy and lighthearted.
+- **Palette:** **per biome**, so each biome has a mood ramp. A global **pop palette** for magic, hits, loot glints, rarity colors and UI keeps those readable in every biome. Characters use a shared **actor palette** (skin, fur, feathers, scales, cloth), since they aren't bound to a biome (OQ-027). The overall vibe is saturated, cozy and lighthearted.
 
 ## Pipeline
 
