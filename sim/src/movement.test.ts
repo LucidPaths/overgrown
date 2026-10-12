@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createCharacterWorld, spawnCharacter, type CharacterWorld } from "./character";
+import { createCharacterWorld, IntentButton, spawnCharacter, type CharacterWorld } from "./character";
 import { DODGE_TICKS, stepActions } from "./actions";
-import { IntentButton } from "./character";
 import { World, type EntityId } from "./ecs";
 import { stepMovement } from "./movement";
 import { Action, Facing, Species } from "./protocol";

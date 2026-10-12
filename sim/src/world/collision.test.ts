@@ -54,9 +54,24 @@ describe("collision", () => {
     expect(slideMove(corner, 25, 30, HW, HH, 4, 4)).toEqual({ x: 29, y: 32 });
   });
 
+  it("slideMove: a box straddling two tile rows is stopped by a wall in only the upper row", () => {
+    // Feet y 18, hh 3: the box covers y 12..18, so tile rows 0 and 1. The cliff is at tile (3, 0) only.
+    const upperOnly = groundFromRows(["#"], 3, 0);
+    expect(slideMove(upperOnly, 30, 18, HW, HH, 30, 0)).toEqual({ x: 43, y: 18 });
+  });
+
   it("speedFactorAt samples the tile under the box centre (x, y − hh)", () => {
     const ground = wallRow("~", 2);
     expect(speedFactorAt(ground, 8, 34, HH)).toBe(1);
     expect(speedFactorAt(ground, 8, 36, HH)).toBe(SHALLOW_WATER_SPEED);
+  });
+
+  it("speedFactorAt samples the x of the box centre, not an x-edge of the box", () => {
+    // Shallow water at tile column 2 (x 32..48) in row 0; feet y 11 puts the centre (y 8) in row 0.
+    const ground = groundFromRows(["~"], 2, 0);
+    expect(speedFactorAt(ground, 30, 11, HH)).toBe(1); // centre in column 1, a box edge (x + 5 = 35) would be in column 2
+    expect(speedFactorAt(ground, 36, 11, HH)).toBe(SHALLOW_WATER_SPEED); // centre in column 2, x - 5 = 31 is in column 1
+    expect(speedFactorAt(ground, 44, 11, HH)).toBe(SHALLOW_WATER_SPEED); // centre in column 2, x + 5 = 49 is in column 3
+    expect(speedFactorAt(ground, 50, 11, HH)).toBe(1); // centre in column 3, x - 5 = 45 is in column 2
   });
 });
