@@ -17,4 +17,21 @@ export default defineConfig(
       globals: { process: "readonly", console: "readonly" },
     },
   },
+  {
+    files: ["sim/src/world/**/*.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[object.name='Math'][property.name!=/^(imul|floor|abs|min|max)$/]",
+          message: "Worldgen must be bit-identical in every JS engine: only Math.imul/floor/abs/min/max, + - * / and bit ops (CLAUDE.md contracts).",
+        },
+        {
+          selector: "BinaryExpression[operator='**'], AssignmentExpression[operator='**=']",
+          message: "Worldgen must be bit-identical in every JS engine: no ** (pow is not exactly rounded).",
+        },
+        { selector: "Identifier[name='Date']", message: "No wall-clock time in seeded code." },
+      ],
+    },
+  },
 );
