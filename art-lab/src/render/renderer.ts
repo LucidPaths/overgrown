@@ -65,6 +65,8 @@ export class Renderer {
   private subTexel: [number, number] = [0, 0];
   readonly basis = lookBasis([0, -Math.sin((PITCH_DEG * Math.PI) / 180), -Math.cos((PITCH_DEG * Math.PI) / 180)]);
   stats = { drawCalls: 0 };
+  /** >1 renders the same framing at more texels per world px (used by the smooth/voxel explorations). */
+  zoom = 1;
 
   constructor(readonly canvas: HTMLCanvasElement) {
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: false, stencil: false, powerPreference: "high-performance" });
@@ -98,15 +100,16 @@ export class Renderer {
     // snap the eye to whole texels in the view plane; keep the remainder for the upscale pass
     const er = eye[0] * right[0] + eye[1] * right[1] + eye[2] * right[2];
     const eu = eye[0] * up[0] + eye[1] * up[1] + eye[2] * up[2];
-    const sr = Math.round(er), su = Math.round(eu);
-    this.subTexel = [er - sr, eu - su];
+    const sr = Math.round(er * this.zoom) / this.zoom, su = Math.round(eu * this.zoom) / this.zoom;
+    this.subTexel = [(er - sr) * this.zoom, (eu - su) * this.zoom];
     const snapped: Vec3 = [
       eye[0] + right[0] * (sr - er) + up[0] * (su - eu),
       eye[1] + right[1] * (sr - er) + up[1] * (su - eu),
       eye[2] + right[2] * (sr - er) + up[2] * (su - eu),
     ];
     const view = viewFromBasis(right, up, back, snapped);
-    const proj = ortho(-this.iw / 2, this.iw / 2, -this.ih / 2, this.ih / 2, D - 1500, D + 1500);
+    const z = this.zoom;
+    const proj = ortho(-this.iw / 2 / z, this.iw / 2 / z, -this.ih / 2 / z, this.ih / 2 / z, D - 1500, D + 1500);
     return { vp: mul(proj, view), eye: snapped };
   }
 
@@ -116,7 +119,7 @@ export class Renderer {
     const f = this.focus;
     const D = 2000;
     const eye: Vec3 = [f[0] + L[0] * D, f[1] + L[1] * D, f[2] + L[2] * D];
-    const half = Math.max(this.iw, this.ih * 1.4) * 0.75 + 64;
+    const half = Math.max(this.iw, this.ih * 1.4) / this.zoom * 0.75 + 64;
     // snap the light eye to shadow texels so shadows never swim
     const texel = (half * 2) / this.shadowSize;
     const er = eye[0] * b.right[0] + eye[1] * b.right[1] + eye[2] * b.right[2];
