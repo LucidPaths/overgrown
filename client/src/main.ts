@@ -1,8 +1,11 @@
 import { TICK_MS } from "@overgrown/sim/constants";
+import { MOVER_AREA_H, MOVER_AREA_W } from "@overgrown/sim/debug-movers";
 import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
-import { Application, Text, TextStyle, TextureStyle } from "pixi.js";
+import { Application, Text, TextStyle, TextureStyle, TilingSprite } from "pixi.js";
+import { loadCoreAtlas } from "./assets";
 import { createFrame, interpolate } from "./render/interpolate";
+import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
 
 const DEFAULT_SEED = 1;
@@ -44,7 +47,15 @@ try {
   });
   root.appendChild(app.canvas);
 
-  const view = new SnapshotView(app.stage);
+  const sheet = await loadCoreAtlas();
+  const backdropFrame = "debug/checker16";
+  requireFrames(sheet, [...Object.values(KIND_FRAMES), backdropFrame]);
+
+  // Checker backdrop over the mover area, behind the entities.
+  const backdrop = new TilingSprite({ texture: sheet.textures[backdropFrame]!, width: MOVER_AREA_W, height: MOVER_AREA_H });
+  app.stage.addChild(backdrop);
+
+  const view = new SnapshotView(app.stage, sheet);
 
   const debugText = new Text({
     text: `overgrown · sim v${SIM_VERSION}`,
@@ -58,10 +69,17 @@ try {
   let curr: Snapshot | null = null;
   let currReceivedAt = 0;
   const frame = createFrame();
+  // An error thrown inside a ticker callback never reaches the try/catch below, so it is caught here.
   app.ticker.add(() => {
     if (curr === null) return;
-    interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
-    view.update(frame);
+    try {
+      interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
+      view.update(frame);
+    } catch (error) {
+      app.ticker.stop();
+      worker.terminate();
+      showFatal("overgrown couldn't draw a frame", error);
+    }
   });
 
   const worker = new Worker(new URL("./sim-worker.ts", import.meta.url), { type: "module" });

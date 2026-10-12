@@ -1,18 +1,29 @@
 // Draws an interpolated frame. Read-only toward the sim: it only reads snapshots.
-import { Kind } from "@overgrown/sim/protocol";
-import { Container, Sprite, Texture } from "pixi.js";
+import { Container, Sprite, type Spritesheet, type Texture } from "pixi.js";
 import type { Frame } from "./interpolate";
-
-const SIZE = 8;
-const KIND_TINT: Record<number, number> = { [Kind.DebugMover]: 0xe8c547 };
-const UNKNOWN_KIND_TINT = 0xff00ff; // loud magenta: a kind nobody assigned a look to
+import { KIND_FRAMES } from "./kind-frames";
 
 export class SnapshotView {
   private readonly sprites = new Map<number, Sprite>();
   private readonly layer = new Container();
 
-  constructor(parent: Container) {
+  constructor(
+    parent: Container,
+    private readonly sheet: Spritesheet,
+  ) {
     parent.addChild(this.layer);
+  }
+
+  private textureFor(kind: number): Texture {
+    const frame = (KIND_FRAMES as Record<number, string | undefined>)[kind];
+    if (frame === undefined) {
+      throw new Error(`no atlas frame is assigned to entity kind ${kind}; add it to KIND_FRAMES (render/kind-frames.ts)`);
+    }
+    const texture = this.sheet.textures[frame];
+    if (texture === undefined) {
+      throw new Error(`atlas frame "${frame}" (entity kind ${kind}) is missing from the core atlas`);
+    }
+    return texture;
   }
 
   update(s: Frame): void {
@@ -22,10 +33,8 @@ export class SnapshotView {
       present.add(id);
       let sprite = this.sprites.get(id);
       if (sprite === undefined) {
-        sprite = new Sprite(Texture.WHITE);
+        sprite = new Sprite(this.textureFor(s.kind[i]!));
         sprite.anchor.set(0.5);
-        sprite.setSize(SIZE, SIZE);
-        sprite.tint = KIND_TINT[s.kind[i]!] ?? UNKNOWN_KIND_TINT;
         this.layer.addChild(sprite);
         this.sprites.set(id, sprite);
       }

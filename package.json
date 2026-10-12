@@ -13,7 +13,7 @@
     "check": "npm run typecheck --workspaces && eslint . && cd tools/art && python3 -m ruff check . && python3 -m ruff format --check .",
     "test": "vitest run --passWithNoTests && cd tools/art && python3 -c \"import sys, pytest; code = pytest.main(); sys.exit(0 if code in (0, 5) else code)\"",
     "build": "python3 tools/art/build.py && npm -w @overgrown/client run build",
-    "dev": "npm -w @overgrown/client run dev"
+    "dev": "python3 tools/art/build.py && npm -w @overgrown/client run dev --"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
