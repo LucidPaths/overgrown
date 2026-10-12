@@ -4,7 +4,7 @@ A template is a list of equal-length strings, one per row. Faces, ears, hair, be
 computed, because at 32 px the identity of a species is a handful of deliberately placed pixels.
 
 Legend (shade digits and letters index the actor ramps: 1 deep shadow, 2 shadow, 3 base, 4 light, 5 highlight;
-index 0, the line colour, is added by the outline pass and is never written here):
+index 0, the line colour, is added by the outline pass and is never written here, except through `k`):
   .          empty
   1 2 3 4 5  body ramp (skin, fur, feathers, scales)
   A B C D E  accent ramp (muzzle, belly, tail tip)

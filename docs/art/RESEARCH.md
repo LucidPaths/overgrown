@@ -77,7 +77,7 @@ Numbered rules; DIRECTION.md turns each into a binding rule and lists the code t
 
 1. **Process.** Philosophy first (a named visual direction), then a token plan, then pixels; review the plan against the brief and replace anything that is a default; always render, upscale and *look* before judging (S2).
 2. **Silhouette first.** Every species must be identifiable as a solid shape at 1x; shapes, not colours, carry species identity (S1, S3, Pixnote).
-3. **Chibi proportions.** About 2.5 to 3 heads tall on the 32 px cell; the head is where the detail budget goes (S1, LPC).
+3. **Chibi proportions.** About 2 to 3 heads tall on the 32 px cell; the head is where the detail budget goes (S1, LPC).
 4. **One light, from above.** Top-centre light, so right (mirrored) frames stay consistent; shadows fall straight down; no side light baked into sprites (Pixnote, LPC, androidarts).
 5. **Cel shading in three to four bands**: highlight, base, shadow, plus one deep shadow for occlusion. Shade by form (top lit, underside dark), never by edge distance; no Bayer-dither shading on bodies (Pixnote, S1 "pillow shading").
 6. **Hue-shifted ramps designed in a perceptual space.** Five steps per ramp; shadows cooler and slightly more saturated, lights warmer and less saturated; no pure black or white in ramps; 15 to 25 degrees of hue travel (Slynyrd, androidarts, LPC, Oklab).

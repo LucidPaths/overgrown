@@ -81,8 +81,8 @@ Practical tests (use them in every review): (a) blur the screenshot, characters 
 ## 5. Proportions on the 32x32 actor cell
 
 - The cell is 32x32. The sole row is 29 (`SOLE_Y`), the outline under the soles is row 30, rows 0 and 31 stay empty. Nothing touches columns 0 or 31.
-- **2.5 to 3 heads tall (chibi).** The head is the biggest shape and takes the detail budget. Faces at 1x need: two eyes of 2x2 px (shine pixel top-left) plus one species marker (muzzle, beak, tusks, beard, ears). [R3, R11]
-- Torso 6 to 9 px wide at the shoulders (species table), arms 2 to 4 px, legs 3 to 4 px with a 1 to 2 px gap, feet one px wider than the leg. No limb thinner than 2 px (3 when it needs a shade). [R10]
+- **About 2 to 2.8 heads tall (chibi), measured on the skull with ears and crests excluded** (dwarf 2.0, human 2.2, elf 2.5, rabbitfolk about 2.8). The head is the biggest shape and takes the detail budget. Faces at 1x need: two eyes of 2x2 px (shine pixel top-left) plus one species marker (muzzle, beak, tusks, beard, ears). [R3, R11]
+- Torso 6 to 14 px wide at the shoulders (twice the shoulder half-span of 3 to 7 in the species table), arms 2 to 5 px (elf and rabbitfolk 2, bearfolk 5), legs 2 to 4 px (birdfolk 2, dwarf, orc and bearfolk 4) with a 0 to 4 px gap between them (elf and rabbitfolk touch, bearfolk 4), feet one px wider than the leg. No limb thinner than 2 px (3 when it needs a shade; the 2 px limbs are the slim species' and the bird's talons). [R10]
 - **Leave room for gear:** torso 7 to 9 rows, legs 4 to 7 rows, arms hang straight in the base pose, and nothing important lives on the hip or shoulder rows that armour will cover.
 - Per species (rows: leg / torso, widths: shoulder half-span / hip half-span) live in `lib/species.py` and are the single source for body shape.
 
@@ -119,9 +119,9 @@ Rules: shapes combine, they do not blur (a fox does not get round ears); the spe
 Frame counts (locked by `contracts/actor-anims.json`): idle 2, walk 4, attack 4, dodge 4, hurt 2, death 4. Poses are joint offsets on the shared skeleton (`lib/anims.py`); drawing never rotates or scales a sprite. [R19]
 
 - **Four strong frames.** Every frame is a key pose. [R15]
-- **Walk:** contact, passing, contact, passing, with a 1 px body bob on the contacts, arms opposite the legs. In front and back views the lifting foot rises 2 px; in profile the feet travel 2 px either way. At least one foot stays on the sole line.
+- **Walk:** contact, passing, contact, passing, with a 1 px body bob on the contacts, arms opposite the legs. In front and back views the lifting foot rises 2 px; in profile the feet travel 3 px either way. At least one foot stays on the sole line.
 - **Attack:** anticipation (1 frame, the weapon hand pulled back and the body one px lower), strike (the widest, longest pose; the whole body leans in 1 px), follow-through (full extension, held), recover (short). No smear on anticipation or recover. M1 attacks have no weapon pixels (OQ-022); weapons add a smear frame later (ART-009). [R16]
-- **Idle:** the chest and head sink 1 px and rise again. Species with ears or tails add a one-frame flick. Colour change, not position change. [R17]
+- **Idle:** two frames: a rest pose, then the chest and head sink 1 px (a breath) while tails lag up 1 px. Keep it to that one pixel; anything bigger reads as bouncing, and long idles read as noise. [R17]
 - **Dodge:** crouch, ball-tuck, deepest tuck, rise. The tuck must still carry the species silhouette.
 - **Hurt/death:** hurt is a flinch and a sag; death ends in a heap that the renderer holds on its last frame.
 - **Follow-through:** tails and long ears move one frame after the body. [R18]

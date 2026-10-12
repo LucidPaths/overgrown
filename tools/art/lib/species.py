@@ -4,7 +4,7 @@ Species differ only through these rows: body dimensions in pixels, the covering,
 palette ramps. Their heads and tails are hand-authored pixel templates in gen/heads.py, keyed by `key`.
 Geometric fit in the 32x32 cell is checked by gen/actor.py, not here.
 
-Dimensions follow docs/art/DIRECTION.md section 5 (chibi, 2.2 to 2.8 heads tall).
+Dimensions follow docs/art/DIRECTION.md section 5 (chibi, about 2 to 2.8 heads tall on the skull).
 """
 
 from dataclasses import dataclass
