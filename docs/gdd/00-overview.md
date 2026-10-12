@@ -55,5 +55,5 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 - [x] **OVR-003** Add the MIT `LICENSE` file (decided in OQ-001: MIT for code and generated assets). — #2
 - [ ] **OVR-004** Write overgrown-specific instantiations for the five lattice principles in `docs/PRINCIPLE_LATTICE.md` (replace the `[ADAPT]` markers); Lucid approves.
 - [ ] **OVR-005** README quick start: prerequisites (Node 22, Python 3.13), the build/dev/test commands, and the `?seed=` URL parameter (found in M0 E2E).
-- [ ] **OVR-006** Committed headless page checker `scripts/check-page.mjs` (`playwright-core` devDependency): loads a URL, prints canvas info and console errors, saves an optional screenshot, exits 1 on errors. Agent role files reference it (replaces M0's container-only checker).
+- [x] **OVR-006** Committed headless page checker `scripts/check-page.mjs` (`playwright-core` devDependency): loads a URL, prints canvas info and console errors, saves an optional screenshot, exits 1 on errors. Agent role files reference it (replaces M0's container-only checker). — #12
 - [ ] **OVR-007** Dev-environment housekeeping: repo-root `.venv/` convention (ignored by git and eslint), replace the old container's paths and the stale proxy trap in `CLAUDE.md`, and copy the discipline skills from `LucidPaths/claude.md-workflow` into `.claude/skills/`.
