@@ -69,10 +69,17 @@ try {
   let curr: Snapshot | null = null;
   let currReceivedAt = 0;
   const frame = createFrame();
+  // An error thrown inside a ticker callback never reaches the try/catch below, so it is caught here.
   app.ticker.add(() => {
     if (curr === null) return;
-    interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
-    view.update(frame);
+    try {
+      interpolate(prev, curr, (performance.now() - currReceivedAt) / TICK_MS, frame);
+      view.update(frame);
+    } catch (error) {
+      app.ticker.stop();
+      worker.terminate();
+      showFatal("overgrown couldn't draw a frame", error);
+    }
   });
 
   const worker = new Worker(new URL("./sim-worker.ts", import.meta.url), { type: "module" });
