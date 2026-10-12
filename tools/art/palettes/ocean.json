@@ -1,0 +1,14 @@
+{
+  "name": "ocean",
+  "ramps": {
+    "grass": ["#7a7a30", "#9c9a40", "#bcb858", "#d6d278", "#ece898"],
+    "dirt": ["#6a4c30", "#8a6840", "#aa8654", "#c8a46c"],
+    "sand": ["#d8c498", "#e8d8b0", "#f4e8c8", "#fff6de"],
+    "stone": ["#505256", "#6e7074", "#8e9094", "#b0b2b4"],
+    "cliff": ["#5a3e2e", "#7c5a40", "#a07a56", "#c29e74", "#dcbc92"],
+    "shallow_water": ["#18a8a8", "#30c4bc", "#58dcd0", "#8cf0e0", "#c8fcf0"],
+    "deep_water": ["#0c2a5c", "#103470", "#164088"],
+    "very_deep_water": ["#06143a", "#081a48", "#0b2058"],
+    "detail": ["#d85a4a", "#f0866e", "#f8b4b4", "#fff0e6"]
+  }
+}

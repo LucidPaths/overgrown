@@ -1,7 +1,26 @@
 // Sim <-> host message protocol. The single source of truth for what crosses the
 // worker boundary; both sides import these types, never re-declare them.
 
-export type HostToSim = { type: "init"; seed: number };
+/**
+ * The local player's full input state, posted by the host whenever it changes. The sim latches the newest
+ * one at the start of each tick. This shape becomes the TEC-010 network input message.
+ */
+export interface InputMessage {
+  type: "input";
+  /** Desired move direction, each axis in [-1, 1]. The sim clamps the magnitude to 1 (so W+D is a normal diagonal). */
+  moveX: number;
+  moveY: number;
+  /** Aim point as an offset from the character's feet point, in world px (y-down). (0, 0) means "no aim". */
+  aimX: number;
+  aimY: number;
+  /** Sprint is held. (Attack and dodge are edge actions: only their press counters are sent.) */
+  sprint: boolean;
+  /** Presses since the host started: u32, starting at 0, +1 per press, wrapping at 2^32. A changed value means "pressed". */
+  attackPresses: number;
+  dodgePresses: number;
+}
+
+export type HostToSim = { type: "init"; seed: number } | InputMessage;
 
 /** What an entity is, for the renderer. 0 is "unset". */
 export const Kind = { Character: 1 } as const;
