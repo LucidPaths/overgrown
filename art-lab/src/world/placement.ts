@@ -46,6 +46,7 @@ export function propAt(g: Ground, tx: number, ty: number): Placement {
     case B.Forest: {
       if (t !== T.Grass && t !== T.Dirt) return NONE;
       if (nearWater(g, tx, ty)) return h < 0.08 ? pl(P.Fern) : NONE;
+      if (t === T.Dirt && h > 0.9) return pl(h > 0.96 ? P.Rock : P.TallGrass);
       const treeP = 0.07 + grove * 0.1;
       if (h < treeP) return pl(v < 0.28 ? P.Pine : v < 0.38 ? P.Birch : P.Oak);
       if (h < treeP + 0.07) return pl(P.Fern);
@@ -57,7 +58,8 @@ export function propAt(g: Ground, tx: number, ty: number): Placement {
       return NONE;
     }
     case B.Grassland: {
-      if (t === T.Dirt) return h < 0.04 ? pl(P.Rock) : NONE;
+      // bare earth: stones and dry tufts, so a big patch reads as worn ground, not a hole in the grass
+      if (t === T.Dirt) return h < 0.03 ? pl(P.Rock) : h < 0.1 + grove * 0.06 ? pl(P.TallGrass) : h < 0.105 ? pl(P.Stump) : NONE;
       if (t !== T.Grass) return NONE;
       if (h < 0.006 + grove * 0.018) return pl(v < 0.75 ? P.Oak : P.Birch);
       if (h < 0.04) return pl(P.Bush);

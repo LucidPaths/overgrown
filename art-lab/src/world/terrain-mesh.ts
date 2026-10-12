@@ -1,5 +1,5 @@
 // Chunk relief -> vertex arrays for the ground and the water surface. World units = world px; y is up; z = sim y.
-import { B, Ground } from "./ground";
+import { B, Ground, T, hash01 } from "./ground";
 import { RC, type ChunkRelief } from "./relief";
 
 export interface TerrainArrays {
@@ -68,7 +68,7 @@ export function terrainArrays(g: Ground, r: ChunkRelief): TerrainArrays {
       tint[v * 4] = c[0]; tint[v * 4 + 1] = c[1]; tint[v * 4 + 2] = c[2];
       const ridx = ((j + 1) * RC + (i + 1)) * 4;
       for (let k = 0; k < 4; k++) weights[v * 4 + k] = r.w[ridx + k]!;
-      tint[v * 4 + 3] = Math.max(0, Math.min(255, (g.fields.moisture(X0 + i, Y0 + j)) * 255));
+      tint[v * 4 + 3] = Math.max(0, Math.min(255, g.fields.elevation(X0 + i, Y0 + j) * 255)); // elevation: snow, alpine
     }
   }
   const index = new Uint16Array(32 * 32 * 6);
@@ -124,4 +124,70 @@ export function waterArrays(g: Ground, r: ChunkRelief): WaterArrays {
     }
   }
   return { pos: new Float32Array(pos), info: new Float32Array(info), count: pos.length / 3 };
+}
+
+/**
+ * Cliff tiles become rock walls: each tile is 2x2 stepped blocks from below the lower terrace to above the upper one,
+ * so a line of cliff tiles reads as a broken ridge of rock and the sim's gaps read as passes.
+ */
+export function cliffArrays(g: Ground, r: ChunkRelief): TerrainArrays & { count: number } {
+  const pos: number[] = [], nrm: number[] = [], tint: number[] = [], weights: number[] = [];
+  const H = (i: number, j: number) => r.h[(j + 1) * RC + (i + 1)]!;
+  const X0 = r.cx * 32, Y0 = r.cy * 32;
+  const quad = (a: number[], b: number[], c: number[], d: number[], n: number[], e: number) => {
+    for (const v of [a, b, c, a, c, d]) {
+      pos.push(v[0]!, v[1]!, v[2]!);
+      nrm.push(n[0]!, n[1]!, n[2]!);
+      tint.push(150, 146, 140, Math.round(Math.min(255, e * 255)));
+      weights.push(0, 0, 255, 0);
+    }
+  };
+  const tri = (a: number[], b: number[], c: number[], e: number) => {
+    const ux = b[0]! - a[0]!, uy = b[1]! - a[1]!, uz = b[2]! - a[2]!, vx = c[0]! - a[0]!, vy = c[1]! - a[1]!, vz = c[2]! - a[2]!;
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const l = Math.hypot(nx, ny, nz) || 1;
+    nx /= l; ny /= l; nz /= l;
+    for (const v of [a, b, c]) {
+      pos.push(v[0]!, v[1]!, v[2]!);
+      nrm.push(nx, ny, nz);
+      tint.push(150, 146, 140, Math.round(Math.min(255, e * 255)));
+      weights.push(0, 0, 255, 0);
+    }
+  };
+  void quad;
+  const isCliff = (lx: number, ly: number) => r.tile[(ly + 2) * 36 + (lx + 2)] === T.Cliff;
+  for (let ly = 0; ly < 32; ly++) {
+    for (let lx = 0; lx < 32; lx++) {
+      if (!isCliff(lx, ly)) continue;
+      const tx = X0 + lx, ty = Y0 + ly;
+      const hs = [H(lx, ly), H(lx + 1, ly), H(lx, ly + 1), H(lx + 1, ly + 1)];
+      const lo = Math.min(...hs) - 3, hi = Math.max(...hs);
+      const e = g.fields.elevation(tx, ty);
+      const j = (k: number) => hash01(g.seed, tx, ty, 320 + k);
+      // a rock column: a jittered octagon at the foot, a smaller tilted one at the top, a peak in the middle.
+      // Neighbouring columns overlap, so a cliff line reads as one jagged ridge.
+      const cx = tx * 16 + 8, cz = ty * 16 + 8;
+      const top = hi + 16 + j(0) * 12;
+      const ring = (rad: number, y: number, k0: number, dy: number) =>
+        Array.from({ length: 8 }, (_, i) => {
+          const a = (i / 8) * Math.PI * 2 + 0.39;
+          const rr = rad * (0.85 + j(k0 + i) * 0.3);
+          return [cx + Math.cos(a) * rr, y + (j(k0 + 8 + i) - 0.5) * dy, cz + Math.sin(a) * rr];
+        });
+      const foot = ring(11.5, lo, 10, 0);
+      const crown = ring(7.5, top - 3, 30, 5);
+      const peak = [cx + (j(50) - 0.5) * 4, top + j(51) * 3, cz + (j(52) - 0.5) * 4];
+      for (let i = 0; i < 8; i++) {
+        const k = (i + 1) % 8;
+        tri(foot[i]!, crown[i]!, crown[k]!, e);
+        tri(foot[i]!, crown[k]!, foot[k]!, e);
+        tri(crown[i]!, peak, crown[k]!, e);
+      }
+      void isCliff;
+    }
+  }
+  return {
+    pos: new Float32Array(pos), nrm: new Float32Array(nrm), tint: new Uint8Array(tint), weights: new Uint8Array(weights),
+    index: new Uint16Array(0), count: pos.length / 3,
+  };
 }

@@ -1,4 +1,5 @@
 import { HEADER, LIGHT_FN, LIGHT_UNIFORMS, NOISE } from "./glsl";
+import { GROUND } from "./ground-glsl";
 
 /** Attribute locations shared by every mesh kind. */
 export const LOC = { pos: 0, nrm: 1, col: 2, aux: 3, inst0: 4, inst1: 5, inst2: 6, bone: 7 } as const;
@@ -19,6 +20,7 @@ export const TERRAIN_FS = `${HEADER}
 ${LIGHT_UNIFORMS}
 ${NOISE}
 ${LIGHT_FN}
+${GROUND}
 in vec3 vWp; in vec3 vN; in vec4 vTint; in vec4 vW;
 layout(location=0) out vec4 oColor;
 layout(location=1) out vec4 oAux;
@@ -26,38 +28,28 @@ void main() {
   vec3 fn = normalize(cross(dFdx(vWp), dFdy(vWp)));
   if (fn.y < 0.0) fn = -fn;
   vec3 n = normalize(vN);
-  float steep = smoothstep(0.75, 0.55, fn.y);
+  float steep = smoothstep(0.72, 0.5, fn.y);
   n = normalize(mix(n, fn, steep));
   vec2 p = vWp.xz;
+  vec2 cell = floor(p);
+  float dth = bayer(cell);                       // world-anchored ordered dither: boundaries break into pixel steps
   float nb = (fbm2(p / 13.0) - 0.5) * 0.7 + (vnoise(p / 3.5) - 0.5) * 0.22;
+  float elev = vTint.a;
 
-  // grass: base tint, a two-tone clump pattern, warm sunny flecks
-  vec3 grass = vTint.rgb;
-  float clump = vnoise(p / 11.0) * 0.65 + vnoise(p / 4.0 + 9.0) * 0.35;
-  grass *= mix(0.93, 1.05, step(0.56, clump));
-  vec3 forestFloor = mix(grass * vec3(0.78, 0.86, 0.9), vec3(0.36, 0.3, 0.2), 0.18);
-  float leaf = step(0.9, vnoise(p / 2.5 + 31.0)) * vW.w;
-  grass = mix(grass, forestFloor, smoothstep(0.3, 0.8, vW.w + nb * 0.4));
-  grass = mix(grass, vec3(0.62, 0.42, 0.22), leaf * 0.35);
-
-  vec3 sand = mix(vec3(0.91, 0.82, 0.6), vec3(0.96, 0.89, 0.7), step(0.6, vnoise(p / 2.5)));
-  vec3 dirt = mix(vec3(0.62, 0.45, 0.3), vec3(0.7, 0.53, 0.36), step(0.55, vnoise(p / 3.0 + 3.0)));
-  dirt = mix(dirt, vec3(0.5, 0.36, 0.25), step(0.85, vnoise(p / 1.5)) * 0.6);
-  float strata = hash12(vec2(floor(vWp.y / 3.0), 7.0));
-  vec3 rockTop = mix(vec3(0.62, 0.61, 0.6), vec3(0.7, 0.68, 0.64), step(0.5, vnoise(p / 4.0)));
-  vec3 rockFace = mix(vec3(0.5, 0.47, 0.47), vec3(0.62, 0.57, 0.52), strata);
-  rockFace = mix(rockFace, rockFace * 0.82, step(0.7, vnoise(vec2(p.x / 2.0, vWp.y / 6.0))));
-
-  vec3 albedo = grass;
-  float mDirt = step(0.5, vW.y / 255.0 * 0.0 + vW.y + nb);
-  float mSand = step(0.5, vW.x + nb * 0.8);
-  float mRock = step(0.5, vW.z + nb * 0.6);
-  albedo = mix(albedo, dirt, mDirt);
-  albedo = mix(albedo, sand, mSand);
-  albedo = mix(albedo, rockTop, mRock * (1.0 - steep));
-  albedo = mix(albedo, rockFace, max(steep, 0.0) * step(0.2, vW.z + steep));
+  vec3 albedo = grassAt(p, cell, vTint.rgb, vW.w, dth);
+  float mDirt = step(0.5, vW.y + nb + (dth - 0.5) * 0.25);
+  float mSand = step(0.5, vW.x + nb * 0.8 + (dth - 0.5) * 0.2);
+  float mRock = step(0.5, vW.z + nb * 0.6 + (dth - 0.5) * 0.25);
+  albedo = mix(albedo, dirtAt(p, cell, dth), mDirt);
+  albedo = mix(albedo, sandAt(p, cell, dth), mSand);
+  albedo = mix(albedo, rockAt(p, cell, elev, dth), mRock * (1.0 - steep));
+  float face = max(steep, 0.0);
+  albedo = mix(albedo, rockFaceAt(vWp, cell), face * step(0.2, vW.z + steep));
   // non-rock steep banks show soil
-  albedo = mix(albedo, dirt * 0.85, steep * (1.0 - step(0.2, vW.z + steep)));
+  albedo = mix(albedo, dirtAt(p, cell, dth) * 0.82, face * (1.0 - step(0.2, vW.z + steep)));
+  // snow on high ground: flat tops first, faces stay rock
+  float snow = smoothstep(0.715, 0.76, elev + (fbm2(p / 24.0) - 0.5) * 0.05 + (dth - 0.5) * 0.012) * (1.0 - steep * 0.85);
+  albedo = mix(albedo, snowAt(p, cell), snow);
 
   vec3 c = light(albedo, n, vWp, 0.6, 0.06);
   oColor = vec4(c, 1.0);
@@ -78,35 +70,41 @@ export const WATER_FS = `${HEADER}
 ${LIGHT_UNIFORMS}
 ${NOISE}
 ${LIGHT_FN}
+${GROUND}
 in vec3 vWp; in vec4 vInfo;
 layout(location=0) out vec4 oColor;
 layout(location=1) out vec4 oAux;
 void main() {
   float depth = vInfo.x;
   if (depth < -0.5) discard;
-  vec2 flow = vInfo.yz * (1.0 - vInfo.w);
-  vec2 p = vWp.xz - flow * uTime * 14.0;
+  float ocean = vInfo.w;
+  vec2 flow = vInfo.yz * (1.0 - ocean);
   float t = uTime;
-  vec3 shallow = vec3(0.42, 0.78, 0.78);
-  vec3 mid = vec3(0.2, 0.55, 0.7);
-  vec3 deep = vec3(0.12, 0.3, 0.55);
-  vec3 col = mix(shallow, mid, smoothstep(1.0, 7.0, depth));
-  col = mix(col, deep, smoothstep(8.0, 30.0, depth));
-  // caustic net on the shallows
-  float ca = abs(vnoise(p / 7.0 + t * 0.15) - vnoise(p / 7.0 - t * 0.13 + 4.0));
-  col += vec3(0.09, 0.11, 0.08) * smoothstep(0.06, 0.0, ca) * (1.0 - smoothstep(2.0, 8.0, depth));
-  // wind ripples: short bright dashes
-  float rip = vnoise(vec2(p.x / 6.0, p.y / 2.0) + vec2(t * 0.3, 0.0));
-  col = mix(col, col * 1.18 + 0.05, step(0.78, rip));
-  // sun glints
-  float gl = vnoise(p / 1.7 + vec2(t * 0.9, -t * 0.6));
-  col = mix(col, vec3(1.0, 0.98, 0.9), step(0.93, gl) * 0.9);
-  // shore foam, pulsing with a slow swell
-  float swell = 0.5 + 0.5 * sin(t * 1.3 + (vWp.x + vWp.z) * 0.02);
-  float foamEdge = 0.5 + swell * 0.7 + (vnoise(p / 3.0 + t * 0.4) - 0.5) * 0.6;
-  float foam = step(depth, foamEdge);
-  float foam2 = step(abs(depth - foamEdge - 1.2 - swell), 0.25) * step(0.4, vnoise(p / 4.0 - t * 0.2));
-  col = mix(col, vec3(0.95, 0.98, 1.0), max(foam, foam2 * 0.7));
+  vec2 p = vWp.xz;
+  vec2 cell = floor(p);
+  float dth = bayer(cell);
+  // depth bands: four flat tones, the steps between them broken by the ordered dither
+  float dq = depth + (fbm2(p / 30.0 + t * 0.03) - 0.5) * 2.0 + (dth - 0.5) * 0.9;
+  vec3 c0 = vec3(0.47, 0.8, 0.78), c1 = vec3(0.27, 0.62, 0.72), c2 = vec3(0.16, 0.44, 0.64), c3 = vec3(0.11, 0.3, 0.52);
+  vec3 col = dq < 2.5 ? c0 : dq < 7.0 ? c1 : dq < 16.0 ? c2 : c3;
+  // the bed shows through the shallows: sand ripples, darker where it is deeper
+  if (depth < 4.0) col = mix(col, col * vec3(1.08, 1.04, 0.9), step(0.6, sin(p.x * 0.3 + p.y * 0.5 + vnoise(p / 8.0) * 4.0)) * 0.6);
+  // surface: few, long, horizontal highlights that drift (a calm sea), flow streaks on rivers
+  vec2 q = p - flow * t * 16.0 + vec2(t * 3.0 * ocean, 0.0);
+  float sw = vnoise(vec2(q.x / 22.0, q.y / 3.2) + vec2(0.0, t * 0.12));
+  float crest = step(0.8, sw) * step(0.5, vnoise(q / 9.0 + t * 0.05)) * step(1.5, depth);
+  col = mix(col, mix(col, vec3(0.86, 0.95, 0.98), 0.55), crest);
+  float trough = step(sw, 0.16) * step(5.0, depth);
+  col = mix(col, col * 0.88, trough);
+  // sun glints: sparse single texels, twinkling
+  float gl = hash12(cell + floor(t * 3.0) * 13.1);
+  col = mix(col, vec3(1.0, 0.98, 0.9), step(0.9975, gl) * step(2.0, depth));
+  // shore: a solid foam rim that breathes with the swell, then a broken second line further out
+  float swell = 0.5 + 0.5 * sin(t * (ocean > 0.5 ? 1.1 : 2.0) + (p.x * 0.7 + p.y) * 0.03);
+  float rim = 0.6 + swell * (ocean > 0.5 ? 1.1 : 0.5) + (vnoise(p / 3.0 + t * 0.4) - 0.5) * 0.7;
+  float foam = step(depth, rim);
+  float line2 = step(abs(depth - rim - 1.2 - swell * 1.2), 0.14) * step(0.5, vnoise(p / 5.0 - t * 0.2)) * step(depth, 5.0);
+  col = mix(col, vec3(0.94, 0.98, 1.0), max(foam, line2 * 0.85));
   vec3 c = light(col, vec3(0.0, 1.0, 0.0), vWp, 0.6, 0.06);
   oColor = vec4(c, 1.0);
   oAux = vec4(0.5, 0.5, 4.0 / 255.0, 1.0);

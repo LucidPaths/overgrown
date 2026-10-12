@@ -9,8 +9,8 @@ import { B, Ground, T, hash01 } from "./ground";
 
 export const LAND_K = 110; // px of rise per unit of elevation above the coast
 export const TERRACE = 25; // must match chunk-gen CLIFF_TERRACES
-export const STEP = 22; // px per mountain terrace
-export const MOUNTAIN_K = 700; // smooth rise per unit elevation inside mountains
+export const STEP = 10; // px per mountain terrace (gentle: the walls are drawn by the cliff tiles, not by the relief)
+export const MOUNTAIN_K = 900; // smooth rise per unit elevation inside mountains
 const MOUNTAIN_FROM = 0.62;
 const COAST = 0.38;
 

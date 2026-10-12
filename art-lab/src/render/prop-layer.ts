@@ -3,7 +3,7 @@ import { Geo, type RGB } from "../geo/builder";
 import { VARIANTS, propGeo } from "../geo/props";
 import { deleteMesh, drawMesh, mesh, program, type GL, type Mesh, type Program } from "../gl/glu";
 import { compose } from "../gl/math";
-import { B, Ground, hash01 } from "../world/ground";
+import { B, Ground, T, hash01 } from "../world/ground";
 import { P, propAt } from "../world/placement";
 import { RC, type ChunkRelief } from "../world/relief";
 import { PROP_FS, PROP_SHADOW_VS, PROP_VS } from "./mesh-shaders";
@@ -52,7 +52,7 @@ export class PropLayer implements Drawable {
         let alt = 0;
         if (pl.kind === P.Pine && b === B.Mountain && this.ground.fields.elevation(tx, ty) > 0.645) alt = 1;
         if (pl.kind === P.Oak && b === B.Grassland) alt = 1;
-        if (pl.kind === P.TallGrass && (b === B.Ocean || b === B.Mountain)) alt = 1;
+        if (pl.kind === P.TallGrass && (b === B.Ocean || b === B.Mountain || r.tile[(ly + 2) * 36 + (lx + 2)] === T.Dirt)) alt = 1;
         const variant = Math.floor(pl.v * VARIANTS);
         const geo = propGeo(pl.kind, variant, alt);
         if (!geo) continue;

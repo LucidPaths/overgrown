@@ -64,7 +64,11 @@ function pine(seed: number, snow = false): Geo {
     const th = rad * 1.25;
     const c = leaf(PINE_LEAF, i / (tiers - 1 || 1));
     const m = compose((r(10 + i) - 0.5) * 1.5, y, (r(20 + i) - 0.5) * 1.5, r(30 + i) * 6);
-    g.cylinder(m, 7, rad, 0, th, (k) => ({ col: snow && k % 2 === 0 ? hex(0xeef4fb) : k % 2 ? c : shade(c, 0.9), mat: MAT.Foliage, wind: Math.min(1, (y + th) / 60) }), true, r(40 + i));
+    g.cylinder(m, 7, rad, 0, th, (k) => ({ col: k % 2 ? c : shade(c, 0.9), mat: MAT.Foliage, wind: Math.min(1, (y + th) / 60) }), true, r(40 + i));
+    if (snow) {
+      // a snow cap on the upper part of each tier: the rim stays green so the tree shape still reads
+      g.cylinder(compose(m[12]!, y + th * 0.42, m[14]!, r(30 + i) * 6), 7, rad * 0.62, 0, th * 0.62, { col: hex(0xeef3fa), mat: MAT.Foliage, wind: Math.min(1, (y + th) / 60) }, false, r(40 + i));
+    }
     y += th * 0.5;
     rad *= 0.72;
   }

@@ -3,7 +3,7 @@ import { deleteMesh, drawMesh, mesh, program, type GL, type Mesh, type Program }
 import { mat4 } from "../gl/math";
 import { Ground } from "../world/ground";
 import { chunkRelief, type ChunkRelief } from "../world/relief";
-import { terrainArrays, waterArrays } from "../world/terrain-mesh";
+import { cliffArrays, terrainArrays, waterArrays } from "../world/terrain-mesh";
 import type { Drawable, FrameInfo } from "./renderer";
 import { LOC, SHADOW_FS, SHADOW_VS, TERRAIN_FS, TERRAIN_VS, WATER_FS, WATER_VS } from "./terrain-shaders";
 
@@ -12,6 +12,7 @@ interface ChunkMeshes {
   cy: number;
   ground: Mesh;
   water?: Mesh;
+  cliff?: Mesh;
   relief: ChunkRelief;
 }
 
@@ -50,6 +51,7 @@ export class TerrainLayer implements Drawable {
       if (!want.has(k)) {
         deleteMesh(this.gl, c.ground);
         if (c.water) deleteMesh(this.gl, c.water);
+        if (c.cliff) deleteMesh(this.gl, c.cliff);
         this.chunks.delete(k);
         this.onDrop?.(c.cx, c.cy);
       }
@@ -80,7 +82,16 @@ export class TerrainLayer implements Drawable {
         { loc: LOC.aux, size: 4, type: gl.FLOAT, normalized: false, data: w.info },
       ], w.count)
       : undefined;
-    this.chunks.set(`${cx},${cy}`, { cx, cy, ground, water, relief: r });
+    const cl = cliffArrays(this.ground, r);
+    const cliff = cl.count > 0
+      ? mesh(gl, [
+        { loc: LOC.pos, size: 3, type: gl.FLOAT, normalized: false, data: cl.pos },
+        { loc: LOC.nrm, size: 3, type: gl.FLOAT, normalized: false, data: cl.nrm },
+        { loc: LOC.col, size: 4, type: gl.UNSIGNED_BYTE, normalized: true, data: cl.tint },
+        { loc: LOC.aux, size: 4, type: gl.UNSIGNED_BYTE, normalized: true, data: cl.weights },
+      ], cl.count)
+      : undefined;
+    this.chunks.set(`${cx},${cy}`, { cx, cy, ground, water, cliff, relief: r });
     this.onChunk?.(r);
   }
 
@@ -89,12 +100,14 @@ export class TerrainLayer implements Drawable {
     gl.uniformMatrix4fv(this.shadowP.u.uLightViewProj!, false, f.lightViewProj);
     gl.uniformMatrix4fv(this.shadowP.u.uModel!, false, this.identity);
     for (const c of this.chunks.values()) drawMesh(gl, c.ground);
+    for (const c of this.chunks.values()) if (c.cliff) drawMesh(gl, c.cliff);
   }
 
   main(gl: GL, f: FrameInfo): void {
     gl.useProgram(this.terrainP.prog);
     f.setLight(this.terrainP);
     for (const c of this.chunks.values()) drawMesh(gl, c.ground);
+    for (const c of this.chunks.values()) if (c.cliff) drawMesh(gl, c.cliff);
     gl.useProgram(this.waterP.prog);
     f.setLight(this.waterP);
     gl.disable(gl.CULL_FACE);
