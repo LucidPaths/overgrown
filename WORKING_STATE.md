@@ -7,7 +7,7 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M0 dispatch** (approved by Lucid 2026-10-12: "just get me the results", so specs aren't shown to him first).
+**M0 complete (2026-10-12).** Waiting on Lucid before starting M1.
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
 1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
@@ -15,15 +15,15 @@ Wave plan (dependencies → waves; parallel only on disjoint files):
 3. ✅ ART-001 #7 · TEC-002 #6
 4. ✅ ART-002 #9 · TEC-003 #8
 5. ✅ ART-003 #10 · TEC-005 #11
-6. M0 E2E ← in flight
+6. ✅ M0 E2E — all 6 checklist items PASS (docs/e2e/M0.md). Proposed tasks added: OVR-005, TEC-020, TEC-021.
 
 Mechanics: worktrees in /home/claude/wt/<id>; shared Python venv /home/claude/.venv-og; PR bodies in the scratchpad; PRs, comments and merges via `gh api` REST (squash merge works).
 
-Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions) for TEC-001's deploy; a stray `probe-workflow` branch the proxy wouldn't let me delete.
+Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions); the Deploy workflow fails on every main push until then; a stray `probe-workflow` branch the proxy wouldn't let me delete.
 
 ## In flight
 
-M0 E2E agent. All 12 M0 tasks are merged (PRs #1–#11). Follow-up ART-023 was added from the ART-003 gate notes.
+None. M0 is done: 12 tasks, PRs #1–#11, E2E green. Open follow-ups: ART-023, OVR-005, TEC-020, TEC-021 (not in any milestone yet).
 
 ## Decisions (accumulate)
 
