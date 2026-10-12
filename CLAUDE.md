@@ -76,6 +76,10 @@ One source of truth each. Add to this table when a new one appears.
 | Tick rate | `sim/src/constants.ts` (`TICK_HZ`) | sim, worker adapter, render interpolation |
 | World tiles and chunk layout (`Tile` ids, `TILE_PX`, `CHUNK_TILES`, y-down, floor division, local index `ly*CHUNK_TILES+lx`) | `sim/src/world/tile.ts`, `sim/src/constants.ts` | worldgen (WLD-002/004), chunk messages (WLD-003), ART-004 tile frames |
 | Worldgen noise (`createFbm`; lattice = `deriveSeed(octaveSeed, ix, iy)`; only `Math.imul/floor/abs/min/max`, lint-enforced in `sim/src/world/`) | `sim/src/world/noise.ts` | `sim/src/world/chunk-gen.ts`, WLD-002 fields |
+| Biome map (seeded fields, `sampleBiome`/`classifyBiome`, the per-tile `biomes` layer of `ChunkData`; ids in `biome.ts` under "World tiles and chunk layout") | `sim/src/world/biome-map.ts`, `sim/src/world/chunk-gen.ts` | chunk messages (WLD-003), per-biome tile palettes (ART-004), spawn search (WLD-004) |
+| Actor skeleton joints, l/r = character's own side, `SOLE_Y` | `tools/art/lib/skeleton.py` | `gen/actor.py` (ART-005/006), weapons (ART-009), paper doll (ART-010) |
+| Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
+| Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
 | Ground tile frames `tile/<palette>/<terrain>/<mask>/<variant>`, mask bits TL1 TR2 BL4 BR8, terrain precedence, variant counts, Biome→palette, dual-grid cell = TL tile's biome | `contracts/tile-frames.json` (checked by both suites); impls `client/src/render/tile-frames.ts` ↔ `tools/art/gen/tiles.py` | WLD-003 chunk baking |
 
 ## Project traps

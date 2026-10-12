@@ -1,0 +1,28 @@
+{
+  "name": "actors",
+  "ramps": {
+    "skin_human": ["#6e3f2c", "#9a6043", "#c2875e", "#e0ac80"],
+    "skin_elf": ["#a8705e", "#d29a84", "#eebfa4", "#fde0ca"],
+    "skin_dwarf": ["#8a4a3a", "#bc6e56", "#e0957a", "#f6bc9e"],
+    "skin_orc": ["#46512a", "#66743a", "#88964e", "#abb46c"],
+    "fur_fox": ["#82320e", "#bc5016", "#e47424", "#f89e4a"],
+    "fur_bear": ["#432717", "#673e23", "#8b5932", "#ae7a4c"],
+    "fur_rabbit": ["#5e4e46", "#83705f", "#a8937c", "#c8b49a"],
+    "feather_bird": ["#2a3a66", "#405c98", "#5f84c4", "#8cb0e6"],
+    "scale_lizard": ["#11524f", "#1b7671", "#2a9b92", "#58c4b4"],
+    "cream": ["#b4a486", "#d6c8a6", "#ede0c2", "#fbf5e2"],
+    "beak": ["#a8620e", "#dc9018", "#f4bc34", "#fde06e"],
+    "hair_brown": ["#24140c", "#3e2414", "#5a361e", "#784a2a"],
+    "hair_blond": ["#a87828", "#d4a43c", "#eecb5e", "#fbe696"],
+    "hair_red": ["#6e1a0c", "#a42c12", "#d4481c", "#f2702a"],
+    "hair_black": ["#181a2c", "#2a2e4a", "#43496e"],
+    "cloth_linen": ["#958668", "#bdae90", "#dbd0b4", "#f2ead6"],
+    "cloth_brown": ["#3a2b25", "#56423a", "#73594c"]
+  },
+  "colors": {
+    "outline": "#2b1b1f",
+    "eye": "#1b1418",
+    "tusk": "#f4ecd2",
+    "ear_inner": "#f09cae"
+  }
+}
