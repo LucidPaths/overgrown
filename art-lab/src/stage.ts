@@ -45,7 +45,20 @@ export function runStage(canvas: HTMLCanvasElement, q: URLSearchParams): void {
   const rows = yaws.length;
   const weaponOverride = q.get("weapon") as Weapon | null;
   const draws: ActorDraw[] = [];
-  list.forEach((si, i) => {
+  const times = q.get("ts")?.split(",").map(Number);
+  const tOf: number[] = [];
+  if (times) {
+    // motion sheet: one row per species, one column per time
+    list.forEach((si, row) => {
+      times.forEach((tt, col) => {
+        const x = fx + (col - (times.length - 1) / 2) * spacing;
+        const z = fz + (row - (list.length - 1) / 2) * Number(q.get("rowsp") ?? 40);
+        const weapon = weaponOverride ?? weapons[si]!;
+        draws.push({ look: { species: si, dye: (si * 4 + 1) % 9, weapon, trousers: si % 4 }, x, y: hf.height(x, z), z, yaw: (yaws[0]! * Math.PI) / 180, pose: newPose(), sil: [0.95, 0.9, 0.6], attackU: -1 });
+        tOf.push(tt);
+      });
+    });
+  } else list.forEach((si, i) => {
     yaws.forEach((yaw, row) => {
       const x = fx + (i - (list.length - 1) / 2) * spacing;
       const z = fz + (row - (rows - 1) / 2) * Number(q.get("rowsp") ?? 40);
@@ -55,6 +68,7 @@ export function runStage(canvas: HTMLCanvasElement, q: URLSearchParams): void {
         look: { species: si, dye: (si * 4 + 1) % 9, weapon, trousers: si % 4 },
         x, y: hf.height(x, z), z, yaw: (yaw * Math.PI) / 180, pose, sil: [0.95, 0.9, 0.6], attackU: -1,
       });
+      tOf.push(t);
     });
   });
   const posed = (d: ActorDraw, i: number, time: number) => {
@@ -71,7 +85,7 @@ export function runStage(canvas: HTMLCanvasElement, q: URLSearchParams): void {
       case "death": death(p, rig, time); break;
     }
   };
-  draws.forEach((d, i) => posed(d, i, t));
+  draws.forEach((d, i) => posed(d, i, tOf[i]!));
   actors.list.push(...draws);
   void ATTACK_S; void DODGE_S;
   let frames = 0;

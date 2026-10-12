@@ -1,35 +1,8 @@
-import { Renderer } from "./render/renderer";
-import { TerrainLayer } from "./render/terrain-layer";
-import { Ground } from "./world/ground";
-import { PropLayer } from "./render/prop-layer";
-
+// Router: the live prototype by default; ?mode=stage for posed captures; ?mode=static for the bare world view.
 const q = new URLSearchParams(location.search);
-if (q.get("mode") === "stage") {
-  (await import("./stage")).runStage(document.getElementById("c") as HTMLCanvasElement, q);
-} else {
-
-const seed = Number(q.get("seed") ?? 22);
-const fx = Number(q.get("x") ?? 1600), fz = Number(q.get("y") ?? 980);
 const canvas = document.getElementById("c") as HTMLCanvasElement;
-const r = new Renderer(canvas);
-const ground = new Ground(seed);
-const terrain = new TerrainLayer(r.gl, ground);
-const props = new PropLayer(r.gl, ground);
-terrain.onChunk = (rl) => props.add(rl);
-terrain.onDrop = (cx, cy) => props.drop(cx, cy);
-r.drawables.push(terrain, props);
-const forced = Number(q.get("scale") ?? 0);
-const resize = () => r.resize(Math.round(innerWidth * devicePixelRatio), Math.round(innerHeight * devicePixelRatio), forced);
-resize();
-addEventListener("resize", resize);
-r.focus = [fx, 20, fz];
-const rad = forced === 1 ? 2 : 1;
-while (terrain.pending(fx, fz, rad, rad) > 0) terrain.update(fx, fz, rad, rad, 25);
-let frames = 0;
-const loop = (t: number) => {
-  r.render(t / 1000);
-  if (++frames === 3) (window as unknown as { sketchDone: boolean }).sketchDone = true;
-  requestAnimationFrame(loop);
-};
-requestAnimationFrame(loop);
-}
+const mode = q.get("mode") ?? "game";
+if (mode === "stage") (await import("./stage")).runStage(canvas, q);
+else if (mode === "static") (await import("./static-view")).runStatic(canvas, q);
+else (await import("./game")).runGame(canvas, q);
+export {};

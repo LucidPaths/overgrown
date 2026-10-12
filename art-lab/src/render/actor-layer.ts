@@ -22,15 +22,20 @@ layout(location=3) in vec4 aAux;
 ${LIGHT_UNIFORMS}
 ${SKIN_VS}
 uniform float uDepthBias;
-uniform float uFeetY;
+uniform vec3 uFeet;
+uniform vec2 uTilt; // cos, sin of the tilt toward the camera
 out vec3 vWp; out vec3 vN; out vec4 vCol;
 void main() {
   mat4 m = boneOf(aAux);
   vec4 wp = m * vec4(aPos, 1.0);
   vWp = wp.xyz; vN = mat3(m) * aNrm; vCol = aCol;
-  gl_Position = uViewProj * wp;
-  gl_Position.y += uLean * max(0.0, wp.y - uFeetY);
-  gl_Position.z -= uDepthBias;
+  // drawn tilted back toward the camera (faces show), lit and depth-tested upright (light and occlusion stay true)
+  vec3 rel = wp.xyz - uFeet;
+  vec3 tilted = uFeet + vec3(rel.x, rel.y * uTilt.x + rel.z * uTilt.y, -rel.y * uTilt.y + rel.z * uTilt.x);
+  vec4 up = uViewProj * wp;
+  gl_Position = uViewProj * vec4(tilted, 1.0);
+  gl_Position.y += uLean * max(0.0, rel.y);
+  gl_Position.z = up.z - uDepthBias;
 }`;
 
 const ACTOR_FS = `${HEADER}
@@ -130,6 +135,13 @@ interface RigMesh {
 }
 
 const TRAIL_SAMPLES = 10;
+/** Characters tilt back toward the camera by this much (on top of the world's lean): see ACTOR_VS. */
+export const TILT = (18 * Math.PI) / 180;
+const TILT_C = Math.cos(TILT), TILT_S = Math.sin(TILT);
+function tilt(p: number[], fx: number, fy: number, fz: number): number[] {
+  const ry = p[1]! - fy, rz = p[2]! - fz;
+  return [p[0]!, fy + ry * TILT_C + rz * TILT_S, fz - ry * TILT_S + rz * TILT_C];
+}
 
 export class ActorLayer implements Drawable {
   private p: Program;
@@ -213,7 +225,8 @@ export class ActorLayer implements Drawable {
     this.list.forEach((d, i) => {
       gl.uniformMatrix4fv(this.p.u.uBones!, false, this.mats[i]!);
       gl.uniform1f(this.p.u.uFlash!, d.pose.flash);
-      gl.uniform1f(this.p.u.uFeetY!, d.y);
+      gl.uniform3f(this.p.u.uFeet!, d.x, d.y, d.z);
+      gl.uniform2f(this.p.u.uTilt!, TILT_C, TILT_S);
       drawMesh(gl, this.rigFor(d.look).mesh);
     });
     gl.disable(gl.STENCIL_TEST);
@@ -227,7 +240,7 @@ export class ActorLayer implements Drawable {
     gl.disable(gl.CULL_FACE);
     gl.useProgram(this.silP.prog);
     gl.uniformMatrix4fv(this.silP.u.uViewProj!, false, f.viewProj);
-    gl.uniform1f(this.silP.u.uDepthBias!, 0.004);
+    gl.uniform1f(this.silP.u.uDepthBias!, 0.0065);
     gl.uniform1f(this.silP.u.uLean!, f.lean); // ~6 px toward the camera: feet in grass don't count as hidden
     gl.depthFunc(gl.GREATER);
     gl.depthMask(false);
@@ -237,7 +250,8 @@ export class ActorLayer implements Drawable {
     this.list.forEach((d, i) => {
       gl.uniformMatrix4fv(this.silP.u.uBones!, false, this.mats[i]!);
       gl.uniform3fv(this.silP.u.uSil!, d.sil);
-      gl.uniform1f(this.silP.u.uFeetY!, d.y);
+      gl.uniform3f(this.silP.u.uFeet!, d.x, d.y, d.z);
+      gl.uniform2f(this.silP.u.uTilt!, TILT_C, TILT_S);
       drawMesh(gl, this.rigFor(d.look).mesh);
     });
     gl.disable(gl.STENCIL_TEST);
@@ -263,7 +277,7 @@ export class ActorLayer implements Drawable {
         attack(p, rm.rig, u);
         this.bones(rm.rig, d, p, tmpM);
         const w = tmpM.subarray(BONE.weapon * 16, BONE.weapon * 16 + 16);
-        const base = xf(w, 0, len * 0.3, 0.6), tip = xf(w, 0, len, 0.6);
+        const base = tilt(xf(w, 0, len * 0.3, 0.6), d.x, d.y, d.z), tip = tilt(xf(w, 0, len, 0.6), d.x, d.y, d.z);
         if (prev) {
           const a = s - 1, b = s;
           const x0 = a / TRAIL_SAMPLES, x1 = b / TRAIL_SAMPLES;

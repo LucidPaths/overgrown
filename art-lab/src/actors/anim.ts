@@ -80,7 +80,7 @@ export function locomotion(p: Pose, rig: Rig, phase: number, run: number, t: num
   const g = rig.species.gait;
   const a = phase * TAU;
   const sw = Math.sin(a), cw = Math.cos(a);
-  const stride = (0.62 + run * 0.32) * g.stride;
+  const stride = (0.8 + run * 0.3) * g.stride;
   const lean = 0.08 + run * 0.22;
   // the body rises twice per cycle (once per step); a light hop when running
   const bob = Math.abs(cw) * (0.6 + run * 0.9) * g.bob;
@@ -136,7 +136,7 @@ export function attack(p: Pose, rig: Rig, u: number): void {
     // thrust: draw back, then drive the point straight out
     set(p, BONE.torso, 0.15 * strike, 0.5 * wind * (1 - strike) - 0.3 * strike * (1 - back), 0);
     set(p, BONE.armR, -1.4 + 0.5 * wind * (1 - strike) - 0.15 * strike, 0, -0.1);
-    set(p, BONE.weapon, 1.57 - 1.57 * 0, 0, 0);
+    set(p, BONE.weapon, Math.PI, 0, 0);
     set(p, BONE.armL, -1.2, 0, 0.5);
     set(p, BONE.legL, -0.5 * strike * (1 - back), 0, 0.05);
     set(p, BONE.legR, 0.35 * strike * (1 - back), 0, -0.05);
@@ -169,20 +169,24 @@ export function attack(p: Pose, rig: Rig, u: number): void {
 export function dodge(p: Pose, rig: Rig, u: number): void {
   const s = rig.species;
   const roll = easeIn(seg(u, 0.08, 0.3)) * 0.25 + ease(seg(u, 0.12, 0.85)) * 0.75;
-  const tuck = Math.sin(Math.min(1, seg(u, 0.05, 0.9)) * Math.PI);
-  p.pivotY = s.leg * 0.55 + s.torso * 0.3;
+  const tuck = Math.sin(Math.min(1, seg(u, 0.03, 0.92)) * Math.PI);
+  // a tight ball turning about its own centre, which hops a little so no part of it dips into the ground
+  const ball = s.leg * 0.45 + s.torso * 0.45;
+  p.pivotY = ball;
   p.rootPitch = roll * TAU;
-  p.off[1] = -tuck * s.leg * 0.45;
-  set(p, BONE.torso, 0.6 * tuck);
-  set(p, BONE.head, 0.5 * tuck);
-  set(p, BONE.legL, -1.6 * tuck, 0, 0.1);
-  set(p, BONE.legR, -1.5 * tuck, 0, -0.1);
-  set(p, BONE.armL, -1.2 * tuck, 0, 0.4 * tuck);
-  set(p, BONE.armR, -1.2 * tuck, 0, -0.4 * tuck);
-  set(p, BONE.tail1, -0.8 * tuck, 0, 0);
-  set(p, BONE.earL, -0.9 * tuck, 0, 0);
-  set(p, BONE.earR, -0.9 * tuck, 0, 0);
+  p.off[1] = Math.sin(roll * Math.PI) * 6.5;
+  set(p, BONE.torso, 1.25 * tuck);
+  set(p, BONE.head, 0.9 * tuck);
+  set(p, BONE.legL, -2.1 * tuck, 0, 0.12);
+  set(p, BONE.legR, -2.0 * tuck, 0, -0.12);
+  set(p, BONE.armL, -1.5 * tuck, 0, 0.3 * tuck);
+  set(p, BONE.armR, -1.5 * tuck, 0, -0.3 * tuck);
+  set(p, BONE.tail1, -1.0 * tuck, 0, 0);
+  set(p, BONE.earL, -1.1 * tuck, 0, 0);
+  set(p, BONE.earR, -1.1 * tuck, 0, 0);
   holdWeapon(p, rig);
+  // dust kicked up at the start and the landing (read by the FX layer)
+  p.swing = 0;
 }
 
 /** Hurt, u = 0..1: snap back from the hit, arms fly out, recover. White flash on the first frames. */

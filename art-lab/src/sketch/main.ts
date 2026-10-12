@@ -9,3 +9,4 @@ const run = async () => {
   (window as unknown as { sketchDone: boolean }).sketchDone = true;
 };
 run().catch((e) => { console.error(e); (window as unknown as { sketchDone: boolean }).sketchDone = true; });
+export {};
