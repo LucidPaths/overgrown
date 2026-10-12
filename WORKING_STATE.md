@@ -7,13 +7,13 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
+**M1 complete (2026-10-12):** all 14 tasks merged (#15–#28) and the M1 E2E passed every checklist and extra item (docs/e2e/M1.md, this PR). Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
 4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 → TEC-021 (sonnet, in flight)
-6. M1 E2E
+5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 · TEC-021 #28
+6. ✅ M1 E2E — all 5 checklist + 9 extra items PASS, no new tasks (docs/e2e/M1.md)
 Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
@@ -30,9 +30,10 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-**Resumed 2026-10-12 ~19:40 UTC.** TEC-020 merged as #27 (Fable round 2 PASS on 911107f). In flight: TEC-021 (branch tec-021-startup, sonnet worker; spec docs/specs/TEC-021.md). Pass along: fix the main.ts TDZ pattern (a constructor failure after `app.ticker.add` gets overwritten by a ReferenceError on the next tick); the CMB-001 AC12 `phoneCanvas` constant is 541×1201 after TEC-020.
-Next: M1 E2E (docs/agents/E2E.md + MILESTONES M1 checklist). Extra items: a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); stall numbers vs a no-ground baseline (SwiftShader halves fps here); characters animate in-game (TEC-022 wiring only smoke-tested); the ≤ 3 s first frame; touch emulation walk; a screenshot of every species and biome for an art-polish task (Lucid finds the graphics weak; known: thin side profiles, orc ears read as horns, rabbit reads as cat, dull mountain palette, death ends kneeling).
-Merged so far: #12–#27. Remaining M1: TEC-021, then the E2E.
+**2026-10-12 ~21:00 UTC.** M1 done; the M1 E2E PR carries this update. In flight:
+- **ART-024** art direction pass (Lucid's request): code PR #30 (branch art-024-direction, critic PASS with notes, fixed in b7dbfcf; Fable gate running), previews PR #29 (branch art-024-previews, images + README only; merge together with #30). WebP atlas 124 KB → 85 KB.
+Not yet decided with Lucid (from the ART-024 and M1 E2E reports): a `?species=` dev parameter so all 9 species show in-game (only Humans spawn); biome-border colour band (renderer picks the TL tile's biome per dual-grid cell); ground shadows (ART-018); props first for empty ground (ART-007); compact atlas JSON (core.json 634 KB raw, ~13 KB gzipped); a 6-frame walk; an opt-in state hook for M2 E2E; first-frame margin is thin (2754 ms vs 3000 ms) before M2 assets.
+Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it off first).
 
 ## Decisions (accumulate)
 
