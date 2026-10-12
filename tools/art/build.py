@@ -14,7 +14,7 @@ log = logging.getLogger("overgrown.art")
 
 ART_SEED = 1  # art is the same for every world
 DEFAULT_OUT = Path(__file__).resolve().parents[2] / "client" / "public" / "generated"
-ATLAS_NAME = re.compile(r"^[a-z0-9_]+$")
+IDENT = re.compile(r"[a-z0-9_]+")  # generator NAME and ATLAS; matched with fullmatch
 
 
 def collect(generators: list[ModuleType], art_seed: int) -> dict[str, list[Frame]]:
@@ -23,15 +23,19 @@ def collect(generators: list[ModuleType], art_seed: int) -> dict[str, list[Frame
     name_owner: dict[str, str] = {}
     atlases: dict[str, list[Frame]] = {}
     for gen in generators:
+        if not IDENT.fullmatch(gen.NAME):
+            raise ValueError(
+                f"generator {gen.__name__}: NAME {gen.NAME!r} must match {IDENT.pattern}"
+            )
         # NAME namespaces the RNG streams too, so a shared NAME would silently share randomness.
         if gen.NAME in name_owner:
             raise ValueError(
                 f"duplicate generator NAME {gen.NAME!r} in {name_owner[gen.NAME]} and {gen.__name__}"
             )
         name_owner[gen.NAME] = gen.__name__
-        if not ATLAS_NAME.match(gen.ATLAS):
+        if not IDENT.fullmatch(gen.ATLAS):
             raise ValueError(
-                f"generator {gen.__name__}: ATLAS {gen.ATLAS!r} must match {ATLAS_NAME.pattern}"
+                f"generator {gen.__name__}: ATLAS {gen.ATLAS!r} must match {IDENT.pattern}"
             )
         for frame in gen.generate(Context(art_seed, gen.NAME)):
             if not frame.name.startswith(f"{gen.NAME}/"):

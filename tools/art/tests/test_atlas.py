@@ -53,6 +53,13 @@ def test_duplicate_generator_names_both_modules():
         collect([first, second], 1)
 
 
+def test_invalid_generator_name_raises():
+    # NAME "a/b" could emit "a/b/c", which NAME "a" could also emit.
+    bad = _generator("gen.bad", "a/b", ["a/b/c"])
+    with pytest.raises(ValueError, match=r"generator gen\.bad: NAME 'a/b' must match"):
+        collect([bad], 1)
+
+
 def test_duplicate_frame_name_raises():
     # Unique NAMEs + the NAME/ prefix rule leave one generator repeating a name as the only clash.
     solo = _generator("gen.solo", "solo", ["solo/a", "solo/a"])

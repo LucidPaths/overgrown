@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-FRAME_NAME = re.compile(r"^[a-z0-9_]+/[a-z0-9_/]+$")
+FRAME_NAME = re.compile(r"[a-z0-9_]+/[a-z0-9_/]+")  # matched with fullmatch
 MIN_SIZE = 64
 
 
@@ -17,7 +17,7 @@ class Frame:
     image: Image.Image
 
     def __post_init__(self) -> None:
-        if not FRAME_NAME.match(self.name):
+        if not FRAME_NAME.fullmatch(self.name):
             raise ValueError(f"frame name {self.name!r} must match {FRAME_NAME.pattern}")
         if self.image.mode != "RGBA":
             raise ValueError(f"frame {self.name!r} must be RGBA, got mode {self.image.mode!r}")
