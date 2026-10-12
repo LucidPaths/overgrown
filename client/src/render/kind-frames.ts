@@ -1,9 +1,11 @@
-// Which atlas frame draws each sim Kind. Adding a Kind without a frame here fails typecheck.
+// Which atlas frame draws each sim Kind, per entity row of an interpolated Frame. Adding a Kind without an entry fails typecheck.
 import { Kind, type KindValue } from "@overgrown/sim/protocol";
 import type { Spritesheet } from "pixi.js";
+import { actorFrame } from "./actor-frames";
+import type { Frame } from "./interpolate";
 
-export const KIND_FRAMES: Record<KindValue, string> = {
-  [Kind.Character]: "debug/character32",
+export const KIND_FRAMES: Record<KindValue, (frame: Frame, i: number) => string> = {
+  [Kind.Character]: (f, i) => actorFrame(f.species[i]!, f.facing[i]!, f.action[i]!, f.actionStart[i]!, f.tick),
 };
 
 /** Throws naming every frame the atlas lacks, so a stale or wrong atlas is one readable error. */

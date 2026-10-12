@@ -14,14 +14,15 @@ export class SnapshotView {
     parent.addChild(this.layer);
   }
 
-  private textureFor(kind: number): Texture {
-    const frame = (KIND_FRAMES as Record<number, string | undefined>)[kind];
-    if (frame === undefined) {
-      throw new Error(`no atlas frame is assigned to entity kind ${kind}; add it to KIND_FRAMES (render/kind-frames.ts)`);
+  private textureFor(s: Frame, i: number): Texture {
+    const resolve = (KIND_FRAMES as Record<number, ((frame: Frame, row: number) => string) | undefined>)[s.kind[i]!];
+    if (resolve === undefined) {
+      throw new Error(`no atlas frame is assigned to entity kind ${s.kind[i]}; add it to KIND_FRAMES (render/kind-frames.ts)`);
     }
-    const texture = this.sheet.textures[frame];
+    const name = resolve(s, i);
+    const texture = this.sheet.textures[name];
     if (texture === undefined) {
-      throw new Error(`atlas frame "${frame}" (entity kind ${kind}) is missing from the core atlas`);
+      throw new Error(`atlas frame "${name}" (entity ${s.ids[i]}, kind ${s.kind[i]}) is missing from the core atlas`);
     }
     return texture;
   }
@@ -31,12 +32,15 @@ export class SnapshotView {
     for (let i = 0; i < s.count; i++) {
       const id = s.ids[i]!;
       present.add(id);
+      const texture = this.textureFor(s, i);
       let sprite = this.sprites.get(id);
       if (sprite === undefined) {
-        sprite = new Sprite(this.textureFor(s.kind[i]!));
+        sprite = new Sprite(texture);
         sprite.anchor.set(0.5, 1); // bottom centre on Position, the feet point
         this.layer.addChild(sprite);
         this.sprites.set(id, sprite);
+      } else {
+        sprite.texture = texture; // a no-op when unchanged
       }
       // Whole art px × integer scale + integer origin = every texel on whole device px (10-art-audio: no sub-pixel jitter).
       sprite.position.set(Math.round(s.x[i]!), Math.round(s.y[i]!));
