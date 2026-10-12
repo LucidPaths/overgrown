@@ -65,8 +65,11 @@ One source of truth each. Add to this table when a new one appears.
 |---|---|---|
 | Seeded RNG algorithm | `contracts/rng-vectors.json` (checked by both test suites); impls `sim/src/rng.ts` ↔ `tools/art/lib/rng.py` | sim, Python pipeline |
 | Entity IDs / component columns | `sim/src/ecs.ts` | every sim system, snapshot protocol |
-| Atlas JSON schema | (ART-001) | `tools/art/build.py`, client asset loader (TEC-005) |
-| Sim → renderer snapshot | (TEC-002) | sim worker, renderer |
+| Atlas JSON schema (TexturePacker JSON Hash, Pixi-native) | `tools/art/lib/atlas.py::write_atlas` | `client/src/assets.ts` (Pixi `Spritesheet`) |
+| Kind → atlas frame | `client/src/render/kind-frames.ts` (`Record<KindValue,string>`, tsc-enforced) | `client/src/render/snapshot-view.ts` |
+| Palette file format | `tools/art/lib/palette.py` (validated on every build) | all generators via `ctx.palette()` |
+| Host ↔ sim messages, Snapshot, Kind | `sim/src/protocol.ts` | `client/src/sim-worker.ts`, `client/src/main.ts`, renderer |
+| Tick rate | `sim/src/constants.ts` (`TICK_HZ`) | sim, worker adapter, render interpolation |
 
 ## Project traps
 
@@ -75,4 +78,6 @@ Add each one here as it's discovered.
 - **TypeScript is pinned to 6.x** because typescript-eslint doesn't support TS 7 yet (Oct 2026). Don't bump TS alone; bump both together.
 - **EntityId generations wrap at 4096.** After 4096 destroy/create cycles of one slot, an old ID becomes valid again. Never store EntityIds long-term (saves, network, quest targets) without a separate stable identity.
 - **RNG inputs must be safe integers** (|v| ≤ 2^53−1). Both languages reject anything else, so they can't diverge.
+- **`npm run dev` builds the art first.** Pass Vite args after `--` (`npm run dev -- --port 4183`).
+- **Debug movers are temporary scaffolding** (`sim/src/debug-movers.ts`, `debug/*` frames). Remove them when real entities land in M1/M2.
 - **GitHub from the agent container:** GraphQL and branch deletion are blocked by the proxy. Use REST (`gh api repos/LucidPaths/overgrown/...`) for PRs, comments and merges.

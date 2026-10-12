@@ -3,7 +3,7 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-11
+Last updated: 2026-10-12
 
 ## Current phase
 
@@ -12,10 +12,10 @@ Last updated: 2026-10-11
 Wave plan (dependencies → waves; parallel only on disjoint files):
 1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
 2. ✅ OVR-002 #5 · TEC-001 #3 · TEC-004 #4
-3. ART-001 pipeline + atlas schema (opus, needs OVR-002) · TEC-002 sim worker + snapshot (opus, needs TEC-001, TEC-004)
-4. ART-002 palettes (sonnet) · TEC-003 fixed timestep + interpolation (sonnet, needs TEC-002)
-5. ART-003 primitives (sonnet, needs ART-002) · TEC-005 asset loader (sonnet, needs ART-001, TEC-003)
-6. M0 E2E
+3. ✅ ART-001 #7 · TEC-002 #6
+4. ✅ ART-002 #9 · TEC-003 #8
+5. ✅ ART-003 #10 · TEC-005 #11
+6. M0 E2E ← in flight
 
 Mechanics: worktrees in /home/claude/wt/<id>; shared Python venv /home/claude/.venv-og; PR bodies in the scratchpad; PRs, comments and merges via `gh api` REST (squash merge works).
 
@@ -23,7 +23,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Wave 3.
+M0 E2E agent. All 12 M0 tasks are merged (PRs #1–#11). Follow-up ART-023 was added from the ART-003 gate notes.
 
 ## Decisions (accumulate)
 

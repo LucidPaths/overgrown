@@ -45,9 +45,9 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 
 ## Tasks
 
-- [ ] **ART-001** `[proto]` Pipeline scaffold: `build.py` → atlas PNG + JSON, consumed by the client (→ TEC-005).
-- [ ] **ART-002** `[proto]` Palette system: biome palettes + global pop palette.
-- [ ] **ART-003** `[proto]` Primitive drawing library: shapes, outlines, shading ramps, dithering.
+- [x] **ART-001** `[proto]` Pipeline scaffold: `build.py` → atlas PNG + JSON, consumed by the client (→ TEC-005). — #7
+- [x] **ART-002** `[proto]` Palette system: biome palettes + global pop palette. — #9
+- [x] **ART-003** `[proto]` Primitive drawing library: shapes, outlines, shading ramps, dithering. — #10
 - [ ] **ART-004** `[proto]` Ground tiles: grass, dirt, sand, stone, water depths, with autotile transitions.
 - [ ] **ART-005** `[proto]` Character body generator per species body plan, 4 directions.
 - [ ] **ART-006** `[proto]` Animation sets: idle, walk, attack per weapon family, dodge, hurt, death.
@@ -67,6 +67,7 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 - [ ] **ART-020** UI icon generator (items, traits, abilities, status effects).
 - [ ] **ART-021** Determinism test in CI (byte-identical rebuilds).
 - [ ] **ART-022** Contact-sheet preview output for PR review.
+- [ ] **ART-023** Harden `draw.py` validation and tests: validate `shade_sphere` light via `_finite`; test np.bool_ rejection, np.float64 in `ellipse_mask`, and the uint8-overflow guard (`int(v)` conversion) found by the ART-003 critic and Fable gate.
 - [ ] **AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.
 - [ ] **AUD-002** SFX set: hits per material, footsteps per terrain, UI, creature calls, spells.
 - [ ] **AUD-003** Runtime WebAudio mixer with spatial panning and volume buses.
