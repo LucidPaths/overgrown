@@ -1,0 +1,53 @@
+# Performance numbers
+
+One living page. Each task that measures something adds its row here. Scripts: `scripts/measure-fps.mjs`, `scripts/measure-startup.mjs`; the emulation recipe lives only in `scripts/perf-profiles.mjs`.
+
+## 1. What this measures, and what it can't
+
+Headless Chromium renders with SwiftShader, a CPU rasterizer. Its fps scales with the number of pixels filled and says nothing absolute about a phone GPU. CPU throttling (`Emulation.setCPUThrottlingRate`) is relative to the host CPU and may not apply to workers. Timings also move with the host's load; every number below records the 1-minute load average from just before the run (the headless browser itself pushes it above 1.5 while measuring, so "before" is the quiet baseline).
+
+**No real phone was measured by any agent.** The real-phone numbers come from the manual check in section 4.
+
+## 2. Render resolution (TEC-020)
+
+Rule: `resolution = dpr / ceil(dpr / 2)` (`client/src/render/resolution.ts`). The canvas backing store is `dpr / k` times the CSS size and the browser upscales it by exactly `k` (nearest, `image-rendering: pixelated`), so every art pixel stays a whole number of device pixels. `?maxdpr=1..4` overrides the cap of 2 for measuring. The resolution is recomputed when the devicePixelRatio changes (browser zoom, another screen).
+
+Why not `Math.min(dpr, 2)` (measured while drafting the spec, main a137bd1, SwiftShader): at 412x915 DPR 2.625 it upscales x1.3125, and art pixels come out as a mix of 3- and 4-device-px blocks (character 79x118 device px); at DPR 3 a mix of 4- and 5-px blocks and a different zoom (90x135). The integer divisor gives uniform 4x4 device-px art pixels, the same as the uncapped page (character 80x120), with 25 % of the device pixels. Drafting-time fps at 390x844 DPR 3, 4x CPU, 5 s idle, before the ground layer existed: uncapped 22.8 fps (1170x2532), `Math.min` 43.9 (780x1688), integer divisor 59.6 (585x1266).
+
+Measured on this branch with `node scripts/measure-fps.mjs <url> <profile>` (3 runs, median; phone = 390x844 DPR 3 touch, 4x CPU throttle; desktop = 1280x720 DPR 1; idle 5 s, then 5 s holding Shift+D; ground layer included). Host load before each run: 1.07, 1.13, 1.11, 1.08.
+
+| Profile / URL | Canvas (backing) | Idle fps / p95 ms | Walk fps / p95 ms |
+|---|---|---|---|
+| phone `?maxdpr=4` (uncapped at DPR 3) | 1170x2532 | 5.9 / 200 | 6.2 / 233.3 |
+| phone default (cap 2 -> resolution 1.5) | 585x1266 | 23.3 / 50.1 | 22.3 / 66.7 |
+| phone `?maxdpr=1` | 390x844 | 45.9 / 33.4 | 42.8 / 33.4 |
+| desktop default | 1280x720 | 26.7 / 50 | 27.6 / 50.1 |
+
+Reading it: the cap cuts the fill by 4x and the software rasterizer's fps rises about 4x (5.9 -> 23.3). The absolute numbers are SwiftShader's and mean nothing for a phone GPU. Desktop (unthrottled CPU) lands near the capped phone because it fills 921,600 px against 740,610; under software rendering fill dominates. The earlier drafting numbers were taken before the ground layer, which is why they are higher.
+
+The GDD budget (at least 30 fps at about 300 entities on mid-range phones) is not measurable in M1: there is one character. It is left to the M2 E2E.
+
+## 3. Startup (first frame)
+
+The mark `overgrown:first-frame` (`performance.mark`, set in `client/src/main.ts`) is the first frame that draws a snapshot with at least one baked ground chunk. Times are ms since navigation start.
+
+Recipe: `node scripts/measure-startup.mjs <url> 5 shot.png`; phone profile (390x844 DPR 3), slow 4G (1.6 Mbit/s down, 150 ms RTT), 4x CPU, HTTP cache off, fresh context per run. Served by `vite preview` on localhost (no compression), built from this branch. Host load before the run: 1.36.
+
+| State | First frame median (min / max) | Worker created | Atlas JSON done | First snapshot | First chunk | Bytes (js / atlas / other / total) | Byte floor |
+|---|---|---|---|---|---|---|---|
+| Before TEC-021 | 4627 ms (4579 / 4675) | 4172 ms | 2243 ms | 4454 ms | 4452 ms | 163,245 / 320,851 / 1,003 / 485,099 | 2425 ms |
+
+Byte floor = total bytes / 200,000 B/s, the time the bytes alone take on the throttled link. The worker is only created after the atlas has loaded and the renderer is up, so first frame is the floor plus a serial chain; TEC-021 adds its "after" row to this table.
+
+## 4. Manual phone check (Lucid)
+
+1. Open the game with `?perf`:
+   - `https://lucidpaths.github.io/overgrown/?perf` once GitHub Pages is enabled (still open, see WORKING_STATE).
+   - Until then: on a computer on the same Wi-Fi run `npm run build && npm -w @overgrown/client run preview -- --host --port 4204`, then on the phone open `http://<computer's LAN IP>:4204/?perf`.
+2. Stand still for 10 s, then read the line under the debug text (for example `fps 25 · worst 59 ms · dpr 3 → 1.5 · 585×1266`).
+3. Repeat with `&maxdpr=4` and `&maxdpr=1` appended. With each, also walk for 10 s using the on-screen stick.
+4. Report, per URL: phone model, browser (and whether it ran inside the X app), the whole `?perf` line, and whether it looked smooth.
+
+| Phone | Browser (X app?) | URL flags | Standing `?perf` line | Walking `?perf` line | Smooth? |
+|---|---|---|---|---|---|
+| (empty, for Lucid) | | | | | |

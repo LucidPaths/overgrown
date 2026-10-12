@@ -11,10 +11,14 @@ import { layoutCamera } from "./render/camera";
 import { ChunkLayer } from "./render/chunk-layer";
 import { createFrame, interpolate } from "./render/interpolate";
 import { requireFrames } from "./render/kind-frames";
+import { MAX_RENDER_DPR, renderResolution } from "./render/resolution";
 import { SnapshotView } from "./render/snapshot-view";
+import { PerfReadout } from "./perf-readout";
 import { TouchOverlay } from "./ui/touch-overlay";
 
 const DEFAULT_SEED = 1;
+/** Performance mark for the first frame that draws a snapshot with at least one baked ground chunk. Read by scripts/measure-*.mjs and docs/perf.md. */
+const FIRST_FRAME_MARK = "overgrown:first-frame";
 
 const root = document.getElementById("app");
 if (!root) {
@@ -39,6 +43,16 @@ function seedFromUrl(): number {
   return DEFAULT_SEED;
 }
 
+/** `?maxdpr=<1..4>` overrides the render-resolution cap (for measuring); missing → default, invalid → default plus a warning. */
+function maxDprFromUrl(): number {
+  const raw = new URLSearchParams(window.location.search).get("maxdpr");
+  if (raw === null) return MAX_RENDER_DPR;
+  if (/^[1-4]$/.test(raw)) return Number(raw);
+  console.warn(`overgrown: ignoring invalid ?maxdpr=${raw} (want an integer 1..4), using ${MAX_RENDER_DPR}`);
+  return MAX_RENDER_DPR;
+}
+const maxDpr = maxDprFromUrl();
+
 // Pixel art: sample textures with nearest-neighbor. Must be set before any texture exists.
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
@@ -48,12 +62,28 @@ try {
     resizeTo: window,
     background: "#1d2b22",
     antialias: false,
-    resolution: window.devicePixelRatio || 1,
+    resolution: renderResolution(window.devicePixelRatio || 1, maxDpr),
     autoDensity: true,
   });
   // A fractional CSS size (backing / resolution at e.g. DPR 2.625) is composited with resampling; keep it nearest.
   app.canvas.style.imageRendering = "pixelated";
   root.appendChild(app.canvas);
+
+  // Browser zoom or another screen changes devicePixelRatio; Pixi's resizeTo only tracks the CSS size.
+  function watchDpr(onChange: () => void): void {
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    mq.addEventListener(
+      "change",
+      () => {
+        watchDpr(onChange);
+        onChange();
+      },
+      { once: true },
+    );
+  }
+  watchDpr(() =>
+    app.renderer.resize(window.innerWidth, window.innerHeight, renderResolution(window.devicePixelRatio || 1, maxDpr)),
+  );
 
   const sheet = await loadCoreAtlas();
   requireFrames(sheet, actorFrameNames());
@@ -72,11 +102,25 @@ try {
   debugText.position.set(4, 4);
   app.stage.addChild(debugText);
 
+  if (new URLSearchParams(window.location.search).has("perf")) {
+    const readout = new PerfReadout(document.body);
+    app.ticker.add(() =>
+      readout.frame(performance.now(), {
+        dpr: window.devicePixelRatio || 1,
+        resolution: app.renderer.resolution,
+        width: app.canvas.width,
+        height: app.canvas.height,
+      }),
+    );
+  }
+
   // Rendering is one tick behind: draw prev -> curr, `alpha` of the way through the tick.
   let prev: Snapshot | null = null;
   let curr: Snapshot | null = null;
   let currReceivedAt = 0;
   const frame = createFrame();
+  let chunksAdded = 0;
+  let firstFrameMarked = false;
   // Camera target: the `you` character, or the last place it was seen.
   let targetX = 0;
   let targetY = 0;
@@ -99,6 +143,10 @@ try {
       input.setLayout(layout);
       ground.update();
       view.update(frame);
+      if (!firstFrameMarked && chunksAdded > 0) {
+        performance.mark(FIRST_FRAME_MARK);
+        firstFrameMarked = true;
+      }
     } catch (error) {
       app.ticker.stop();
       worker.terminate();
@@ -118,6 +166,7 @@ try {
           break;
         case "chunk":
           ground.add(msg);
+          chunksAdded += 1;
           break;
         case "unchunk":
           ground.remove(msg.cx, msg.cy);
