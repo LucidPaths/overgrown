@@ -74,8 +74,8 @@ These are the main source of "feel", so give them real visual budget.
 ## Tasks
 
 - [ ] **WLD-001** `[proto]` Chunk generator: seed + coordinates → tile layer (deterministic, tested).
-- [ ] **WLD-002** `[proto]` Biome map from layered noise (temperature, moisture, elevation); grassland, forest, river, mountain, ocean.
-- [ ] **WLD-003** `[proto]` Chunk streaming: load and unload around players; cache generated chunks.
+- [ ] **WLD-002** `[proto]` Biome map from layered noise (temperature, moisture, elevation); grassland, forest, river, mountain, ocean. Biome regions ~6–10 chunks across (OQ-024).
+- [ ] **WLD-003** `[proto]` Chunk streaming: load and unload around players; cache generated chunks. Spawn and zoom defaults in OQ-024.
 - [ ] **WLD-004** `[proto]` Tile collision and walkability; water depth layer; cliff tiles block, shallow water slows, deep water blocks (OQ-018, OQ-019).
 - [ ] **WLD-005** River and coastline generation that stays continuous across chunk borders.
 - [ ] **WLD-006** Structure placement: settlements, dens, dungeon sites, rift sites (seeded, with minimum spacing).

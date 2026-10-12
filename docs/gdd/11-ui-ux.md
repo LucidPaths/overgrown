@@ -35,7 +35,7 @@ No tutorial island. Spawn near a small friendly village where generated starter 
 ## Tasks
 
 - [ ] **UIX-001** `[proto]` HUD: HP, stamina, mana bars.
-- [ ] **UIX-002** `[proto]` Touch layout: stick, attack, dodge, ability ring; auto-switch by input device.
+- [ ] **UIX-002** `[proto]` Touch layout: stick, attack, dodge, ability ring; auto-switch by input device. Layout per OQ-026.
 - [ ] **UIX-003** Minimap and full map with fog of war.
 - [ ] **UIX-004** Nameplates gated by perception trait.
 - [ ] **UIX-005** Inventory + paper doll screen.

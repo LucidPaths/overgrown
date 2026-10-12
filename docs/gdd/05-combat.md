@@ -79,8 +79,8 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 
 ## Tasks
 
-- [ ] **CMB-001** `[proto]` Desktop input: WASD movement, mouse aim, LMB attack, Space dodge, Shift sprint.
-- [ ] **CMB-002** `[proto]` Touch input: virtual stick, attack button with soft auto-aim, dodge button.
+- [ ] **CMB-001** `[proto]` Desktop input: WASD movement, mouse aim, LMB attack, Space dodge, Shift sprint. M1: attack, dodge and sprint are animation-only with no stamina (OQ-021); movement and facing defaults in OQ-024, OQ-025.
+- [ ] **CMB-002** `[proto]` Touch input: virtual stick, attack button with soft auto-aim, dodge button. M1 scoping in OQ-021; auto-aim defaults in OQ-026.
 - [ ] **CMB-003** `[proto]` Ability hotbar (keys 1–6 / touch ring).
 - [ ] **CMB-004** `[proto]` Stamina pool: costs per action, regen after a pause.
 - [ ] **CMB-005** `[proto]` Dodge roll with invulnerability frames.

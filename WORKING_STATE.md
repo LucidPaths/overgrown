@@ -7,7 +7,14 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M0 complete (2026-10-12).** Housekeeping: OVR-006 merged (#12); OVR-007 in flight. Then M1 (plan pending Lucid's answers).
+**M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
+1. WLD-001 (opus) · CHR-001 (opus) · ART-005 (opus)
+2. WLD-002 (sonnet) · ART-004 (sonnet) · CMB-001 (opus)
+3. WLD-003 (opus) · ART-006 (sonnet)
+4. WLD-004 (sonnet) · TEC-022 (sonnet)
+5. CMB-002 → UIX-002 (sonnet) · TEC-020/TEC-021 (sonnet)
+6. M1 E2E
+Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
 
 Wave plan (dependencies → waves; parallel only on disjoint files):
 1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
@@ -19,11 +26,11 @@ Wave plan (dependencies → waves; parallel only on disjoint files):
 
 Mechanics: main checkout /home/user/overgrown (claude.ai/code cloud container, ephemeral); worktrees in /home/user/wt/<id>; Python venv at repo-root `.venv/`; PR bodies in the scratchpad; PRs, comments and merges via the GitHub connector tools (`gh` has no valid token here; the git proxy refuses branch deletion).
 
-Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions); the Deploy workflow fails on every main push until then; a stray `probe-workflow` branch the proxy won't let me delete (Lucid deletes it in the GitHub UI).
+Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions); the Deploy workflow fails on every main push until then; Birdfolk *Glide* vs "no height-level system" (OQ-018) to raise when Glide is built; a stray `probe-workflow` branch the proxy won't let me delete (Lucid deletes it in the GitHub UI).
 
 ## In flight
 
-OVR-007 (branch ovr-007-dev-env, haiku). M0 is done: 12 tasks, PRs #1–#11, E2E green. Open follow-ups: ART-023, OVR-005, TEC-020, TEC-021 (not in any milestone yet).
+M1 wave 1 specs being written. Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
