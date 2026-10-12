@@ -132,10 +132,10 @@ Frame counts (locked by `contracts/actor-anims.json`): idle 2, walk 4, attack 4,
 Tiles are 16x16 render cells of the dual grid (corners on four world tiles, mask bits TL1 TR2 BL4 BR8). Contract: `contracts/tile-frames.json`.
 
 - **Quiet centres.** A full tile is one base tone plus two to four deliberate clusters (blades, pebbles, ripples, flowers). Per-pixel speckle is forbidden. Features keep 1 px clear of the tile edge so no cluster is ever cut at a seam. [R9, R20, R21]
-- **Variants.** Every full tile has several variants that differ by *which* clusters appear, one quiet, others busier. More variants over less contrast beats more contrast. [R21]
+- **Variants.** Every full tile has ten variants (`contracts/tile-frames.json`) whose clusters differ in kind, count and position, so no feature repeats on a visible lattice; two variants per transition mask. More variants over less contrast beats more contrast. A feature that is unique to one variant (a flower) must be rare: it will recur at the same offset in every tile that draws that variant. [R21]
 - **Transitions are shapes, not noise.** Boundaries are smooth, low-frequency curves with a gradual run-length progression; every edge pixel on a transition frame depends only on its two corners so neighbours meet exactly (the `tests/test_tiles.py` corner rule). [R22]
 - **Edge treatment by terrain class** [R23]: land over land has a lit top lip and a dark bottom/side lip inside the shape; the shoreline lip is pale foam over wet sand; shallow water over deep gets a foam shelf; cliffs are a stratified face under the lit top, in shade; deep and very deep water stay calm (few ripples) so the shallows read as the edge of something.
-- **Terrain character:** grass is clumped blades with rare flowers; dirt is flat with pebbles and cracks; sand is wind ripples and shell glints; stone is slabs with a lit top and a dark base; water is staggered horizontal ripple dashes, longer and lighter in the shallows.
+- **Terrain character:** grass is clumped blades with rare flowers; dirt is flat with pebbles and cracks; sand is wind ripples and shell glints; stone is slab seams (a dark run with one step, lit along its lower edge) and lit chips; water is staggered horizontal ripple dashes, longer and lighter in the shallows.
 - **Never** place a busy terrain beside a busy terrain: busy variants only appear in quiet-edged tiles. [R20]
 
 ## 9. Don't list
@@ -174,3 +174,24 @@ How to extend each family without breaking the look.
 4. No orphan pixels, no thin protrusions, no dither shading?
 5. Only palette colours; no pop colour outside pop things?
 6. Rendered at real game scale on two biomes and looked at?
+
+## 11. Where the rules live in code
+
+| Rule | Code |
+|---|---|
+| Palette recipe (Oklab, hue drift, six-step actor ramps with index 0 = line) | `tools/art/palettes/*.json` (designed offline; the hex values are the source of truth) |
+| Selective outline (own-ramp line colour, lit top edges one step lighter) | `gen/actor.py::Sheet.outline` |
+| Light from above, form shading (top lit, bottom shaded, no side light) | `gen/actor.py::_shape_shade`, `Sheet.darken` |
+| Shape language and species markers | `gen/heads.py` (`HEADS`, `TAILS`), dimensions in `lib/species.py::SPECIES` |
+| Proportions on the 32 px cell, sole line, head overlap | `lib/skeleton.py::base_skeleton`, `HEAD_OVERLAP`, `SOLE_Y` |
+| Fit-in-cell and feet-on-sole checks | `gen/actor.py::_cell_check`, `tests/test_actor.py` |
+| Animation keys, lag of tails and ears | `lib/anims.py::ANIMS`, `Pose.tail` |
+| Quiet tile centres, features off the seam | `gen/tiles.py::_scatter` and the per-terrain texture functions |
+| Organic transitions, ring exactness | `gen/tiles.py::coverage`, `_despeckle` |
+| Edge treatment by terrain class | `gen/tiles.py::_rims`, `_cliff_face` |
+| No colour outside the palette | `tests/test_actor.py::test_actors_use_only_actor_palette_colours` |
+| No orphan pixels | `tests/test_actor.py::test_silhouettes_have_no_orphan_pixels` |
+
+### Template legend (heads and tails)
+
+`1 2 3 4 5` body ramp shades, `A B C D E` accent, `a b c d e` hair, `F G H I J` extra (beak, inner ear). The letter is the shade, so **`A` and `a` are the *darkest*, `C`/`c` the base**; index 0, the line colour, is added by the outline pass. `X` eye, `W` eye shine, `P p` pink, `T t` tusk, `k` the body line colour used inside a shape. Rows may be written in groups of four columns separated by spaces; `sym` mirrors a left half, `raw` takes full rows.

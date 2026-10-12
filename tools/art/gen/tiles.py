@@ -217,15 +217,17 @@ def _sand(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
 def _stone(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
     st = p["stone"]
     img[:] = st[2]
-    cracks = [1, 2, 1, 2, 2, 1][v % 6]
-    for x, y in _scatter(rng, cracks, ext=(5, 3), min_d=6):  # a crack: dark line, lit edge below it
+    for x, y in _scatter(rng, [1, 2, 1, 2, 2][v % 5], ext=(5, 3), min_d=6):
+        # a slab seam: a dark run with one step in it, lit along its lower edge
         n = rng.int(4, 6)
-        dy = 0
+        step = rng.int(2, n - 2)
         for i in range(n):
+            dy = 1 if i >= step else 0
             _put(img, x + i, y + dy, st[1])
             _put(img, x + i, y + dy + 1, st[3])
-            if dy < 2 and rng.int(0, 2) == 0:
-                dy += 1
+        if rng.int(0, 1):  # and a short vertical joint from the end of the seam
+            _put(img, x + n - 1, y + 2, st[1])
+            _put(img, x + n - 1, y + 3, st[1])
     for x, y in _scatter(rng, 2, ext=(1, 0), min_d=5):  # a lit chip
         _stamp(img, x, y, [(0, 0, st[3]), (1, 0, st[3])])
 

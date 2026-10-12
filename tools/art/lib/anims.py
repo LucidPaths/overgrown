@@ -1,4 +1,4 @@
-"""Actor animation poses: small per-frame joint offsets on the shared skeleton (ART-006, OQ-020).
+"""Actor animation poses: small per-frame joint offsets on the shared skeleton (ART-006, ART-024, OQ-020).
 
 A frame is `draw_body` applied to `pose_skeleton(...)`. Poses are pure, fixed data with no
 per-species values, so all species animate through the same tables.
@@ -6,8 +6,8 @@ per-species values, so all species animate through the same tables.
 Invariants (they keep every frame inside the 32x32 cell and the body generator's assumptions):
 - Nothing but a hand moves up: body, chest and head dy are >= 0. Five species have ear or crest
   tips on row 1, so any rise would clip.
-- tail_root never moves: the profile torso depth mirrors from tail_root.x, and low tails hang to
-  rows 29-30.
+- tail_root never moves: tails are drawn from it, and only their cosmetic `tail` offset (a lag of a
+  pixel or two behind the body) changes between frames.
 - Shoulders and hips have no per-side offset: the torso and clothes read only shoulder_l.y and
   hip_l.y.
 - Neck, shoulders, hips and tail_root never move in x. Only head, hands and feet do.
