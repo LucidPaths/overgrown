@@ -84,6 +84,8 @@ One source of truth each. Add to this table when a new one appears.
 | Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
 | Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
 | Ground tile frames `tile/<palette>/<terrain>/<mask>/<variant>`, mask bits TL1 TR2 BL4 BR8, terrain precedence, variant counts, Biome→palette, dual-grid cell = TL tile's biome | `contracts/tile-frames.json` (checked by both suites); impls `client/src/render/tile-frames.ts` ↔ `tools/art/gen/tiles.py` | WLD-003 chunk baking |
+| Actor animation frame counts per anim (plus the species and dir key lists); display timing `ticksPerFrame`/`loop` lives only in TS | `contracts/actor-anims.json` (checked by both suites); impls `tools/art/lib/anims.py` (`ANIMS`) ↔ `client/src/render/actor-anims.ts` (`ACTOR_ANIMS`) | TEC-022 |
+| Actor poses: per-frame joint offsets on `base_skeleton` (only head, hands and feet move in x; `tail_root` never moves), `pose_skeleton`, main-hand anchor `hand_anchor` | `tools/art/lib/anims.py` | `gen/actor.py`, weapons (ART-009), paper doll (ART-010) |
 
 ## Project traps
 
