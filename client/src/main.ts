@@ -1,8 +1,11 @@
 import { TICK_MS } from "@overgrown/sim/constants";
+import { MOVER_AREA_H, MOVER_AREA_W } from "@overgrown/sim/debug-movers";
 import type { HostToSim, SimToHost, Snapshot } from "@overgrown/sim/protocol";
 import { SIM_VERSION } from "@overgrown/sim/version";
-import { Application, Text, TextStyle, TextureStyle } from "pixi.js";
+import { Application, Text, TextStyle, TextureStyle, TilingSprite } from "pixi.js";
+import { loadCoreAtlas } from "./assets";
 import { createFrame, interpolate } from "./render/interpolate";
+import { KIND_FRAMES, requireFrames } from "./render/kind-frames";
 import { SnapshotView } from "./render/snapshot-view";
 
 const DEFAULT_SEED = 1;
@@ -44,7 +47,15 @@ try {
   });
   root.appendChild(app.canvas);
 
-  const view = new SnapshotView(app.stage);
+  const sheet = await loadCoreAtlas();
+  const backdropFrame = "debug/checker16";
+  requireFrames(sheet, [...Object.values(KIND_FRAMES), backdropFrame]);
+
+  // Checker backdrop over the mover area, behind the entities.
+  const backdrop = new TilingSprite({ texture: sheet.textures[backdropFrame]!, width: MOVER_AREA_W, height: MOVER_AREA_H });
+  app.stage.addChild(backdrop);
+
+  const view = new SnapshotView(app.stage, sheet);
 
   const debugText = new Text({
     text: `overgrown · sim v${SIM_VERSION}`,
