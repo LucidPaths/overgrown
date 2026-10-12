@@ -69,6 +69,7 @@ describe("createSim", () => {
       ["moveX", { moveX: NaN }],
       ["moveX", { moveX: 1.5 }],
       ["aimY", { aimY: Infinity }],
+      ["aimX", { aimX: 1e300 }], // finite, but Infinity once stored in the f32 Intent column
       ["attackPresses", { attackPresses: -1 }],
       ["attackPresses", { attackPresses: 1.5 }],
       ["sprint", { sprint: 1 }],
@@ -77,5 +78,36 @@ describe("createSim", () => {
       expect(() => sim.input(input(patch as Partial<InputMessage>))).toThrow(RangeError);
       expect(() => sim.input(input(patch as Partial<InputMessage>))).toThrow(field);
     }
+  });
+
+  it("input: a press buffered during an action survives the latch re-applying messages, and dodge beats attack on the same tick", () => {
+    const sim = createSim(1);
+    const actions: ActionValue[] = [];
+    const record = () => {
+      sim.step();
+      const s = sim.snapshot();
+      actions.push(s.action[Array.from(s.ids).indexOf(s.you)]! as ActionValue);
+    };
+
+    // Attack pressed for tick 1; dodge pressed for tick 6, inside the attack's last BUFFER_TICKS.
+    // A fresh message is posted before every tick, so the latch rewrites buttons each time.
+    for (let tick = 1; tick <= 16; tick++) {
+      sim.input(input({ attackPresses: 1, dodgePresses: tick >= 6 ? 1 : 0 }));
+      record();
+    }
+    const expected: ActionValue[] = [
+      ...Array<ActionValue>(8).fill(Action.Attack), // ticks 1–8
+      ...Array<ActionValue>(7).fill(Action.Dodge), // ticks 9–15
+      Action.Idle, // tick 16
+    ];
+    expect(actions).toEqual(expected);
+
+    // Both presses land on the same tick: dodge wins, and the attack press is dropped.
+    actions.length = 0;
+    for (let k = 0; k < 8; k++) {
+      sim.input(input({ attackPresses: 2, dodgePresses: 2 }));
+      record();
+    }
+    expect(actions).toEqual([...Array<ActionValue>(7).fill(Action.Dodge), Action.Idle]);
   });
 });

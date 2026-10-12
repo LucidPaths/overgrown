@@ -22,8 +22,13 @@ function assertUnitAxis(field: string, v: unknown): void {
   if (typeof v !== "number" || !Number.isFinite(v) || v < -1 || v > 1) throw invalid(field, v, "a finite number in [-1, 1]");
 }
 
-function assertFinite(field: string, v: unknown): void {
-  if (typeof v !== "number" || !Number.isFinite(v)) throw invalid(field, v, "a finite number");
+/** Aim bound in world px: well inside f32 range (the Intent column), so a stored aim is never Infinity. */
+const MAX_AIM = 16_777_216; // 2^24
+
+function assertAim(field: string, v: unknown): void {
+  if (typeof v !== "number" || !Number.isFinite(v) || Math.abs(v) > MAX_AIM) {
+    throw invalid(field, v, `a finite number with |value| <= ${MAX_AIM}`);
+  }
 }
 
 function assertU32(field: string, v: unknown): void {
@@ -36,8 +41,8 @@ function assertU32(field: string, v: unknown): void {
 export function assertInputMessage(msg: InputMessage): void {
   assertUnitAxis("moveX", msg.moveX);
   assertUnitAxis("moveY", msg.moveY);
-  assertFinite("aimX", msg.aimX);
-  assertFinite("aimY", msg.aimY);
+  assertAim("aimX", msg.aimX);
+  assertAim("aimY", msg.aimY);
   if (typeof msg.sprint !== "boolean") throw invalid("sprint", msg.sprint, "a boolean");
   assertU32("attackPresses", msg.attackPresses);
   assertU32("dodgePresses", msg.dodgePresses);
