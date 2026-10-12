@@ -1,11 +1,9 @@
 // Which atlas frame draws each sim Kind. Adding a Kind without a frame here fails typecheck.
-import { Kind } from "@overgrown/sim/protocol";
+import { Kind, type KindValue } from "@overgrown/sim/protocol";
 import type { Spritesheet } from "pixi.js";
 
-export type KindValue = (typeof Kind)[keyof typeof Kind];
-
 export const KIND_FRAMES: Record<KindValue, string> = {
-  [Kind.DebugMover]: "debug/mover32",
+  [Kind.Character]: "debug/character32",
 };
 
 /** Throws naming every frame the atlas lacks, so a stale or wrong atlas is one readable error. */
