@@ -30,7 +30,7 @@ Ramps are designed in Oklab (lightness L, chroma C, hue h in degrees) and frozen
 - **Chroma.** Peaks in the middle, falls toward both ends; the dark end keeps more chroma than the light end. Never a long ramp of fully saturated colour. [R14]
 - **Lightness.** Biome ground ramps: 4 or 5 steps, dL about 0.09 (a compressed, quiet band). Actor ramps: 6 steps, dL about 0.12 to 0.14.
 - **Actor ramp layout (index):** `0` line (the outline colour for that material, L about 0.15 to 0.22), `1` deep shadow (occlusion, under-chin, inside folds), `2` shadow (form shadow, undersides), `3` base, `4` light (top-lit planes), `5` highlight (1 to 2 px specular, never a region).
-- **Biome ramp layout:** grass (5), grass_alt (3, a bluer patch tone), dirt (5), sand (4), stone (5), cliff (5), shallow_water (5), deep_water (3), very_deep_water (3), detail (4: flowers, litter, pebbles, shells, blossoms, ordered dark to light).
+- **Biome ramp layout:** grass (5), grass_alt (3, a bluer tone, used for the cool root of grass tufts), dirt (5), sand (4), stone (5), cliff (5), shallow_water (5), deep_water (3), very_deep_water (3), detail (4: flowers, litter, pebbles, shells, blossoms, ordered dark to light).
 
 ### 1.3 Biome moods
 

@@ -35,7 +35,7 @@ class Template:
         width = {len(r) for r in self.rows}
         if len(width) != 1 or next(iter(width)) % 2:
             raise ValueError(f"template rows must share one even width, got {sorted(width)}")
-        bad = sorted({c for r in self.rows for c in r} - set(LEGEND))
+        bad = sorted({c for r in self.rows for c in r} - set(LEGEND) - set(BLANK))
         if bad:
             raise ValueError(f"template uses unknown legend characters {bad}")
 
@@ -62,17 +62,21 @@ def raw(rows: list[str], chin: int | None = None) -> Template:
     return Template(tuple(_clean(rows)), chin)
 
 
-def ctr(rows: list[str], chin: int | None = None, width: int = 16) -> Template:
-    """A symmetric template from rows of even length, each centred in `width` columns."""
-    out = []
-    for r in _clean(rows):
-        if (width - len(r)) % 2:
-            raise ValueError(f"ctr row {r!r} cannot be centred in {width} columns")
-        out.append(r.center(width, "."))
-    return Template(tuple(out), chin)
-
-
-LEGEND = set(". 12345ABCDEabcdeFGHIJXWTtPpk")
+# Shade indices into a six-step actor ramp: 0 line, 1 deep shadow, 2 shadow, 3 base, 4 light, 5 highlight.
+LEGEND: dict[str, tuple[str, int]] = {
+    **{str(i): ("body", i) for i in range(1, 6)},
+    **{c: ("accent", i) for i, c in enumerate("ABCDE", 1)},
+    **{c: ("hair", i) for i, c in enumerate("abcde", 1)},
+    **{c: ("extra", i) for i, c in enumerate("FGHIJ", 1)},
+    "X": ("eye", 0),
+    "W": ("shine", 0),
+    "T": ("tusk", 4),
+    "t": ("tusk", 3),
+    "P": ("pink", 3),
+    "p": ("pink", 2),
+    "k": ("body", 0),
+}
+BLANK = ". "  # characters that draw nothing
 
 HEADS: dict[str, dict[str, Template]] = {
     "human": {
@@ -611,7 +615,7 @@ class TailTemplate:
     def __post_init__(self) -> None:
         if len({len(r) for r in self.rows}) != 1:
             raise ValueError("tail rows must share one width")
-        bad = sorted({c for r in self.rows for c in r} - LEGEND)
+        bad = sorted({c for r in self.rows for c in r} - set(LEGEND) - set(BLANK))
         if bad:
             raise ValueError(f"tail uses unknown legend characters {bad}")
 
@@ -743,4 +747,7 @@ def tail(tail_kind: str, view: str) -> TailTemplate | None:
 
 
 def template(species_key: str, view: str) -> Template:
-    return HEADS.get(species_key, HEADS["human"])[view]
+    try:
+        return HEADS[species_key][view]
+    except KeyError as err:
+        raise ValueError(f"heads: no template for species {species_key!r} view {view!r}") from err

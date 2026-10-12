@@ -33,21 +33,6 @@ _MARK = (255, 255, 255, 255)  # scratch colour for building masks with draw.line
 # Shade indices into a six-step actor ramp (docs/art/DIRECTION.md section 1.2).
 LINE, DEEP, SHADOW, BASE, LIGHT, HIGH = range(6)
 
-# Template legend letters: (role, shade). Roles are ramps registered on the Sheet.
-_LEGEND: dict[str, tuple[str, int]] = {
-    **{str(i): ("body", i) for i in range(1, 6)},
-    **{c: ("accent", i) for i, c in enumerate("ABCDE", 1)},
-    **{c: ("hair", i) for i, c in enumerate("abcde", 1)},
-    **{c: ("extra", i) for i, c in enumerate("FGHIJ", 1)},
-    "X": ("eye", 0),
-    "W": ("shine", 0),
-    "T": ("tusk", LIGHT),
-    "t": ("tusk", BASE),
-    "P": ("pink", BASE),
-    "p": ("pink", SHADOW),
-    "k": ("body", LINE),
-}
-
 
 def frame_name(species_key: str, anim: str, direction: str, index: int) -> str:
     """The actor frame-name contract: actor/<species>/<anim>/<dir>/<i>."""
@@ -114,14 +99,14 @@ class Sheet:
         covered = np.zeros((CELL, CELL), bool)
         for dy, row in enumerate(rows):
             for dx, ch in enumerate(row):
-                if ch in ". ":
+                if ch in heads.BLANK:
                     continue
                 x, y = x0 + dx, y0 + dy
                 if y > SOLE_Y:  # hanging beards and hair are cut at the sole line (a deep crouch)
                     continue
                 if not (0 <= x < CELL and 0 <= y):
                     raise ValueError(f"template pixel {ch!r} at ({x}, {y}) is off the cell")
-                role, shade = _LEGEND[ch]
+                role, shade = heads.LEGEND[ch]
                 self.own[y, x] = self.roles[role]
                 self.sh[y, x] = shade
                 covered[y, x] = True
