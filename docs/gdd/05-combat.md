@@ -105,3 +105,4 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 - [ ] **CMB-023** Hitting flyers during their attack pass (→ ECO-012).
 - [ ] **CMB-024** Optional click-to-move control scheme (settings toggle).
 - [ ] **CMB-025** Downed state: ~10 s at 0 HP, ally revive by channeling, death on expiry or finishing blow; corpse is lootable only after death.
+- [ ] **CMB-026** Gamepad input: move, aim, attack, dodge, sprint through the shared HostInput. (OQ-029)

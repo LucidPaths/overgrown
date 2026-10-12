@@ -26,7 +26,7 @@ client/        @overgrown/client — Vite + PixiJS app (renderer, input, UI, wor
 tools/art/     Python asset pipeline → client/public/generated/ (gitignored build output)
 contracts/     cross-language fixtures (e.g. RNG test vectors) shared by TS and Python tests
 scripts/       dev tools run with node (check-page.mjs: headless page check)
-services/      (later) tiny signaling service
+services/      (later) dedicated host and other services (TEC-018)
 .claude/skills/ discipline skills copied from LucidPaths/claude.md-workflow (goal-loop, adversarial-review, …); docs/agents/ wins where they differ
 docs/          gdd/, agents/, specs/, e2e/, PRINCIPLE_LATTICE.md
 ```

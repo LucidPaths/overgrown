@@ -13,7 +13,7 @@
 | Layer | Choice | Why |
 |-------|--------|-----|
 | Language | TypeScript (strict) | One language for client, sim and the dedicated host |
-| Rendering | web-tech renderer (PixiJS today; the renderer choice follows ART-025/026) | Fast batched 2D sprites; a small fraction of a full engine's web export |
+| Rendering | web-tech renderer (PixiJS today; the renderer choice is open, see the art lab exploration) | Fast batched 2D sprites; a small fraction of a full engine's web export |
 | Build | Vite | Fast dev loop, code splitting |
 | Simulation | Plain TS, in a Web Worker | Keeps the render thread smooth; the worker is the "server" when hosting |
 | Netcode | host + joiners over LAN/internet; transport decided in TEC-010 | One machine hosts the world (OQ-029) |
@@ -82,3 +82,4 @@ client (main thread)            sim worker                    joiners
 - [x] **TEC-020** `[proto]` Cap the render device-pixel-ratio (e.g. ≤ 2) and measure fps on a real mid-range phone GPU; record the numbers (found in M0 E2E: software-GL fps fell to 15 at DPR 3). (OQ-023) — #27
 - [x] **TEC-021** `[proto]` Cut the startup waterfall: start the sim worker in parallel with the atlas load (Pixi's chunk fan-out was measured off the critical path), and ship the atlas as lossless WebP; target first frame ≤ 3 s on emulated slow 4G + 4× CPU (found in M0 E2E: 2.65–2.79 s). (OQ-023, OQ-028) — #28
 - [x] **TEC-022** `[proto]` Animated actor rendering: map each character's species, facing and action from the snapshot to atlas frames, replacing the one-frame-per-Kind lookup for characters (→ CHR-001, ART-006). (OQ-023) — #24
+- [ ] **TEC-023** Desktop shell: choose and set up how overgrown runs as a desktop app (local browser, Tauri or Electron), with a one-command launch for host and joiners. (OQ-029)

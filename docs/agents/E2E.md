@@ -5,7 +5,7 @@ Runs once per **milestone**, after every task in it has merged ([MILESTONES.md](
 ## Procedure
 
 1. Build `main` from a clean checkout. Record the commands and their results.
-2. Run the game in a real browser (headless with scripted input is fine; use touch emulation for touch tasks). Boot and console checks use `node scripts/check-page.mjs <url> [shot.png] [waitMs]`; scripted input means writing a Playwright script with `playwright-core`.
+2. Run the game in a real browser (headless with scripted input is fine; drive keyboard, mouse and gamepad input; touch is not a target (OQ-029)). Boot and console checks use `node scripts/check-page.mjs <url> [shot.png] [waitMs]`; scripted input means writing a Playwright script with `playwright-core`.
 3. Walk through every feature of the milestone **as a player would**, following the milestone's checklist. Capture a screenshot for each step.
 4. Check the budgets that apply: load size, first-frame time, fps with the milestone's entity counts.
 5. Check the cross-cutting rules: same seed gives the same world, nothing crashes on reload, and the console has no errors.
