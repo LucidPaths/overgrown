@@ -7,7 +7,7 @@ Last updated: 2026-10-12
 
 ## Current phase
 
-**M1 complete (2026-10-12):** all 14 tasks merged (#15–#28) and the M1 E2E passed every checklist and extra item (docs/e2e/M1.md, this PR). Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
+**M1 complete (2026-10-12):** all 14 tasks merged (#15–#28) and the M1 E2E passed every checklist and extra item (docs/e2e/M1.md, this PR). Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
