@@ -14,7 +14,7 @@
 
 ```
 tools/art/  (Python)
-  palettes/        biome + pop palettes (data)
+  palettes/        biome + pop + actor palettes (data)
   lib/             primitives: shapes, outlines, shading ramps, dithering, noise
   gen/             one generator per asset family (tiles, bodies, armor, weapons, monsters, props, vfx, icons)
   build.py         runs all generators → atlases/*.png + atlases/*.json

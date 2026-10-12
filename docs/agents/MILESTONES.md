@@ -20,7 +20,7 @@ OVR-001 · OVR-002 · OVR-003 · TEC-001 · TEC-002 · TEC-003 · TEC-004 · TEC
 
 WLD-001 · WLD-002 · WLD-003 · WLD-004 · ART-004 · ART-005 · ART-006 · CHR-001 · CMB-001 · CMB-002 · UIX-002 · TEC-020 · TEC-021 · TEC-022
 
-Design locked by OQ-018 to OQ-027 (2026-10-12).
+Design locked by OQ-018 to OQ-027 (2026-10-12); TEC-020, TEC-021 and TEC-022 joined M1 per OQ-023.
 
 **E2E checklist**
 - Create a world from a seed and walk with the keyboard, then with touch emulation.
