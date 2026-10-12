@@ -1,6 +1,7 @@
-// Draws the latest sim snapshot. Read-only toward the sim: it only reads snapshots.
-import { Kind, type Snapshot } from "@overgrown/sim/protocol";
+// Draws an interpolated frame. Read-only toward the sim: it only reads snapshots.
+import { Kind } from "@overgrown/sim/protocol";
 import { Container, Sprite, Texture } from "pixi.js";
+import type { Frame } from "./interpolate";
 
 const SIZE = 8;
 const KIND_TINT: Record<number, number> = { [Kind.DebugMover]: 0xe8c547 };
@@ -14,7 +15,7 @@ export class SnapshotView {
     parent.addChild(this.layer);
   }
 
-  update(s: Snapshot): void {
+  update(s: Frame): void {
     const present = new Set<number>();
     for (let i = 0; i < s.count; i++) {
       const id = s.ids[i]!;
