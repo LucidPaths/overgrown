@@ -10,7 +10,7 @@ Last updated: 2026-10-12
 **M1 in progress (2026-10-12).** Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027, this PR). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
-3. WLD-003 (opus) · ✅ ART-006 #21
+3. ✅ WLD-003 #22 · ART-006 #21
 4. WLD-004 (sonnet) · TEC-022 (sonnet)
 5. CMB-002 → UIX-002 (sonnet) · TEC-020/TEC-021 (sonnet)
 6. M1 E2E
@@ -30,7 +30,7 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-Waves 1–2 and ART-006 merged (#15–#21). WLD-003 in PR. Next: WLD-004 ∥ TEC-022, then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also check a chunk border where terrain changes (WLD-003's re-bake rule has no automated guard) and record stall numbers vs a no-ground baseline (software GL halves fps here). Open follow-ups outside M1: ART-023, OVR-005.
+Waves 1–3 merged (#15–#22). WLD-004 in PR; TEC-022 critic PASS, next PR. Then CMB-002 → UIX-002 → TEC-020 → TEC-021 (serial: all touch client/src/main.ts), then M1 E2E. All remaining specs are locked (orchestrator scratchpad specs/). M1 E2E must also: check a chunk border where terrain changes (WLD-003 re-bake rule has no automated guard); record stall numbers vs a no-ground baseline (software GL halves fps here); verify characters animate in-game (TEC-022's KIND_FRAMES wiring is only smoke-tested). Open follow-ups outside M1: ART-023, OVR-005.
 
 ## Decisions (accumulate)
 
@@ -52,6 +52,7 @@ Waves 1–2 and ART-006 merged (#15–#21). WLD-003 in PR. Next: WLD-004 ∥ TEC
 ## Corrections (accumulate; mistakes not to repeat)
 
 - 2026-10-12 PR #14 (docs-only design lock) took 4 Fable rounds on cross-reference bookkeeping. Before gating a GDD edit, run a scripted sweep: every OQ "Applied in" cell ↔ task-line pointers ↔ prose mentions, and re-read surrounding prose and MILESTONES checklists.
+- 2026-10-12 Never chain verification after `git commit` with `&&`: an empty commit exits 1 and silently skips venv activation, so ruff/pytest 'fail'. Activate the venv first, on its own.
 - 2026-10-12 Never chain `git add -A && git commit` after a `git merge` without checking `git diff --name-only --diff-filter=U` first: a conflicted CLAUDE.md got committed with markers on the ART-005 branch (caught before push, amended).
 - 2026-10-12 Parallel tasks that each add CLAUDE.md contract rows: merge `main` into the later branch before its Fable gate, so the gate sees the real head.
 
