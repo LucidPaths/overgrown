@@ -80,6 +80,7 @@ One source of truth each. Add to this table when a new one appears.
 | Actor skeleton joints, l/r = character's own side, `SOLE_Y` | `tools/art/lib/skeleton.py` | `gen/actor.py` (ART-005/006), weapons (ART-009), paper doll (ART-010) |
 | Species body table (dimensions, features, ramps) | `tools/art/lib/species.py` | `gen/actor.py`, ART-010 |
 | Actor frame names `actor/<species>/<anim>/<dir>/<i>`; anim ∈ `idle, walk, attack_blade, attack_unarmed, dodge, hurt, death` | `tools/art/gen/actor.py::frame_name` | `client` animated actor rendering (TEC-022) |
+| Ground tile frames `tile/<palette>/<terrain>/<mask>/<variant>`, mask bits TL1 TR2 BL4 BR8, terrain precedence, variant counts, Biome→palette, dual-grid cell = TL tile's biome | `contracts/tile-frames.json` (checked by both suites); impls `client/src/render/tile-frames.ts` ↔ `tools/art/gen/tiles.py` | WLD-003 chunk baking |
 
 ## Project traps
 
