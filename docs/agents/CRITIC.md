@@ -11,7 +11,7 @@ Your job is to **refute** the claim that the branch delivers the spec's desired 
 
 ## Procedure
 
-1. Run every verification command in the spec yourself. Record exact results.
+1. Run every verification command in the spec yourself, including any `scripts/check-page.mjs` command. Record exact results.
 2. For each AC, decide met or unmet based on **your own evidence**, not the worker's.
 3. Hunt for failures: the desired result not actually reached, edge cases the ACs miss, scope breaches, lattice violations.
 4. For each candidate finding, try to **disprove** it by reading the code that would handle it. Keep only findings that survive.

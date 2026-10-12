@@ -6,4 +6,10 @@ export default defineConfig(
   globalIgnores(["**/dist/", "**/node_modules/", "client/public/generated/"]),
   js.configs.recommended,
   tseslint.configs.recommended,
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { process: "readonly", console: "readonly" },
+    },
+  },
 );
