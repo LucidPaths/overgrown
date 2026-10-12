@@ -69,6 +69,7 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 - [ ] **ART-022** Contact-sheet preview output for PR review.
 - [ ] **ART-023** Harden `draw.py` validation and tests: validate `shade_sphere` light via `_finite`; test np.bool_ rejection, np.float64 in `ellipse_mask`, and the uint8-overflow guard (`int(v)` conversion) found by the ART-003 critic and Fable gate.
 - [x] **ART-024** Art direction pass: research open-source game-art practice and design skills, write the art bible (`docs/art/`), and redraw actors, ground tiles and palettes to it (Lucid, 2026-10-12). — #30
+- [ ] **ART-025** Art lab: unconstrained art-direction exploration with a browser prototype, art bible and integration plan (`docs/art/lab/`); the agent has full creative freedom inside "everything is ours", the 2D sim and phone budgets (Lucid, 2026-10-13).
 - [ ] **AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.
 - [ ] **AUD-002** SFX set: hits per material, footsteps per terrain, UI, creature calls, spells.
 - [ ] **AUD-003** Runtime WebAudio mixer with spatial panning and volume buses.
