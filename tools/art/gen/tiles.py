@@ -156,7 +156,7 @@ def _stamp(img: np.ndarray, x: int, y: int, shape: list[tuple[int, int, object]]
 def _grass(img: np.ndarray, rng: Rng, p: dict, v: int) -> None:
     g, det = p["grass"], p["detail"]
     img[:] = g[2]
-    tufts = [2, 2, 3, 2, 3, 2][v % 6]
+    tufts = [3, 3, 4, 3, 4, 3][v % 6]
     flowers = [0, 0, 0, 0, 0, 1][v % 6]
     for i, (x, y) in enumerate(_scatter(rng, tufts + flowers, ext=(2, 2), min_d=5)):
         if i < tufts:  # a blade tuft seen from above: two lit tips over a shaded root
