@@ -6,6 +6,8 @@ import { assertInputMessage, createInputLatch, latchInput } from "./input";
 import { stepMovement } from "./movement";
 import { Species, type ChunkStreamMessage, type InputMessage, type Snapshot } from "./protocol";
 import { createChunkStore, type AnchorPos } from "./world/chunk-store";
+import { findSpawn } from "./world/spawn";
+import type { TileLookup } from "./world/walkability";
 
 export interface Sim {
   readonly tick: number;
@@ -28,7 +30,9 @@ export function createSim(seed: number): Sim {
   const world = createCharacterWorld(ecs);
   const chunkAnchor = ecs.register("ChunkAnchor", {});
   const chunks = createChunkStore(seed);
-  const player = spawnCharacter(world, { x: 0, y: 0, species: Species.Human, tick: 0 });
+  const spawn = findSpawn(chunks); // OQ-024; throws if no walkable Grassland within SPAWN_SEARCH_RADIUS
+  const player = spawnCharacter(world, { x: spawn.x, y: spawn.y, species: Species.Human, tick: 0 });
+  const tileAt: TileLookup = (tx, ty) => chunks.tileAt(tx, ty);
   const latch = createInputLatch();
   // ChunkAnchor marks characters a host input channel drives (the local player now; every peer's character in TEC-011).
   // Streaming reads only this tag, never the player id.
@@ -56,7 +60,7 @@ export function createSim(seed: number): Sim {
       tick += 1;
       latchInput(latch, world, player); // the only player-specific line: every system below is shared
       stepActions(world, tick);
-      stepMovement(world, tick);
+      stepMovement(world, tick, tileAt);
       streamChunks(); // last, so it sees this tick's positions
     },
     input(msg) {
