@@ -46,6 +46,8 @@ try {
     resolution: window.devicePixelRatio || 1,
     autoDensity: true,
   });
+  // A fractional CSS size (backing / resolution at e.g. DPR 2.625) is composited with resampling; keep it nearest.
+  app.canvas.style.imageRendering = "pixelated";
   root.appendChild(app.canvas);
 
   const sheet = await loadCoreAtlas();
