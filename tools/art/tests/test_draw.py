@@ -69,3 +69,32 @@ def test_to_image_rejects_non_binary_alpha():
     img[0, 0] = (10, 20, 30, 128)
     with pytest.raises(ValueError, match="non-binary alpha"):
         draw.to_image(img)
+
+
+def test_out_of_bounds_drawing_is_clipped_and_bad_coords_are_rejected():
+    img = draw.canvas(4, 4)
+    draw.rect(img, -2, -3, 4, 5, RED)  # overlaps columns 0-1, rows 0-1
+    assert len(_opaque(img)) == 4
+    img = draw.canvas(4, 4)
+    draw.rect(img, 3, 3, 9, 9, RED)
+    assert _opaque(img) == {(3, 3)}
+
+    img = draw.canvas(4, 4)
+    draw.line(img, -3, 1, 6, 1, RED)  # crosses the whole row, ends outside both sides
+    assert _opaque(img) == {(0, 1), (1, 1), (2, 1), (3, 1)}
+
+    src = draw.canvas(3, 3)
+    draw.rect(src, 0, 0, 3, 3, BLUE)
+    img = draw.canvas(4, 4)
+    draw.paste(img, src, -1, -1)  # only the 2x2 corner of src lands
+    assert _opaque(img) == {(0, 0), (1, 0), (0, 1), (1, 1)}
+    draw.paste(img, src, 3, 3)  # only src's top-left pixel lands
+    assert (3, 3) in _opaque(img) and len(_opaque(img)) == 5
+
+    for bad in (3.5, float("nan"), True):
+        with pytest.raises(ValueError, match="x1"):
+            draw.line(img, 0, 0, bad, 3, RED)
+    with pytest.raises(ValueError, match="x1"):
+        draw.line(img, 0, 0, 10**9, 3, RED)
+    with pytest.raises(ValueError, match="x"):
+        draw.rect(img, 1.5, 0, 1, 1, RED)

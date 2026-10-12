@@ -28,6 +28,23 @@ def _color(color: Rgba) -> np.ndarray:
     return np.array(color, np.uint8)
 
 
+LINE_COORD_MAX = 100_000  # line() walks every pixel of its span, so unbounded spans are refused
+
+
+def _ints(**values: object) -> None:
+    """Every named value must be a real int (bool, float and NaN are rejected)."""
+    for name, v in values.items():
+        if not isinstance(v, int) or isinstance(v, bool):
+            raise ValueError(f"{name} must be an int, got {v!r}")  # noqa: TRY004
+
+
+def _finite(**values: object) -> None:
+    """Every named value must be a finite real number (bool and NaN/inf are rejected)."""
+    for name, v in values.items():
+        if not isinstance(v, int | float) or isinstance(v, bool) or not math.isfinite(v):
+            raise ValueError(f"{name} must be a finite number, got {v!r}")
+
+
 def _check_image(img: np.ndarray) -> None:
     if img.ndim != 3 or img.shape[2] != 4 or img.dtype != np.uint8:
         raise ValueError(f"image must be uint8 (H, W, 4), got {img.dtype} {img.shape}")
@@ -43,6 +60,7 @@ def _check_mask(img: np.ndarray, mask: np.ndarray) -> None:
 
 def canvas(w: int, h: int) -> np.ndarray:
     """Fully transparent w x h image."""
+    _ints(w=w, h=h)
     if w < 1 or h < 1:
         raise ValueError(f"canvas size must be at least 1x1, got {w}x{h}")
     return np.zeros((h, w, 4), np.uint8)
@@ -51,6 +69,7 @@ def canvas(w: int, h: int) -> np.ndarray:
 def rect(img: np.ndarray, x: int, y: int, w: int, h: int, color: Rgba) -> None:
     """Filled rectangle with top-left (x, y), clipped to the image."""
     _check_image(img)
+    _ints(x=x, y=y, w=w, h=h)
     c = _color(color)
     x0, y0 = max(x, 0), max(y, 0)
     x1, y1 = min(x + w, img.shape[1]), min(y + h, img.shape[0])
@@ -64,6 +83,10 @@ def line(img: np.ndarray, x0: int, y0: int, x1: int, y1: int, color: Rgba) -> No
     Exact ties (the line passes between two pixels) round toward the line's end point.
     """
     _check_image(img)
+    _ints(x0=x0, y0=y0, x1=x1, y1=y1)
+    for name, v in (("x0", x0), ("y0", y0), ("x1", x1), ("y1", y1)):
+        if abs(v) > LINE_COORD_MAX:
+            raise ValueError(f"{name}={v} is outside +-{LINE_COORD_MAX}")
     c = _color(color)
     h, w = img.shape[:2]
     dx, dy = abs(x1 - x0), -abs(y1 - y0)
@@ -87,6 +110,8 @@ def line(img: np.ndarray, x0: int, y0: int, x1: int, y1: int, color: Rgba) -> No
 
 def ellipse_mask(w: int, h: int, cx: float, cy: float, rx: float, ry: float) -> np.ndarray:
     """Bool (h, w) mask: pixel (x, y) is inside iff ((x+0.5-cx)/rx)^2 + ((y+0.5-cy)/ry)^2 <= 1."""
+    _ints(w=w, h=h)
+    _finite(cx=cx, cy=cy, rx=rx, ry=ry)
     if rx <= 0 or ry <= 0:
         raise ValueError(f"ellipse radii must be positive, got rx={rx} ry={ry}")
     ys, xs = np.mgrid[0:h, 0:w]
@@ -182,6 +207,7 @@ def paste(dst: np.ndarray, src: np.ndarray, x: int, y: int) -> None:
     """Copy src pixels with alpha 255 onto dst at (x, y), clipped to dst."""
     _check_image(dst)
     _check_image(src)
+    _ints(x=x, y=y)
     sh, sw = src.shape[:2]
     dh, dw = dst.shape[:2]
     cx0, cy0 = max(x, 0), max(y, 0)
