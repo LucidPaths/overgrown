@@ -44,8 +44,8 @@ Byte floor = total bytes / 200,000 B/s, the time the bytes alone take on the thr
 1. Open the game with `?perf`:
    - `https://lucidpaths.github.io/overgrown/?perf` once GitHub Pages is enabled (still open, see WORKING_STATE).
    - Until then: on a computer on the same Wi-Fi run `npm run build && npm -w @overgrown/client run preview -- --host --port 4204`, then on the phone open `http://<computer's LAN IP>:4204/?perf`.
-2. Stand still for 10 s, then read the line under the debug text (`fps .. - worst .. ms - dpr .. -> .. - WxH`).
-3. Repeat with `&maxdpr=4` and `&maxdpr=1` appended. If the touch controls exist, also walk for 10 s with each.
+2. Stand still for 10 s, then read the line under the debug text (for example `fps 25 · worst 59 ms · dpr 3 → 1.5 · 585×1266`).
+3. Repeat with `&maxdpr=4` and `&maxdpr=1` appended. With each, also walk for 10 s using the on-screen stick.
 4. Report, per URL: phone model, browser (and whether it ran inside the X app), the whole `?perf` line, and whether it looked smooth.
 
 | Phone | Browser (X app?) | URL flags | Standing `?perf` line | Walking `?perf` line | Smooth? |
