@@ -182,8 +182,10 @@ export class Model {
 
 function sdEllipsoid(x: number, y: number, z: number, r: V3): number {
   // iq's bound: exact on the surface, a good-enough distance near it
-  const k0 = Math.hypot(x / r[0], y / r[1], z / r[2]);
-  const k1 = Math.hypot(x / (r[0] * r[0]), y / (r[1] * r[1]), z / (r[2] * r[2]));
+  const ax = x / r[0], ay = y / r[1], az = z / r[2];
+  const k0 = Math.sqrt(ax * ax + ay * ay + az * az);
+  const bx = ax / r[0], by = ay / r[1], bz = az / r[2];
+  const k1 = Math.sqrt(bx * bx + by * by + bz * bz);
   return k1 === 0 ? -Math.min(r[0], r[1], r[2]) : (k0 * (k0 - 1)) / k1;
 }
 
@@ -191,7 +193,7 @@ function sdRoundCone(px: number, py: number, pz: number, p: number[]): number {
   // p relative to a; b - a = (bx, by, bz); radii r1 (at a), r2 (at b). iq's exact round cone.
   const bx = p[0]!, by = p[1]!, bz = p[2]!, r1 = p[3]!, r2 = p[4]!;
   const l2 = bx * bx + by * by + bz * bz;
-  if (l2 < 1e-9) return Math.hypot(px, py, pz) - Math.max(r1, r2);
+  if (l2 < 1e-9) return Math.sqrt(px * px + py * py + pz * pz) - Math.max(r1, r2);
   const rr = r1 - r2;
   const a2 = l2 - rr * rr;
   const il2 = 1 / l2;
@@ -210,12 +212,12 @@ function sdRoundCone(px: number, py: number, pz: number, p: number[]): number {
 function sdRoundBox(x: number, y: number, z: number, h: V3, round: number): number {
   const qx = Math.abs(x) - h[0] + round, qy = Math.abs(y) - h[1] + round, qz = Math.abs(z) - h[2] + round;
   const ox = Math.max(qx, 0), oy = Math.max(qy, 0), oz = Math.max(qz, 0);
-  return Math.hypot(ox, oy, oz) + Math.min(Math.max(qx, qy, qz), 0) - round;
+  return Math.sqrt(ox * ox + oy * oy + oz * oz) + Math.min(Math.max(qx, qy, qz), 0) - round;
 }
 
 function sdTorus(x: number, y: number, z: number, R: number, r: number): number {
-  const q = Math.hypot(x, z) - R;
-  return Math.hypot(q, y) - r;
+  const q = Math.sqrt(x * x + z * z) - R;
+  return Math.sqrt(q * q + y * y) - r;
 }
 
 /** Signed distance of one primitive at world-rest point (x, y, z). */
