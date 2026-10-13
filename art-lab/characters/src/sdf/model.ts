@@ -76,6 +76,9 @@ export interface Shell {
   fold: number;
   folds: number;
   foldY: number;
+  /** below this height the shell takes `soleMat` (boot soles) */
+  soleY: number;
+  soleMat: number;
 }
 
 export interface PrimOpts {
@@ -91,15 +94,21 @@ export class Model {
   readonly prims: Prim[] = [];
   /** layer 0 is the body; every shell adds a layer */
   readonly shells: (Shell | null)[] = [null];
+  /** per layer: never drawn, only a base for shells (a skirt's bell around both legs) */
+  readonly hidden: boolean[] = [false];
+  /** per layer: a proxy is smooth-unioned with this layer (radius k) before shells use it */
+  readonly proxyOf: ({ base: number; k: number } | null)[] = [null];
   private layer = 0;
 
   constructor(readonly bones: number, readonly mats: number) {}
 
   /** Starts a shell layer around `base` (default: the body). Following prims are its masks (unioned). */
   beginShell(s: Partial<Shell> & { thickness: number; mat: number }): number {
+    this.hidden.push(false);
+    this.proxyOf.push(null);
     this.shells.push({
       base: s.base ?? 0, thickness: s.thickness, mat: s.mat, flare: s.flare ?? 0, flareY: s.flareY ?? 0,
-      hem: s.hem ?? 0, hemW: s.hemW ?? 0.8, hemMat: s.hemMat ?? -1, hemPrims: s.hemPrims ?? 0, fold: s.fold ?? 0, folds: s.folds ?? 9, foldY: s.foldY ?? 1e9,
+      hem: s.hem ?? 0, hemW: s.hemW ?? 0.8, hemMat: s.hemMat ?? -1, hemPrims: s.hemPrims ?? 0, fold: s.fold ?? 0, folds: s.folds ?? 9, foldY: s.foldY ?? 1e9, soleY: s.soleY ?? -1e9, soleMat: s.soleMat ?? -1,
     });
     this.layer = this.shells.length - 1;
     return this.layer;
@@ -107,6 +116,21 @@ export class Model {
 
   /** Starts a solid layer (hair, armour plates, a belt): its own prims, joined to the rest with a hard min. */
   beginSolid(): number {
+    this.hidden.push(false);
+    this.proxyOf.push(null);
+    this.shells.push(null);
+    this.layer = this.shells.length - 1;
+    return this.layer;
+  }
+
+  /**
+   * Starts a hidden proxy layer: `base` smooth-unioned (radius k) with the following prims. It is never drawn;
+   * a shell built on it drapes over the proxy instead of the body (a skirt that bridges the legs). Its prims'
+   * bones become the drape's skin weights where the proxy wins.
+   */
+  beginProxy(base = 0, k = 1.5): number {
+    this.hidden.push(true);
+    this.proxyOf.push({ base, k });
     this.shells.push(null);
     this.layer = this.shells.length - 1;
     return this.layer;

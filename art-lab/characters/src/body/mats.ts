@@ -43,8 +43,8 @@ export function hex(h: number): RGB {
 export function shadeOf(c: RGB, kind: "skin" | "fur" | "cloth" | "metal" | "hard" = "cloth"): RGB {
   const [r, g, b] = c;
   switch (kind) {
-    case "skin": return [r * 0.78, g * 0.5, b * 0.52];
-    case "fur": return [r * 0.66, g * 0.48, b * 0.5];
+    case "skin": return [r * 0.9, g * 0.6, b * 0.58];
+    case "fur": return [r * 0.74, g * 0.54, b * 0.55];
     case "metal": return [r * 0.32, g * 0.36, b * 0.5];
     case "hard": return [r * 0.6, g * 0.5, b * 0.52];
     default: {

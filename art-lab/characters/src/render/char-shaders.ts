@@ -184,30 +184,38 @@ void main() {
   float ao = vMatW.w;
   // terminator: one crisp step, pushed toward the light where the form is occluded (armpits, under the chin)
   float ndl = dot(n, uKey);
-  float th = mix(0.3, -0.02, smoothstep(0.25, 0.85, ao));
-  float fw = fwidth(ndl) + 0.015;
+  float th = mix(0.22, -0.05, smoothstep(0.25, 0.85, ao));
+  float fw = fwidth(ndl) + 0.02;
   float lit = smoothstep(th - fw, th + fw, ndl) * (1.0 - uInShadow * 0.85);
   vec3 amb = mix(uBounceCol, uSkyCol, n.y * 0.5 + 0.5);
-  vec3 shade = S * (amb * 1.05 + uSunCol * 0.18) * uShadeTint;
-  vec3 litc = L.rgb * (uSunCol * 0.82 + amb * 0.3);
+  vec3 shade = S * (amb * 1.0 + uSunCol * 0.16) * uShadeTint;
+  // the lit side keeps a little form: brightest where it faces the key, a touch darker toward the terminator
+  float form = mix(0.86, 1.04, smoothstep(th, 0.9, ndl));
+  vec3 litc = L.rgb * (uSunCol * 0.8 + amb * 0.3) * form;
   vec3 c = mix(shade, litc, lit);
+  // soft materials (skin, fur: kind 0 with warm shade) glow a little warmer right at the terminator
+  float band = smoothstep(th - 0.28, th, ndl) * (1.0 - lit);
+  c += (kind < 0.5 ? 1.0 : 0.0) * band * L.rgb * vec3(0.16, 0.05, 0.0);
   // occlusion darkens the deepest creases a little more, on both sides
-  c *= mix(0.72, 1.0, smoothstep(0.0, 0.55, ao));
+  c *= mix(0.7, 1.0, smoothstep(0.0, 0.55, ao));
   // rim: a thin cool sky line on the edge turned away from the viewer, readable against any ground
   float nv = dot(n, uView);
-  float rim = smoothstep(0.32, 0.12, nv) * smoothstep(-0.2, 0.4, n.y);
-  c += uSkyCol * rim * 0.28 * (1.0 - lit * 0.5);
+  float rim = smoothstep(0.3, 0.1, nv) * smoothstep(-0.2, 0.4, n.y);
+  c += uSkyCol * rim * 0.26 * (1.0 - lit * 0.5);
+  vec3 hv = normalize(uKey + uView);
+  float nh = dot(n, hv);
   if (kind > 0.5 && kind < 1.5) {
     // metal: a hard sky band and a sun glint
-    vec3 hv = normalize(uSunDir + uView);
-    float sp = step(0.9, dot(n, hv)) * lit;
-    c = mix(c, uSunCol * 1.1, sp);
+    c = mix(c, uSunCol * 1.1, step(0.93, nh) * lit);
     c += L.rgb * 0.25 * smoothstep(0.1, 0.4, n.y);
   } else if (kind > 1.5 && kind < 2.5) {
-    vec3 hv = normalize(uSunDir + uView);
-    c = mix(c, vec3(1.0), step(0.96, dot(n, hv)) * 0.8 * lit);
-  } else if (kind > 2.5) {
+    c = mix(c, vec3(1.0), step(0.96, nh) * 0.8 * lit);
+  } else if (kind > 2.5 && kind < 3.5) {
     c = L.rgb;
+  } else if (kind > 3.5) {
+    // sheen (hair, glossy fur, feathers): a broad lit shape, lighter and warmer, on the crown of every lock
+    float sh = smoothstep(0.78, 0.8, nh) * lit;
+    c = mix(c, min(vec3(1.0), L.rgb * 1.55 + vec3(0.08, 0.06, 0.03)), sh * 0.75);
   }
   // point lights (lanterns): soft pools on the figure
   for (int i = 0; i < 8; i++) {

@@ -51,7 +51,7 @@ export class CharLayer implements Drawable {
   /** clay: full-res ink pass; pixel: drawn into the world's G-buffer; paint: clay + hatching, thin lines */
   mode: "clay" | "pixel" | "paint" = "clay";
   /** key light for characters (world space): from the viewer's upper left and in front, at every time of day */
-  key: [number, number, number] = [-0.5, 0.72, 0.48];
+  key: [number, number, number] = [-0.72, 0.62, 0.3];
   /** ink line radius in world px (scaled by the device px per world px) */
   lineW = 0.42;
   ink: [number, number, number] = [0.34, 0.27, 0.38];

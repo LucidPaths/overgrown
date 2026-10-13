@@ -138,6 +138,12 @@ export class Field {
     return c;
   }
 
+  private tmps: Attrs[] = [];
+  private tmpAt(i: number): Attrs {
+    while (this.tmps.length <= i) this.tmps.push(newAttrs(this.model));
+    return this.tmps[i]!;
+  }
+
   /** per-call memo of layer distances (dist() only): shells reuse their base layer instead of re-evaluating it */
   private memo = new Float64Array(64);
   private memoOn = false;
@@ -145,6 +151,18 @@ export class Field {
   private layerDist(i: number, x: number, y: number, z: number, at: Attrs | null): number {
     const plan = this.cur[i]!;
     const s = plan.shell;
+    const px = this.model.proxyOf[i];
+    if (px) {
+      // proxy: base layer smooth-unioned with this layer's prims; skin weights blend by the same union
+      const tb = at ? this.tmpAt(i) : null;
+      const base = this.memoOn && !at ? this.memo[px.base]! : this.layerDist(px.base, x, y, z, at);
+      const e = this.chain(plan.prims, x, y, z, tb);
+      if (at && tb) {
+        const hb = clamp01(0.5 + (0.5 * (e - base)) / (px.k * 1.6)); // 1: base wins
+        for (let q = 0; q < at.bones.length; q++) at.bones[q] = at.bones[q]! * hb + tb.bones[q]! * (1 - hb);
+      }
+      return smin(base, e, px.k);
+    }
     if (!s) return this.chain(plan.prims, x, y, z, at);
     // shell: the base layer grown by `thickness`, kept only inside the union of the mask prims
     const base = this.memoOn && !at ? this.memo[s.base]! : this.layerDist(s.base, x, y, z, at);
@@ -158,7 +176,7 @@ export class Field {
       const a = Math.atan2(x, z);
       t += s.fold * (0.5 + 0.5 * Math.sin(a * s.folds)) * Math.min(1, (s.foldY - y) / 3);
     }
-    if (at) { at.mats.fill(0); at.mats[s.hemMat >= 0 && edge > 0.5 ? s.hemMat : s.mat] = 1; }
+    if (at) { at.mats.fill(0); at.mats[y < s.soleY && s.soleMat >= 0 ? s.soleMat : s.hemMat >= 0 && edge > 0.5 ? s.hemMat : s.mat] = 1; }
     return Math.max(base - t, mask);
   }
 
@@ -172,7 +190,7 @@ export class Field {
     for (let i = 1; i < this.plans.length; i++) {
       const e = this.layerDist(i, x, y, z, null);
       memo[i] = e;
-      d = smin(d, e, this.layerK);
+      if (!this.model.hidden[i]) d = smin(d, e, this.layerK);
     }
     this.memoOn = false;
     return d;
@@ -184,6 +202,7 @@ export class Field {
     let d = this.layerDist(0, x, y, z, out);
     out.layer = 0;
     for (let i = 1; i < this.plans.length; i++) {
+      if (this.model.hidden[i]) continue;
       const tmp = this.tmpA;
       const e = this.layerDist(i, x, y, z, tmp);
       if (e < d) {

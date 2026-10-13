@@ -157,47 +157,51 @@ export function scaleV(a: V3, s: number): V3 {
 }
 
 /**
- * The shared base body: torso (chest, belly, pelvis), neck, arms with mitten hands, legs with feet. Species
- * build their head on top. Smooth radii are chosen so limbs fuse at the joint without swelling it.
+ * The shared base body. Shape language: a soft barrel chest with real shoulders, a pinched waist, a solid
+ * pelvis; short limbs that taper toward wrists and ankles; big hands and feet (they carry the actions and
+ * plant the figure). Smooth radii are chosen so limbs fuse at the joint without swelling it.
  */
 export function sculptBase(b: Build, j: Joints, skinMat: number = M.skin): Model {
   const m = new Model(BONES, MATS);
   const P = j.pos;
   const s = { mat: skinMat };
-  // torso: pelvis, belly, chest, blended generously
   const leanRot = euler(0, -b.lean);
-  m.ellipsoid(add(P[B.pelvis]!, [0, 0.2, 0]), b.pelvis, { ...s, bone: B.pelvis, rot: leanRot });
-  m.ellipsoid(P[B.spine]!, b.belly, { ...s, bone: B.spine, k: 2.6, ks: 3, rot: leanRot });
-  m.ellipsoid(add(P[B.chest]!, [0, 0.6, 0]), b.chest, { ...s, bone: B.chest, k: 2.6, ks: 3, rot: leanRot });
-  // shoulders: a soft yoke so arms grow out of the chest, not out of a ball
+  // torso: pelvis (wider at the seat), waist, chest (a barrel, highest and widest at the shoulders)
+  m.ellipsoid(add(P[B.pelvis]!, [0, 0.1, -0.15]), b.pelvis, { ...s, bone: B.pelvis, rot: leanRot });
+  m.ellipsoid(P[B.spine]!, b.belly, { ...s, bone: B.spine, k: 1.9, ks: 3, rot: leanRot });
+  m.ellipsoid(add(P[B.chest]!, [0, 0.7, 0.15]), b.chest, { ...s, bone: B.chest, k: 1.9, ks: 3, rot: leanRot });
+  // the trapezius slope from neck to shoulder, so the head sits in the shoulders and does not float on a stick
   for (const side of [1, -1]) {
     const sh = P[side > 0 ? B.armL : B.armR]!;
-    m.sphere([sh[0] * 0.92, sh[1] + 0.1, sh[2]], b.armR[0] * 1.15, { ...s, bone: B.chest, k: 2.2, ks: 2.4 });
+    m.cone(add(P[B.head]!, [0, -0.9, -0.3]), [sh[0] * 0.8, sh[1] + 0.5, sh[2] - 0.2], b.head[0] * 0.3, b.armR[0] * 0.95, { ...s, bone: B.chest, k: 1.2, ks: 2.4 });
+    // deltoid: a ball that caps the arm and widens the silhouette
+    m.sphere([sh[0], sh[1] + 0.15, sh[2]], b.armR[0] * 1.18, { ...s, bone: side > 0 ? B.armL : B.armR, k: 1.1, ks: 2.4 });
   }
   // neck
   const nb = add(P[B.chest]!, [0, b.chest[1] * 0.6, 0]);
-  m.cone(nb, add(P[B.head]!, [0, 0.8, 0]), b.head[0] * 0.36, b.head[0] * 0.3, { ...s, bone: B.head, k: 1.4, ks: 2.2 });
-  // arms
+  m.cone(nb, add(P[B.head]!, [0, 0.8, 0]), b.head[0] * 0.34, b.head[0] * 0.3, { ...s, bone: B.head, k: 1.2, ks: 2.2 });
+  // arms: the forearm swells below the elbow, then narrows into a thick wrist
   for (const [arm, fore, hand, side] of [[B.armL, B.foreL, B.handL, 1], [B.armR, B.foreR, B.handR, -1]] as const) {
-    m.cone(P[arm]!, P[fore]!, b.armR[0], b.armR[1], { ...s, bone: arm, k: 1.2, ks: 2.4 });
-    m.cone(P[fore]!, P[hand]!, b.armR[1], b.armR[2], { ...s, bone: fore, k: 0.8, ks: 2.2 });
+    m.cone(P[arm]!, P[fore]!, b.armR[0], b.armR[1], { ...s, bone: arm, k: 0.9, ks: 2.2 });
+    m.cone(P[fore]!, P[hand]!, b.armR[1], b.armR[2], { ...s, bone: fore, k: 0.6, ks: 2.0 });
+    m.ellipsoid(lerpV(P[fore]!, P[hand]!, 0.32), [b.armR[1] * 1.12, b.fore * 0.32, b.armR[1] * 1.05], { ...s, bone: fore, k: 0.8, rot: alongY(sub(P[fore]!, P[hand]!)) });
     handMitten(m, b, j, hand, side, s.mat);
   }
-  // legs
+  // legs: thigh into knee, a calf, a slim ankle, a big planted foot with a flat sole
   for (const [thigh, shin, foot, toe] of [[B.thighL, B.shinL, B.footL, B.toeL], [B.thighR, B.shinR, B.footR, B.toeR]] as const) {
-    m.cone(P[thigh]!, P[shin]!, b.legR[0], b.legR[1], { ...s, bone: thigh, k: 1.6, ks: 2.6 });
-    m.cone(P[shin]!, P[foot]!, b.legR[1], b.legR[2], { ...s, bone: shin, k: 1.0, ks: 2.4 });
+    m.cone(P[thigh]!, P[shin]!, b.legR[0], b.legR[1], { ...s, bone: thigh, k: 1.3, ks: 2.6 });
+    m.cone(P[shin]!, P[foot]!, b.legR[1], b.legR[2], { ...s, bone: shin, k: 0.8, ks: 2.2 });
+    m.ellipsoid(lerpV(P[shin]!, P[foot]!, 0.3), [b.legR[1] * 1.12, Math.hypot(...sub(P[shin]!, P[foot]!)) * 0.3, b.legR[1] * 1.18], { ...s, bone: shin, k: 0.8, rot: alongY(sub(P[shin]!, P[foot]!)) });
     if (b.digi) {
       m.cone(P[foot]!, P[toe]!, b.legR[2], b.legR[2] * 0.9, { ...s, bone: foot, k: 0.8, ks: 1.6 });
-      // toes: a soft wedge on the ground
       const t = P[toe]!;
-      m.ellipsoid([t[0], 0.95, t[2] + b.footLen * 0.28], [b.footW, 1.0, b.footLen * 0.42], { ...s, bone: toe, k: 0.8, ks: 1.4 });
+      m.dome([t[0], 0.9, t[2] + b.footLen * 0.25], [b.footW, 1.5, b.footLen * 0.45], 0.9, { ...s, bone: toe, k: 0.7, ks: 1.4 });
     } else {
       const a = P[foot]!;
-      m.ellipsoid([a[0], 1.05, b.footLen * 0.22], [b.footW, 1.15, b.footLen * 0.62], { ...s, bone: foot, k: 1.0, ks: 1.6 });
+      // heel under the ankle, the ball forward: a flat-bottomed wedge
+      m.dome([a[0], 1.0, b.footLen * 0.2], [b.footW, 1.6, b.footLen * 0.6], 1.0, { ...s, bone: foot, k: 0.9, ks: 1.6 });
     }
   }
-  // pelvis joins the thighs
   return m;
 }
 
@@ -208,9 +212,11 @@ export function handMitten(m: Model, b: Build, j: Joints, hand: number, side: nu
   const ydir: V3 = [dU[3], dU[4], dU[5]]; // points back up the arm
   const zdir: V3 = [dU[6], dU[7], dU[8]];
   const c = add(w, scaleV(ydir, -b.hand * 0.5));
-  m.ellipsoid(c, b.handR, { mat, bone: hand, k: 0.7, ks: 1.4, rot: alongY(ydir, zdir) });
-  const th = add(add(w, scaleV(ydir, -b.hand * 0.32)), scaleV(zdir, b.handR[2] * 0.9));
-  m.cone(th, add(th, add(scaleV(ydir, -b.hand * 0.4), scaleV(zdir, 0.5))), b.handR[2] * 0.55, b.handR[2] * 0.45, { mat, bone: hand, k: 0.5, ks: 1.2 });
+  m.ellipsoid(c, b.handR, { mat, bone: hand, k: 0.6, ks: 1.4, rot: alongY(ydir, zdir) });
+  // knuckles: a ridge across the front of the fist
+  m.ellipsoid(add(c, add(scaleV(ydir, -b.handR[1] * 0.35), scaleV(zdir, b.handR[2] * 0.3))), [b.handR[0] * 0.92, b.handR[1] * 0.55, b.handR[2] * 0.85], { mat, bone: hand, k: 0.4, rot: alongY(ydir, zdir) });
+  const th = add(add(w, scaleV(ydir, -b.hand * 0.3)), scaleV(zdir, b.handR[2] * 0.85));
+  m.cone(th, add(th, add(scaleV(ydir, -b.hand * 0.42), scaleV(zdir, 0.35))), b.handR[2] * 0.52, b.handR[2] * 0.42, { mat, bone: hand, k: 0.35, ks: 1.2 });
   void side;
 }
 

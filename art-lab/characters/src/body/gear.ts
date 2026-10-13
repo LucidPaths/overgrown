@@ -60,19 +60,30 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
       }
       case "tunic":
       case "shirt": {
-        m.beginShell({ thickness: 0.55, mat: M.cloth1, flare: g === "tunic" ? 0.2 : 0, flareY: pelvisY + 1.2, hem: 0.4, hemW: 0.8, hemMat: M.cloth2, hemPrims: 3, fold: g === "tunic" ? 0.18 : 0, folds: 11, foldY: pelvisY + 0.8 });
-        // torso down to the upper thigh (the hem), sleeves to the elbow (cuffs); the neckline and tail are carved
-        const hem = g === "tunic" ? pelvisY - b.hip * 0.32 : pelvisY - 0.6;
+        const tunic = g === "tunic";
+        const waistY = pelvisY + b.torso * 0.3;
+        const hem = tunic ? pelvisY - b.hip * 0.36 : pelvisY - 0.4;
+        // a tunic's skirt hangs as a bell from the waist over both legs: a hidden proxy bridges them
+        let base = 0;
+        if (tunic) {
+          base = m.beginProxy(0, 1.6);
+          const r0 = Math.max(b.belly[0], b.belly[2]) * 0.95;
+          const r1 = legsHalfW(b) - 0.2;
+          m.cone([0, waistY, -0.2], [0, hem - 0.5, 0.1], r0, r1, { mat: 0, bone: B.pelvis, k: 0 });
+        }
+        m.beginShell({ base, thickness: 0.5, mat: M.cloth1, flare: tunic ? 0.12 : 0, flareY: waistY, hem: 0.45, hemW: 0.9, hemMat: M.cloth2, hemPrims: 3, fold: tunic ? 0.22 : 0, folds: 13, foldY: waistY - 0.5 });
+        // torso down to the hem, sleeves to just above the elbow (the forearm and fist stay free to read)
         const top = shoulderY + 1.5;
         m.box([0, (hem + top) / 2, 0], [b.shoulderW + 1.2, (top - hem) / 2, BIG], 0, { mat: 0, bone: 0 });
-        for (const [arm, fore] of [[B.armL, B.foreL], [B.armR, B.foreR]] as const) limbMask(m, P[arm]!, P[fore]!, g === "tunic" ? 1.12 : 0.6, b.armR[0] * 2.4, 0.3);
+        for (const [arm, fore] of [[B.armL, B.foreL], [B.armR, B.foreR]] as const) limbMask(m, P[arm]!, P[fore]!, tunic ? 0.82 : 0.55, b.armR[0] * 2.6, 0.3);
         notHead(m, b, j);
         notTail(m, b, j);
+        // a V at the neck: carve the front of the collar
+        m.box(add(P[B.head]!, [0, -2.2, b.chest[2] + 0.6]), [0.9, 2.2, 1.6], 0.2, { mat: 0, bone: 0, op: Op.Subtract, k: 0.4, rot: euler(0, 0, Math.PI / 4) });
         // the collar band
         m.useLayer(0);
-        const ly = m.beginSolid();
-        void ly;
-        m.torus(add(P[B.head]!, [0, -0.9, 0.1]), b.head[0] * 0.38, 0.45, { mat: M.cloth1, bone: B.chest, rot: euler(0, 0.12) });
+        m.beginSolid();
+        m.torus(add(P[B.head]!, [0, -1.0, 0.0]), b.head[0] * 0.4, 0.5, { mat: M.cloth2, bone: B.chest, rot: euler(0, 0.18) });
         break;
       }
       case "kilt": {
@@ -81,7 +92,7 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
         break;
       }
       case "boots": {
-        m.beginShell({ thickness: 0.55, mat: M.boot, hem: 0.35, hemW: 0.6 });
+        m.beginShell({ thickness: 0.55, mat: M.boot, hem: 0.35, hemW: 0.6, soleY: 0.55, soleMat: M.dark });
         const top = b.digi ? P[B.footL]![1] + 1.6 : kneeY - 1.0;
         slab(m, -1, top, legsHalfW(b));
         // a turned-down cuff
@@ -97,12 +108,13 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
       }
       case "belt": {
         m.beginSolid();
-        const c: V3 = [0, pelvisY + 1.6, 0.2];
+        const c: V3 = [0, pelvisY + b.torso * 0.3, 0.2];
         m.torus(c, 1, 0.5, { mat: M.leather, bone: B.spine, rot: euler(0, 0) });
         const last = m.prims[m.prims.length - 1]!;
         // stretch the torus to the waist ellipse: rebuild as an elliptic ring of small spheres instead
         m.prims.pop();
-        const rx = b.belly[0] + 0.95, rz = b.belly[2] + 0.95;
+        const r0 = Math.max(b.belly[0], b.belly[2]) * 0.95;
+        const rx = Math.max(b.belly[0], r0) + 1.0, rz = Math.max(b.belly[2], r0) + 0.95;
         for (let i = 0; i < 20; i++) {
           const a = (i / 20) * Math.PI * 2;
           m.sphere([Math.sin(a) * rx, c[1], Math.cos(a) * rz], 0.62, { mat: M.leather, bone: B.spine, k: 0.5 });
