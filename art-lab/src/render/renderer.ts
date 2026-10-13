@@ -85,6 +85,22 @@ export class Renderer {
   readonly lightCols = new Float32Array(24);
   /** >1 renders the same framing at more texels per world px (used by the smooth/voxel explorations). */
   zoom = 1;
+  /** Runs after the blit, with the canvas bound: full-resolution layers (the character lab) draw here. */
+  afterBlit?: (f: FrameInfo) => void;
+  /** The sun's shadow map (depth texture). */
+  get shadowMap(): WebGLTexture | undefined {
+    return this.shadowT?.depth;
+  }
+  /** The low-res G-buffer (colour, aux, depth), for passes that composite over it. */
+  get gbuffer(): Target | undefined {
+    return this.g;
+  }
+  /** How a G-buffer texel maps to canvas device px: device = texel * scale + offset (the blit's mapping). */
+  blitMap(): { scale: number; ox: number; oy: number } {
+    const ox = (this.canvas.width - this.iw * this.scale) * 0.5 - Math.round(this.subTexel[0] * this.scale);
+    const oy = (this.canvas.height - this.ih * this.scale) * 0.5 - Math.round(this.subTexel[1] * this.scale);
+    return { scale: this.scale, ox, oy };
+  }
 
   constructor(readonly canvas: HTMLCanvasElement) {
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: false, stencil: false, powerPreference: "high-performance" });
@@ -233,6 +249,7 @@ export class Renderer {
     gl.uniform2f(bu.uOffset!, Math.round(this.subTexel[0] * this.scale), Math.round(this.subTexel[1] * this.scale));
     gl.uniform1f(bu.uScale!, this.scale);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    this.afterBlit?.(f);
   }
 
   /** World px point (+ `h` px of lean height) -> G-buffer texel xy and window depth. */
