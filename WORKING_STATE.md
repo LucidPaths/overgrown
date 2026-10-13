@@ -3,11 +3,11 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-12
+Last updated: 2026-10-13
 
 ## Current phase
 
-**M1 complete (2026-10-12):** all 14 tasks merged (#15–#28) and the M1 E2E passed every checklist and extra item (docs/e2e/M1.md, this PR). Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
+**PAUSED after M1 (2026-10-13).** M1 complete: all 14 tasks merged (#15–#28) and the M1 E2E passed (docs/e2e/M1.md, #31). Then: ART-024 #30/#29, OVR-008 #33 (desktop retarget, OQ-029/OQ-030). Lucid: features first, graphics later; M2 planning "not yet". Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
 1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
 2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
 3. ✅ WLD-003 #22 · ART-006 #21
@@ -30,9 +30,16 @@ Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enab
 
 ## In flight
 
-**2026-10-12 ~21:20 UTC.** M1 done (#31). ART-024 merged as #30 (art bible `docs/art/DIRECTION.md`, research `docs/art/RESEARCH.md`, redrawn actors/tiles/palettes; core.webp 124 KB → 85 KB); its previews land with this PR (#29, `docs/art/previews/`). Nothing in flight.
-Not yet decided with Lucid (from the ART-024 and M1 E2E reports): a `?species=` dev parameter so all 9 species show in-game (only Humans spawn); biome-border colour band (renderer picks the TL tile's biome per dual-grid cell); ground shadows (ART-018); props first for empty ground (ART-007); compact atlas JSON (core.json 634 KB raw, ~13 KB gzipped); a 6-frame walk; an opt-in state hook for M2 E2E; first-frame margin is thin (2754 ms vs 3000 ms) before M2 assets; adopting the pixel-art skills ART-024 recommended (omer-metin pixel-art, anthropics canvas-design) as reviewer aids.
-Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it off first).
+**Nothing running (2026-10-13).** Lucid paused before M2: "focus on the game first, graphics later", and M2 planning is "not yet".
+
+Resume options when Lucid returns:
+- **M2 "First fight"** (MILESTONES § M2 is a draft; lock its design questions with Lucid first, as with OQ-018..027).
+- **Art, later:** branch `art-lab` = draft PR #32 (never merge as-is; it's a sandbox). Contents:
+  - ART-025 pixel-diorama world prototype (`art-lab/`, `docs/art/lab/`; Lucid: "land is decent, characters look ass").
+  - ART-026 character lab (`art-lab/characters/`, `docs/art/lab/characters/PROGRESS.md`; SDF-sculpted toon characters; stopped mid-run at Lucid's request, last commit 6c51de3 is half-finished WIP; Lucid: "don't look like 2015 anymore but still look ass").
+  - ART-025/026 GDD lines exist only on that branch.
+Open design calls for Lucid (from OVR-008): TEC-011 peer zone ownership vs one-machine hosting; player cap 10 vs "2, up to ~4"; OQ-001 "generated assets" wording; OQ-003/OQ-005 still mention a tab-hosted world; where authored asset files live.
+Older open items: a `?species=` dev parameter (only Humans spawn); biome-border colour band; ground shadows (ART-018); props (ART-007); an opt-in state hook for M2 E2E.
 
 ## Decisions (accumulate)
 
@@ -50,6 +57,8 @@ Next: M2 "First fight" planning (MILESTONES § M2 is still draft; Lucid signs it
 - 2026-10-12 Lucid: atlas → lossless WebP and M1 first-frame bar ≤ 3 s; the 2 s target moves to TEC-012 (OQ-028, lands with TEC-021).
 - 2026-10-12 WLD-003 AC8: in headless SwiftShader, displaying baked ground alone halves fps; stall numbers are recorded vs a no-ground baseline, and the hard stall bar moves to TEC-020's real-GPU step and the M1 E2E (orchestrator spec amendment).
 - 2026-10-12 Lucid: ART-024 art direction pass with full creative freedom inside the frame/cell/determinism contracts; preview images go in their own PR, not the scratchpad. After 3 Fable loops on #30 Lucid chose "fix both, merge" (fixes verified locally, no 4th gate).
+- 2026-10-13 Lucid: desktop game for Lucid and a few friends, same stack (OQ-029); assets "authored by us" by any method, no third-party packs (OQ-030); merged as OVR-008 #33.
+- 2026-10-13 Lucid: features first, graphics later (the art labs on `art-lab` / PR #32 are parked).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)
