@@ -7,6 +7,7 @@ import type { Build } from "./build";
 import { applyGear, applyWeapon, type GearId, type WeaponId } from "./gear";
 import { M, type MatDef, type RGB } from "./mats";
 import { SPECIES, buildSpecies, paletteOf, type Face } from "./species";
+import { proxyNormals } from "./normals";
 
 export interface Look {
   species: number;
@@ -49,6 +50,7 @@ export function buildLook(l: Look, cellPx = 0.36): Built {
   // bounds: generous around the rest pose (A pose arms, tails, ears, weapons)
   const top = j.headC[1] + b.head[1] * 2.6 + 4;
   const raw = meshField(f, { min: [-16, -1.5, -18 - (b.tail?.len ?? 0)], max: [16, top, 22], h: cellPx });
+  proxyNormals(raw, j.sk, b, j.headC, 0.6);
   const built: Built = { key, raw, sk: j.sk, build: b, headC: j.headC, face: s.face, weaponLen: w.len, height: top };
   cache.set(key, built);
   return built;

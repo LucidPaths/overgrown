@@ -5,6 +5,7 @@
 import { deleteTarget, drawMesh, program, target, type GL, type Mesh, type Program, type Target } from "../../../src/gl/glu";
 import type { Drawable, FrameInfo, Renderer } from "../../../src/render/renderer";
 import { buildLook, lookPalette, type Built, type Look } from "../body/look";
+import type { MeshPool } from "../body/mesh-pool";
 import { BONES } from "../rig/skeleton";
 import { newPosed, placeM, skin, fk, type Pose, type Posed } from "../rig/pose";
 import { toCharGeo, uploadChar } from "./char-mesh";
@@ -47,6 +48,10 @@ export class CharLayer implements Drawable {
   private boneData = new Float32Array(0);
   private world = new Float32Array(16);
   tilt = TILT;
+  /** clay: full-res ink pass; pixel: drawn into the world's G-buffer; paint: clay + hatching, thin lines */
+  mode: "clay" | "pixel" | "paint" = "clay";
+  /** key light for characters (world space): from the viewer's upper left and in front, at every time of day */
+  key: [number, number, number] = [-0.5, 0.72, 0.48];
   /** ink line radius in world px (scaled by the device px per world px) */
   lineW = 0.42;
   ink: [number, number, number] = [0.34, 0.27, 0.38];
@@ -87,8 +92,21 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
     gl.uniform1i(p.u.uBoneTex!, 3);
   }
 
+  /** Async meshing: when set, looks come from the pool and characters appear once their mesh is ready. */
+  pool?: MeshPool;
+
+  /** The GPU entry for a look, or undefined while its mesh is still being sculpted. */
+  ready(look: Look): Entry | undefined {
+    if (!this.pool) return this.entry(look);
+    const b = this.pool.peek(look);
+    return b ? this.upload(b) : undefined;
+  }
+
   entry(look: Look): Entry {
-    const b = buildLook(look);
+    return this.upload(buildLook(look));
+  }
+
+  private upload(b: Built): Entry {
     let e = this.cache.get(b.key);
     if (!e) {
       e = { built: b, mesh: uploadChar(this.gl, toCharGeo(b.raw)) };
@@ -98,9 +116,15 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
   }
 
   private prepare(): void {
+    // characters whose mesh is still being sculpted are skipped this frame
+    if (this.pool) {
+      let n = 0;
+      for (const d of this.list) if (this.ready(d.look)) this.list[n++] = d;
+      this.list.length = n;
+    }
     while (this.mats.length < this.list.length) this.mats.push(new Float32Array(BONES * 16));
     this.list.forEach((d, i) => {
-      const e = this.entry(d.look);
+      const e = this.ready(d.look)!;
       if (!d.posed) d.posed = newPosed();
       if (!d.posedReady) fk(e.built.sk, d.pose, d.posed);
       placeM(d.x, d.y, d.z, d.yaw, 1, this.world);
@@ -117,46 +141,22 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
     this.bindBones(this.sp);
     this.list.forEach((d, i) => {
       gl.uniform1i(this.sp.u.uRow!, i);
-      drawMesh(gl, this.entry(d.look).mesh);
+      drawMesh(gl, this.ready(d.look)!.mesh);
     });
     gl.enable(gl.CULL_FACE);
   }
 
-  main(): void {
-    /* drawn at full resolution after the blit */
+  main(gl: GL, f: FrameInfo): void {
+    if (this.mode !== "pixel") return; // clay and paint draw at full resolution after the blit
+    const g = this.r.gbuffer!;
+    this.drawChars(gl, f, g.w, g.h, { scale: 1, ox: 0, oy: 0 }, true);
+    gl.enable(gl.CULL_FACE);
   }
 
-  private ensureTarget(w: number, h: number): Target {
-    if (this.t && this.t.w === w && this.t.h === h) return this.t;
-    if (this.t) deleteTarget(this.gl, this.t);
-    this.t = target(this.gl, w, h, 2, true);
-    return this.t;
-  }
 
-  private fullRes(f: FrameInfo): void {
-    const gl = this.gl, r = this.r;
-    const W = r.canvas.width, H = r.canvas.height;
-    const t = this.ensureTarget(W, H);
-    const map = r.blitMap();
+  private drawChars(gl: GL, f: FrameInfo, W: number, H: number, map: { scale: number; ox: number; oy: number }, pixel: boolean): void {
+    const r = this.r;
     const g = r.gbuffer!;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
-    gl.viewport(0, 0, W, H);
-    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]);
-    gl.clearBufferfv(gl.COLOR, 1, [0, 0, 0, 0]);
-    // 1. the world's depth, texel for texel
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.ALWAYS);
-    gl.depthMask(true);
-    gl.colorMask(false, false, false, false);
-    gl.useProgram(this.fillP.prog);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, g.depth!);
-    gl.uniform1i(this.fillP.u.uDepth!, 0);
-    gl.uniform4f(this.fillP.u.uMap!, map.scale, map.ox, map.oy, 0);
-    gl.uniform2f(this.fillP.u.uSrc!, g.w, g.h);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    gl.colorMask(true, true, true, true);
-    // 2. characters
     gl.depthFunc(gl.LEQUAL);
     gl.disable(gl.CULL_FACE);
     const p = this.p, u = p.u, L = f.lighting;
@@ -166,6 +166,10 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
     gl.uniform1f(u.uLean!, f.lean);
     gl.uniform4f(u.uMap!, map.scale, map.ox, map.oy, 0);
     gl.uniform4f(u.uSize!, g.w, g.h, W, H);
+    gl.uniform1f(u.uPixel!, pixel ? 1 : 0);
+    gl.uniform1f(u.uPixelMode!, pixel ? 1 : 0);
+    gl.uniform1f(u.uHatch!, this.mode === "paint" ? 1 : 0);
+    gl.uniform3fv(u.uKey!, this.keyDir(f));
     gl.uniform1f(u.uDepthBias!, (window as unknown as { dbgSimple?: number }).dbgSimple ?? 0);
     gl.uniform3fv(u.uSunDir!, L.sunDir);
     gl.uniform3fv(u.uSunCol!, L.sunCol);
@@ -180,7 +184,7 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
     this.stats.draws = 0;
     const lit = new Float32Array(64), shd = new Float32Array(48);
     this.list.forEach((d, i) => {
-      const e = this.entry(d.look);
+      const e = this.ready(d.look)!;
       const pal = d.palette ?? lookPalette(d.look);
       for (let k = 0; k < 16; k++) {
         const m = pal[k]!;
@@ -205,6 +209,52 @@ precision highp float; out vec4 o; void main(){ o = vec4(0.0); }`);
       this.stats.tris += e.mesh.count / 3;
       this.stats.draws++;
     });
+  }
+
+  /**
+   * The key light. Characters get their own light (as Arc System Works gives each fighter one): the sun moves and
+   * can sit behind the camera, but a figure must always read as a lit form with a shade side. The camera has no
+   * yaw, so a fixed world direction is fixed on screen too.
+   */
+  private keyDir(_f: FrameInfo): [number, number, number] {
+    const k = this.key;
+    const n = Math.hypot(k[0], k[1], k[2]);
+    return [k[0] / n, k[1] / n, k[2] / n];
+  }
+
+  private ensureTarget(w: number, h: number): Target {
+    if (this.t && this.t.w === w && this.t.h === h) return this.t;
+    if (this.t) deleteTarget(this.gl, this.t);
+    this.t = target(this.gl, w, h, 2, true);
+    return this.t;
+  }
+
+  private fullRes(f: FrameInfo): void {
+    if (this.mode === "pixel") return;
+    const gl = this.gl, r = this.r;
+    const W = r.canvas.width, H = r.canvas.height;
+    const t = this.ensureTarget(W, H);
+    const map = r.blitMap();
+    const g = r.gbuffer!;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+    gl.viewport(0, 0, W, H);
+    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]);
+    gl.clearBufferfv(gl.COLOR, 1, [0, 0, 0, 0]);
+    // 1. the world's depth, texel for texel
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.ALWAYS);
+    gl.depthMask(true);
+    gl.colorMask(false, false, false, false);
+    gl.useProgram(this.fillP.prog);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, g.depth!);
+    gl.uniform1i(this.fillP.u.uDepth!, 0);
+    gl.uniform4f(this.fillP.u.uMap!, map.scale, map.ox, map.oy, 0);
+    gl.uniform2f(this.fillP.u.uSrc!, g.w, g.h);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.colorMask(true, true, true, true);
+    // 2. characters
+    this.drawChars(gl, f, W, H, map, false);
     gl.disable(gl.DEPTH_TEST);
     // 3. ink and composite onto the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

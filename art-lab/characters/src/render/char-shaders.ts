@@ -30,6 +30,7 @@ uniform float uLean;
 uniform vec4 uMap;   // texel -> device px: scale, ox, oy
 uniform vec4 uSize;  // G-buffer w, h; target w, h
 uniform float uDepthBias;
+uniform float uPixel;   // 1: drawing into the world's low-res G-buffer (no device mapping)
 out vec3 vRest; out vec3 vN; out vec3 vWp; flat out uvec4 vMatI; out vec4 vMatW; out float vHead; out float vDbg;
 void main() {
   uvec4 aBoneI = uvec4(aBoneIf + 0.5); uvec4 aMatI = uvec4(aMatIf + 0.5);
@@ -45,9 +46,11 @@ void main() {
   vec4 c = uViewProj * vec4(tilted, 1.0);
   c.y += uLean * max(0.0, rel.y);
   // the world blit's mapping, so characters land on the same device pixels as the ground under them
-  vec2 tex = (c.xy * 0.5 + 0.5) * uSize.xy;
-  vec2 dev = tex * uMap.x + uMap.yz;
-  c.xy = dev / uSize.zw * 2.0 - 1.0;
+  if (uPixel < 0.5) {
+    vec2 tex = (c.xy * 0.5 + 0.5) * uSize.xy;
+    vec2 dev = tex * uMap.x + uMap.yz;
+    c.xy = dev / uSize.zw * 2.0 - 1.0;
+  }
   vDbg = uDepthBias < -1.5 ? 1.0 : 0.0;
   c.z = up.z - max(uDepthBias, 0.0);
   gl_Position = c;
@@ -69,6 +72,9 @@ uniform vec4 uMouth;     // y, half w, -, -
 uniform vec3 uIris;
 uniform vec4 uFace;      // blink, expr, look x, look y
 uniform vec4 uPL[8]; uniform vec3 uPLc[8];
+uniform float uPixelMode;
+uniform vec3 uKey;       // the characters' own key light direction (camera-relative, see char-layer)
+uniform float uHatch;    // painterly mode: hatch the shade
 layout(location=0) out vec4 oCol;
 layout(location=1) out vec4 oAux;
 
@@ -177,8 +183,8 @@ void main() {
   vec3 n = normalize(vN);
   float ao = vMatW.w;
   // terminator: one crisp step, pushed toward the light where the form is occluded (armpits, under the chin)
-  float ndl = dot(n, uSunDir);
-  float th = mix(0.42, 0.0, ao);
+  float ndl = dot(n, uKey);
+  float th = mix(0.3, -0.02, smoothstep(0.25, 0.85, ao));
   float fw = fwidth(ndl) + 0.015;
   float lit = smoothstep(th - fw, th + fw, ndl) * (1.0 - uInShadow * 0.85);
   vec3 amb = mix(uBounceCol, uSkyCol, n.y * 0.5 + 0.5);
@@ -220,9 +226,17 @@ void main() {
     if (f.rgb == vec3(1.0, 0.98, 0.94)) fc = f.rgb;
     c = mix(c, fc, f.a);
   }
+  if (uHatch > 0.5) {
+    // painterly: diagonal hatching in the shade, a drier terminator
+    vec2 sp = gl_FragCoord.xy;
+    float hatch = step(0.62, fract((sp.x + sp.y) / 5.0));
+    float hatch2 = step(0.7, fract((sp.x - sp.y) / 4.0));
+    float dark = 1.0 - lit;
+    c = mix(c, c * 0.72, hatch * dark * 0.9 + hatch2 * dark * smoothstep(0.5, 0.0, ao) * 0.8);
+  }
   c = mix(c, vec3(1.0, 0.98, 0.94), uFlash);
   oCol = vec4(c, 1.0);
-  oAux = vec4(n.xy * 0.5 + 0.5, uId, 1.0);
+  oAux = uPixelMode > 0.5 ? vec4(n.xz * 0.5 + 0.5, 3.0 / 255.0, 1.0) : vec4(n.xy * 0.5 + 0.5, uId, 1.0);
 }`;
 
 export const CHAR_SHADOW_VS = `${HDR}

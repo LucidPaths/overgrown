@@ -25,6 +25,24 @@ function limbMask(m: Model, a: V3, b: V3, t: number, r: number, back = 0): void 
   m.cone(s, add(a, scaleV(d, t)), r, r, { mat: 0, bone: 0 });
 }
 
+/** Carves the head (and a collar gap) out of a shell's mask: clothes stop at the neck on every species. */
+function notHead(m: Model, b: Build, j: Joints): void {
+  const R = b.head;
+  m.ellipsoid(j.headC, [R[0] * 1.3, R[1] * 1.2, R[2] * 1.3], { mat: 0, bone: 0, op: Op.Subtract });
+  m.cone(j.pos[B.head]!, j.headC, R[0] * 0.42, R[0] * 0.5, { mat: 0, bone: 0, op: Op.Subtract });
+}
+
+/** Half width of a mask that holds both legs and never the hands. */
+function legsHalfW(b: Build): number {
+  return Math.max(b.hipW + b.legR[0] + 1.6, b.pelvis[0] + 1.2);
+}
+
+/** Carves the tail out of a shell's mask (a capsule along the tail bones, plus its root). */
+function notTail(m: Model, b: Build, j: Joints): void {
+  if (!b.tail) return;
+  for (let i = 0; i < 3; i++) m.cone(j.pos[B.tail1 + i]!, j.pos[B.tail1 + i + 1]!, b.tail.r1 * 1.5 + 1, b.tail.r1 * 1.5 + 1, { mat: 0, bone: 0, op: Op.Subtract });
+}
+
 export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
   const P = j.pos;
   const pelvisY = P[B.pelvis]![1];
@@ -34,19 +52,22 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
     switch (g) {
       case "trousers":
       case "shorts": {
-        m.beginShell({ thickness: 0.35, mat: M.cloth2 });
+        m.beginShell({ thickness: 0.35, mat: M.cloth2, fold: 0.12, folds: 7, foldY: 1e9 });
         const bottom = g === "trousers" ? (b.digi ? P[B.footL]![1] + 0.6 : P[B.footL]![1] + 1.4) : kneeY + 1.6;
-        slab(m, bottom, pelvisY + b.pelvis[1] * 0.75);
+        slab(m, bottom, pelvisY + b.pelvis[1] * 0.75, legsHalfW(b));
+        notTail(m, b, j);
         break;
       }
       case "tunic":
       case "shirt": {
-        m.beginShell({ thickness: 0.55, mat: M.cloth1, flare: g === "tunic" ? 0.16 : 0, flareY: pelvisY + 1 });
-        // torso down to the upper thigh, cut at the neck
+        m.beginShell({ thickness: 0.55, mat: M.cloth1, flare: g === "tunic" ? 0.2 : 0, flareY: pelvisY + 1.2, hem: 0.4, hemW: 0.8, hemMat: M.cloth2, hemPrims: 3, fold: g === "tunic" ? 0.18 : 0, folds: 11, foldY: pelvisY + 0.8 });
+        // torso down to the upper thigh (the hem), sleeves to the elbow (cuffs); the neckline and tail are carved
         const hem = g === "tunic" ? pelvisY - b.hip * 0.32 : pelvisY - 0.6;
-        m.box([0, (hem + shoulderY + 1.4) / 2, 0], [b.shoulderW + 1.2, (shoulderY + 1.4 - hem) / 2, BIG], 0, { mat: 0, bone: 0 });
-        // sleeves to just below the elbow
-        for (const [arm, fore] of [[B.armL, B.foreL], [B.armR, B.foreR]] as const) limbMask(m, P[arm]!, P[fore]!, g === "tunic" ? 1.25 : 0.6, b.armR[0] * 2.4, 0.3);
+        const top = shoulderY + 1.5;
+        m.box([0, (hem + top) / 2, 0], [b.shoulderW + 1.2, (top - hem) / 2, BIG], 0, { mat: 0, bone: 0 });
+        for (const [arm, fore] of [[B.armL, B.foreL], [B.armR, B.foreR]] as const) limbMask(m, P[arm]!, P[fore]!, g === "tunic" ? 1.12 : 0.6, b.armR[0] * 2.4, 0.3);
+        notHead(m, b, j);
+        notTail(m, b, j);
         // the collar band
         m.useLayer(0);
         const ly = m.beginSolid();
@@ -56,13 +77,13 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
       }
       case "kilt": {
         m.beginShell({ thickness: 0.7, mat: M.cloth2, flare: 0.22, flareY: pelvisY });
-        slab(m, kneeY + 1.2, pelvisY + 1.5);
+        slab(m, kneeY + 1.2, pelvisY + 1.5, legsHalfW(b) + 1);
         break;
       }
       case "boots": {
-        m.beginShell({ thickness: 0.55, mat: M.boot });
+        m.beginShell({ thickness: 0.55, mat: M.boot, hem: 0.35, hemW: 0.6 });
         const top = b.digi ? P[B.footL]![1] + 1.6 : kneeY - 1.0;
-        slab(m, -1, top);
+        slab(m, -1, top, legsHalfW(b));
         // a turned-down cuff
         m.useLayer(0);
         m.beginSolid();
@@ -81,7 +102,7 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
         const last = m.prims[m.prims.length - 1]!;
         // stretch the torus to the waist ellipse: rebuild as an elliptic ring of small spheres instead
         m.prims.pop();
-        const rx = b.belly[0] + 0.55, rz = b.belly[2] + 0.55;
+        const rx = b.belly[0] + 0.95, rz = b.belly[2] + 0.95;
         for (let i = 0; i < 20; i++) {
           const a = (i / 20) * Math.PI * 2;
           m.sphere([Math.sin(a) * rx, c[1], Math.cos(a) * rz], 0.62, { mat: M.leather, bone: B.spine, k: 0.5 });
@@ -123,6 +144,7 @@ export function applyGear(m: Model, b: Build, j: Joints, gear: GearId[]): void {
       case "breastplate": {
         m.beginShell({ thickness: 1.0, mat: M.metal });
         m.box([0, (pelvisY + 1 + shoulderY + 0.6) / 2, 0], [b.shoulderW + 0.4, (shoulderY - pelvisY) / 2, BIG], 0, { mat: 0, bone: 0 });
+        notHead(m, b, j);
         break;
       }
       case "helmet": {

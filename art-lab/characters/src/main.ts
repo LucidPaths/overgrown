@@ -12,7 +12,7 @@ const show = (e: unknown) => {
 window.addEventListener("error", (e) => show(e.error ?? e.message));
 try {
   if (mode === "stage") (await import("./stage")).runStage(canvas, q);
-  else (await import("./stage")).runStage(canvas, q);
+  else await (await import("./game")).runGame(canvas, q);
 } catch (e) {
   show(e);
 }

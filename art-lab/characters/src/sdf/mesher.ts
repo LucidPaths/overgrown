@@ -123,8 +123,8 @@ export function meshField(field: Field, o: MeshOpts): RawMesh {
   const pos = new Float32Array(nv * 3), nrm = new Float32Array(nv * 3);
   const mat = new Uint8Array(nv * 4), boneIdx = new Uint8Array(nv * 4), boneW = new Uint8Array(nv * 4), layer = new Uint8Array(nv);
   const at = newAttrs(field.model);
-  const e = o.normalEps ?? h * 0.75;
-  const aoD = o.ao ?? [0.8, 1.8, 3.6];
+  const e = o.normalEps ?? 0.6;
+  const aoD = o.ao ?? [1.2, 2.6, 4.5];
   for (let v = 0; v < nv; v++) {
     let x = P[v * 3]!, y = P[v * 3 + 1]!, z = P[v * 3 + 2]!;
     for (let it = 0; it < 2; it++) {
@@ -157,7 +157,28 @@ export function meshField(field: Field, o: MeshOpts): RawMesh {
     // four strongest bones
     top4(at.bones, boneIdx, boneW, v * 4);
   }
+  smoothAo(mat, I, nv, 3);
   return { pos, nrm, mat, boneIdx, boneW, layer, index: new Uint32Array(I), vertexCount: nv, ms: performance.now() - t0 };
+}
+
+/** Averages occlusion over mesh neighbours: a cel terminator shifted by occlusion must not inherit its noise. */
+function smoothAo(mat: Uint8Array, I: number[], nv: number, iters: number): void {
+  const sum = new Float32Array(nv), cnt = new Float32Array(nv);
+  let ao = new Float32Array(nv);
+  for (let v = 0; v < nv; v++) ao[v] = mat[v * 4 + 3]!;
+  for (let it = 0; it < iters; it++) {
+    sum.fill(0); cnt.fill(0);
+    for (let t = 0; t < I.length; t += 3) {
+      const a = I[t]!, b = I[t + 1]!, c = I[t + 2]!;
+      sum[a] = sum[a]! + ao[b]! + ao[c]!; cnt[a] = cnt[a]! + 2;
+      sum[b] = sum[b]! + ao[a]! + ao[c]!; cnt[b] = cnt[b]! + 2;
+      sum[c] = sum[c]! + ao[a]! + ao[b]!; cnt[c] = cnt[c]! + 2;
+    }
+    const n = new Float32Array(nv);
+    for (let v = 0; v < nv; v++) n[v] = cnt[v]! > 0 ? (ao[v]! + sum[v]!) / (1 + cnt[v]!) : ao[v]!;
+    ao = n;
+  }
+  for (let v = 0; v < nv; v++) mat[v * 4 + 3] = Math.round(ao[v]!);
 }
 
 function dist2(P: number[], a: number, b: number): number {

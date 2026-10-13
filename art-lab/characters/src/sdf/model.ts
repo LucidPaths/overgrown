@@ -17,6 +17,8 @@ export const Kind = {
   Torus: 3,
   /** a flat-bottomed ellipsoid cap: ellipsoid intersected with a plane (local y > -cut) */
   Disc: 4,
+  /** a nested chain of prims (its own unions, carves and intersections), blended in as one shape */
+  Group: 5,
 } as const;
 export type KindV = (typeof Kind)[keyof typeof Kind];
 
@@ -51,6 +53,8 @@ export interface Prim {
   br: number;
   /** layer index: shells (clothes) evaluate against their base layer */
   layer: number;
+  /** Group: the nested prims */
+  sub?: Prim[];
 }
 
 export interface Shell {
@@ -61,6 +65,17 @@ export interface Shell {
   /** extra thickness: added as `flare * max(0, flareY - y)` (skirts and coat tails widen toward the hem) */
   flare: number;
   flareY: number;
+  /** a raised lip along the shell's edge (a hem, a cuff): extra thickness fading over `hemW` px inside the mask */
+  hem: number;
+  hemW: number;
+  /** material of the hem band (-1 = same as the shell): trim */
+  hemMat: number;
+  /** how many of the shell's first mask prims define where the hem runs (0 = all of them) */
+  hemPrims: number;
+  /** vertical folds: amplitude (px) and count around the body's y axis, below foldY */
+  fold: number;
+  folds: number;
+  foldY: number;
 }
 
 export interface PrimOpts {
@@ -82,7 +97,10 @@ export class Model {
 
   /** Starts a shell layer around `base` (default: the body). Following prims are its masks (unioned). */
   beginShell(s: Partial<Shell> & { thickness: number; mat: number }): number {
-    this.shells.push({ base: s.base ?? 0, thickness: s.thickness, mat: s.mat, flare: s.flare ?? 0, flareY: s.flareY ?? 0 });
+    this.shells.push({
+      base: s.base ?? 0, thickness: s.thickness, mat: s.mat, flare: s.flare ?? 0, flareY: s.flareY ?? 0,
+      hem: s.hem ?? 0, hemW: s.hemW ?? 0.8, hemMat: s.hemMat ?? -1, hemPrims: s.hemPrims ?? 0, fold: s.fold ?? 0, folds: s.folds ?? 9, foldY: s.foldY ?? 1e9,
+    });
     this.layer = this.shells.length - 1;
     return this.layer;
   }
@@ -132,6 +150,25 @@ export class Model {
   /** Torus in the local xz plane (ring radius R, tube radius r). */
   torus(c: V3, R: number, r: number, o: PrimOpts): Prim {
     return this.push(Kind.Torus, c, o.rot ?? IDENT, [R, r, 0], [], o, R + r);
+  }
+
+  /**
+   * A compound shape: `build` adds prims to a scratch model (their bone/mat are ignored); they are evaluated as
+   * their own chain and blended in as one primitive with this bone and material. Ears, horns, beaks, blades.
+   */
+  group(build: (g: Model) => void, o: PrimOpts): Prim {
+    const g = new Model(this.bones, this.mats);
+    build(g);
+    let lo: V3 = [1e9, 1e9, 1e9], hi: V3 = [-1e9, -1e9, -1e9];
+    for (const p of g.prims) {
+      if (p.op !== Op.Union) continue;
+      for (let i = 0; i < 3; i++) { lo[i] = Math.min(lo[i]!, p.bc[i]! - p.br); hi[i] = Math.max(hi[i]!, p.bc[i]! + p.br); }
+    }
+    const c: V3 = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
+    const r = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2;
+    const p = this.push(Kind.Group, c, IDENT, [0, 0, 0], [], o, r);
+    p.sub = g.prims;
+    return p;
   }
 
   /** Ellipsoid cut flat below local y = -cut (a dome, a cap, a hood brim). */

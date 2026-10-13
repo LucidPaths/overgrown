@@ -1,12 +1,31 @@
 // Evaluating a Model: the distance alone (fast, for meshing) or the distance plus blended material and skin
 // weights (once per vertex). Layers combine with a hard min, so a hem or a plate edge is a real step.
-import { Op, primDist, type Model, type Prim } from "./model";
+import { Kind, Op, primDist as primDist0, type Model, type Prim } from "./model";
 
 export interface Attrs {
   mats: Float32Array;
   bones: Float32Array;
   /** which layer won (0 = body) */
   layer: number;
+}
+
+function primDist(pr: Prim, x: number, y: number, z: number): number {
+  return pr.kind === Kind.Group ? groupDist(pr.sub!, x, y, z) : primDist0(pr, x, y, z);
+}
+
+/** A group's own chain (distance only). */
+function groupDist(prims: Prim[], x: number, y: number, z: number): number {
+  let d = 1e9;
+  let first = true;
+  for (const pr of prims) {
+    const e = primDist(pr, x, y, z);
+    if (first) { d = e; first = false; continue; }
+    const k = Math.max(pr.k, 1e-4);
+    if (pr.op === Op.Union) d = smin(d, e, pr.k);
+    else if (pr.op === Op.Subtract) { const h = clamp01(0.5 - (0.5 * (-e - d)) / k); d = -e * (1 - h) + d * h + k * h * (1 - h); }
+    else if (pr.op === Op.Intersect) { const h = clamp01(0.5 - (0.5 * (e - d)) / k); d = e * (1 - h) + d * h + k * h * (1 - h); }
+  }
+  return d;
 }
 
 interface LayerPlan {
@@ -84,9 +103,17 @@ export class Field {
     if (!s) return this.chain(plan.prims, x, y, z, at);
     // shell: the base layer grown by `thickness`, kept only inside the union of the mask prims
     const base = this.layerDist(s.base, x, y, z, at);
-    const t = s.thickness + (s.flare > 0 ? s.flare * Math.max(0, s.flareY - y) : 0);
     const mask = this.chain(plan.prims, x, y, z, null);
-    if (at) { at.mats.fill(0); at.mats[s.mat] = 1; }
+    let t = s.thickness + (s.flare > 0 ? s.flare * Math.max(0, s.flareY - y) : 0);
+    // the hem: thicker within hemW of the mask's edge
+    const hm = s.hem > 0 && s.hemPrims > 0 ? this.chain(plan.prims.slice(0, s.hemPrims), x, y, z, null) : mask;
+    const edge = s.hem > 0 ? clamp01(1 + Math.max(hm, mask) / s.hemW) * (mask <= 0 ? 1 : 0) : 0;
+    if (s.hem > 0) t += s.hem * edge * edge * (3 - 2 * edge);
+    if (s.fold > 0 && y < s.foldY) {
+      const a = Math.atan2(x, z);
+      t += s.fold * (0.5 + 0.5 * Math.sin(a * s.folds)) * Math.min(1, (s.foldY - y) / 3);
+    }
+    if (at) { at.mats.fill(0); at.mats[s.hemMat >= 0 && edge > 0.5 ? s.hemMat : s.mat] = 1; }
     return Math.max(base - t, mask);
   }
 
