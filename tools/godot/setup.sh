@@ -61,17 +61,26 @@ if [ "$missing" -eq 1 ]; then
 fi
 
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK" "${STAGE:-}"' EXIT
+STAGES=()
+trap 'rm -rf "$WORK" "${STAGES[@]}"' EXIT
+
+# stage_dir <parent>: a fresh temp dir on the same filesystem as its final home, removed on exit if
+# still there. Every install extracts or copies into one and then mv's it into place (atomic).
+stage_dir() {
+  mkdir -p "$1"
+  STAGE="$(mktemp -d "$1/.stage.XXXXXX")"
+  STAGES+=("$STAGE")
+}
 
 # --- Godot ---
 if [ ! -x "${PREFIX}/godot/${GODOT_DIR}" ]; then
   curl -fsSL -o "$WORK/godot.zip" "${GODOT_BASE}/${GODOT_DIR}.zip"
   echo "${GODOT_SHA512}  $WORK/godot.zip" | sha512sum -c -
-  # Atomic: extract aside, then move into place, so the -x check above never sees a partial install.
-  mkdir -p "${PREFIX}/godot" "$WORK/godot"
-  unzip -qo "$WORK/godot.zip" -d "$WORK/godot"
-  chmod +x "$WORK/godot/${GODOT_DIR}"
-  mv -f "$WORK/godot/${GODOT_DIR}" "${PREFIX}/godot/${GODOT_DIR}"
+  # Atomic: extract to a stage dir, then move into place, so the -x check above never sees a partial install.
+  stage_dir "${PREFIX}/godot"
+  unzip -qo "$WORK/godot.zip" -d "$STAGE"
+  chmod +x "$STAGE/${GODOT_DIR}"
+  mv -f "$STAGE/${GODOT_DIR}" "${PREFIX}/godot/${GODOT_DIR}"
 fi
 ln -sf "${PREFIX}/godot/${GODOT_DIR}" "${BIN}/godot"
 
@@ -80,9 +89,8 @@ if [ "$WITH_TEMPLATES" -eq 1 ] && [ ! -f "${TEMPLATES_DIR}/version.txt" ]; then
   curl -fsSL -o "$WORK/templates.tpz" "${GODOT_BASE}/Godot_v${GODOT_VER}-stable_export_templates.tpz"
   echo "${TEMPLATES_SHA512}  $WORK/templates.tpz" | sha512sum -c -
   unzip -qo "$WORK/templates.tpz" -d "$WORK/templates"
-  # Atomic: copy to a sibling temp dir, then move into place (version.txt is the "installed" marker).
-  mkdir -p "$(dirname "$TEMPLATES_DIR")"
-  STAGE="$(mktemp -d "$(dirname "$TEMPLATES_DIR")/.stage.XXXXXX")"
+  # Atomic: copy to a stage dir beside the final one, then move into place (version.txt is the "installed" marker).
+  stage_dir "$(dirname "$TEMPLATES_DIR")"
   cp -a "$WORK/templates/templates/." "$STAGE/"
   rm -rf "$TEMPLATES_DIR"
   mv "$STAGE" "$TEMPLATES_DIR"
@@ -93,12 +101,11 @@ if [ "$WITH_BLENDER" -eq 1 ]; then
   if [ ! -x "${PREFIX}/blender-${BLENDER_VER}-linux-x64/blender" ]; then
     curl -fsSL -o "$WORK/blender.tar.xz" "https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VER}-linux-x64.tar.xz"
     echo "${BLENDER_SHA256}  $WORK/blender.tar.xz" | sha256sum -c -
-    # Atomic: extract into a temp dir under $PREFIX (same filesystem), then move into place.
-    STAGE="$(mktemp -d "${PREFIX}/.blender-stage.XXXXXX")"
+    # Atomic: extract into a stage dir under $PREFIX, then move into place.
+    stage_dir "$PREFIX"
     tar -xJf "$WORK/blender.tar.xz" -C "$STAGE"
     rm -rf "${PREFIX}/blender-${BLENDER_VER}-linux-x64"
     mv "$STAGE/blender-${BLENDER_VER}-linux-x64" "${PREFIX}/blender-${BLENDER_VER}-linux-x64"
-    rmdir "$STAGE"
   fi
   ln -sfn "${PREFIX}/blender-${BLENDER_VER}-linux-x64" "${PREFIX}/blender"
   ln -sf "${PREFIX}/blender/blender" "${BIN}/blender"
