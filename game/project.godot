@@ -15,6 +15,7 @@ window/size/resizable=true
 
 [physics]
 
+common/physics_ticks_per_second=60
 common/physics_interpolation=true
 
 [rendering]
