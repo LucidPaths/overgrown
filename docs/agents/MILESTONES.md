@@ -63,7 +63,7 @@ After G3 comes the rest of the GDD (NPCs, dungeons, ecology and so on), planned 
 
 ## Before the overhaul
 
-M0 and M1 were built and signed off on the TypeScript, Pixi and Python stack. They stay here as history. Their checklists describe that stack and are not run again; the code is deleted by OVR-010.
+M0 and M1 were built and signed off on the TypeScript, Pixi and Python stack. They stay here as history. Their checklists describe that stack and are not run again; OVR-010 deleted the code, and it stays in git history (see `CLAUDE.md`).
 
 ### M0 — Foundations
 

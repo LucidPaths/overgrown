@@ -1,5 +1,7 @@
 # Performance numbers
 
+> History: this page describes the retired browser build (TypeScript and Pixi, deleted in OVR-010). Its numbers and scripts are not current.
+
 One living page. Each task that measures something adds its row here. Scripts: `scripts/measure-fps.mjs`, `scripts/measure-startup.mjs`; the emulation recipe lives only in `scripts/perf-profiles.mjs`.
 
 ## 1. What this measures, and what it can't
