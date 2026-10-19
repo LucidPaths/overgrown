@@ -54,7 +54,7 @@ Everything happens through the scripts in `tools/godot/` (Ubuntu; the cloud sess
 bash tools/godot/setup.sh            # installs Godot 4.7.2 and Blender
 bash tools/godot/test.sh             # headless GDScript tests
 bash tools/godot/export.sh           # Windows and Linux builds into game/export/
-bash tools/godot/capture.sh out.png  # a screenshot of the main scene (xvfb, software rendering)
+bash tools/godot/capture.sh out.png  # a screenshot of the main scene (xvfb, software rendering; run test.sh first so new scripts are imported)
 ```
 
 Agents start from [`CLAUDE.md`](CLAUDE.md).
