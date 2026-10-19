@@ -1,6 +1,6 @@
 # Milestones (G0 is the current milestone)
 
-A milestone is a batch of GDD tasks that together make something you can play-test end to end. The E2E agent runs once per milestone ([E2E.md](E2E.md)). From G0 on, **Lucid's playtest of the exe** is part of every milestone's E2E, because the cloud renders in software (about 4 fps): agents can judge how the game looks, but only Lucid can judge how it feels and how fast it runs. The decisions behind G0 to G3 are in `docs/overhaul/PLAN.md` and OQ-031 to OQ-038.
+A milestone is a batch of GDD tasks that together make something you can play-test end to end. The E2E agent runs once per milestone ([E2E.md](E2E.md)). From G0 on, **Lucid's playtest of the exe** is part of every milestone's E2E, because the cloud renders in software (about 4 fps): agents can judge how the game looks, but only Lucid can judge how it feels and how fast it runs. The decisions behind G0 to G3 are in `docs/overhaul/PLAN.md` and OQ-031 to OQ-038: Godot and the exe (OQ-031, OQ-032), cloud-only development (OQ-033) and the asset rule (OQ-038).
 
 ## G0 — Foundation and the first exe (current)
 
@@ -20,10 +20,10 @@ GOD-001 · GOD-002 · GOD-003 · GOD-004 · GOD-005 · GOD-006 · OVR-009 · OVR
 ## G1 — Painted vertical slice
 
 Goal: one biome and one vista that look like the mood board, with the wanderer in motion. Tasks are specced when G0 is done; the plan's scope is:
-- An art bible built from the mood board, with full creative freedom (an art lab in Godot and Blender), free to start from D8-allowed CC0 bases and from Lucid's images. Replaces the pixel art bible.
+- An art bible built from the mood board (OQ-035), with full creative freedom (an art lab in Godot and Blender), free to start from D8-allowed CC0 bases and from Lucid's images. Replaces the pixel art bible.
 - The painterly post stack, palette grading and the cosmic sky shader.
 - Wind on everything.
-- The wanderer: Blender-built, rigged, with walk, run, dodge, attack and idle, and cloth and hair motion.
+- The wanderer (OQ-036): Blender-built (OQ-037), rigged, with walk, run, dodge, attack and idle, and cloth and hair motion.
 - Props for one biome (trees, rocks, grass) and one landmark vista.
 
 **E2E checklist**

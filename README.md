@@ -1,6 +1,6 @@
 # overgrown
 
-An open-source, desktop, real-time hack-and-slash sandbox RPG for you and a few friends (OQ-029), made in Godot 4.
+An open-source, desktop, real-time hack-and-slash sandbox RPG for you and a few friends (OQ-029), made in Godot 4 (OQ-031) and shipped as an exe from GitHub Releases (OQ-032).
 
 A cozy, saturated, painted world where you are *just another one*: NPCs live, learn, trade, migrate and die by the same rules you do. Monsters age, breed and take over land if nobody pushes back. Wander too far, or let an area grow wild, and the lovely world turns into hell difficulty.
 

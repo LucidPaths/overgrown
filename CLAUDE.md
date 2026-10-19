@@ -28,7 +28,7 @@ game/          the Godot 4 project (GDScript). src/ = game rules (plain classes,
 game/assets/third_party/  third-party assets + CREDITS.md (checked by tools/check-credits.sh)
 tools/godot/   setup, test, export and capture scripts (bash)
 tools/check-credits.sh  the third-party credits check (CI)
-art/blender/   (planned, G1) headless Blender Python scripts → glTF
+art/blender/   (planned, G1; OQ-037) headless Blender Python scripts → glTF
 contracts/     cross-language fixtures (RNG and worldgen vectors, …) shared by the GDScript and TS (and Python) tests
 sim/           (retired in OVR-010; reference only) @overgrown/sim — pure TS simulation. Sees NO browser APIs (lib ES2022, types []).
 client/        (retired in OVR-010; reference only) @overgrown/client — Vite + PixiJS app

@@ -2,7 +2,7 @@
 
 Runs once per **milestone**, after every task in it has merged ([MILESTONES.md](MILESTONES.md)). It replaces running large test suites on every PR.
 
-The game is a Godot 4 project in `game/`, built into an exe (OQ-031, OQ-032). The cloud renders in software (about 4 fps), so this agent judges **correctness and how things look**. Feel and real fps are judged by **Lucid's playtest of the exe**, which is a line on every milestone's checklist. The agent doesn't replace it and doesn't claim it.
+The game is a Godot 4 project in `game/`, built into an exe (OQ-031, OQ-032). The cloud renders in software (about 4 fps), so this agent judges **correctness and how things look**. Development happens in the cloud and Lucid's machine only plays builds (OQ-033). Feel and real fps are judged by **Lucid's playtest of the exe**, which is a line on every milestone's checklist. The agent doesn't replace it and doesn't claim it.
 
 ## Procedure
 

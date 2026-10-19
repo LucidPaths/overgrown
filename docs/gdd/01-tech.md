@@ -24,7 +24,7 @@ The TypeScript sim (`sim/`), the Pixi client (`client/`) and the Python art pipe
 | Storage | Local files (worlds, characters), export/import as files; the format is decided in TEC-006 and TEC-007 | Valheim-style local ownership (OQ-029). IndexedDB went with the web client |
 | Assets | Blender headless scripts → glTF, imported by Godot; third-party files under `game/assets/third_party/` | See `10-art-audio.md` (OQ-037, OQ-038) |
 | Auth | local profile name (OQ-029) | Identity label only; no accounts. Sign in with X is dropped (OQ-029, supersedes OQ-004). |
-| Dedicated host | A headless Godot run of the same rules (planned, being ported from the Node.js plan) | Always-on worlds on a server (OQ-003) |
+| Dedicated host | The engine is re-decided in TEC-018 (a headless Godot run of the same rules is the obvious candidate); the old plan was the same sim in Node.js | Always-on worlds on a server (OQ-003) |
 | Release | GitHub Releases: a rolling `latest` pre-release from `main`, `v*` tags for versions | CI exports both builds (OQ-032) |
 
 ## Architecture
@@ -88,7 +88,7 @@ The rules below were written for the TS sim and are engine-neutral design. They 
 - [ ] **TEC-015** Performance HUD (fps, entity counts, sim tick cost) behind a debug flag.
 - [ ] ~~**TEC-016** Load-time CI check: fail if the initial bundle exceeds budget.~~ (dropped: OQ-029)
 - [ ] ~~**TEC-017** Open Graph/X card meta tags so shared links render a preview image (summary card, not a player card).~~ (dropped: OQ-029)
-- [ ] **TEC-018** Dedicated host: run the game rules headless (Godot, replacing the Node.js plan, OQ-031) with storage and network adapters, so a server can host an always-on world that friends join over LAN or the internet (OQ-029).
+- [ ] **TEC-018** Dedicated host: run the game rules headless, with storage and network adapters (the engine is re-decided here: headless Godot is the obvious candidate, replacing the Node.js plan, OQ-031), so a server can host an always-on world that friends join over LAN or the internet (OQ-029).
 - [x] **TEC-019** `[proto]` CI guard: the sim package builds with no DOM/browser types available, so browser API use in the sim fails the build. — #1
 - [x] **TEC-020** `[proto]` Cap the render device-pixel-ratio (e.g. ≤ 2) and measure fps on a real mid-range phone GPU; record the numbers (found in M0 E2E: software-GL fps fell to 15 at DPR 3). (OQ-023) — #27
 - [x] **TEC-021** `[proto]` Cut the startup waterfall: start the sim worker in parallel with the atlas load (Pixi's chunk fan-out was measured off the critical path), and ship the atlas as lossless WebP; target first frame ≤ 3 s on emulated slow 4G + 4× CPU (found in M0 E2E: 2.65–2.79 s). (OQ-023, OQ-028) — #28

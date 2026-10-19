@@ -2,7 +2,7 @@
 
 ## Shape
 
-- **Infinite, chunk-generated, from a seed.** Chunks are 32×32 tiles at 16 px per tile on the ground grid, while characters are 32×32 px sprites (→ ART). Chunks generate when first approached and are deterministic from seed + chunk coordinates.
+- **Infinite, chunk-generated, from a seed.** Chunks are 32×32 tiles, and in the 3D world 1 tile = 1 m (OQ-031, OQ-034) (→ ART). Chunks generate when first approached and are deterministic from seed + chunk coordinates.
 - Infinite only works if moving across it means something (the Cube World lesson). Distance, local ecology and time all change what you meet. New ground always offers new dungeons, cities, bosses and biomes.
 
 ## Biomes
