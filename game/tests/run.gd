@@ -3,6 +3,7 @@ extends SceneTree
 ## Finds every res://tests/test_*.gd, instantiates it and calls each method named test_*(t: TestContext).
 ## A test fails with t.fail("msg"). Exit code 0 when all pass, 1 otherwise (including a script that
 ## fails to load, parse or instantiate).
+## Runtime script errors don't stop Godot and don't change this exit code; tools/godot/test.sh scans the output for them.
 
 const TESTS_DIR := "res://tests"
 
@@ -17,10 +18,12 @@ func _init() -> void:
 			failed += 1
 			continue
 		var suite: Object = script.new()
+		var methods := 0
 		for m in script.get_script_method_list():
 			var method_name: String = m["name"]
 			if not method_name.begins_with("test_"):
 				continue
+			methods += 1
 			var t := TestContext.new()
 			suite.call(method_name, t)
 			if t.failures.is_empty():
@@ -30,6 +33,9 @@ func _init() -> void:
 				failed += 1
 				for msg in t.failures:
 					printerr("FAIL %s::%s: %s" % [file, method_name, msg])
+		if methods == 0:
+			printerr("FAIL %s (no test_* methods)" % file)
+			failed += 1
 		if not suite is RefCounted:
 			suite.free()
 	print("%d passed, %d failed" % [passed, failed])

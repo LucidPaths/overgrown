@@ -61,15 +61,17 @@ if [ "$missing" -eq 1 ]; then
 fi
 
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+trap 'rm -rf "$WORK" "${STAGE:-}"' EXIT
 
 # --- Godot ---
 if [ ! -x "${PREFIX}/godot/${GODOT_DIR}" ]; then
   curl -fsSL -o "$WORK/godot.zip" "${GODOT_BASE}/${GODOT_DIR}.zip"
   echo "${GODOT_SHA512}  $WORK/godot.zip" | sha512sum -c -
-  mkdir -p "${PREFIX}/godot"
-  unzip -qo "$WORK/godot.zip" -d "${PREFIX}/godot"
-  chmod +x "${PREFIX}/godot/${GODOT_DIR}"
+  # Atomic: extract aside, then move into place, so the -x check above never sees a partial install.
+  mkdir -p "${PREFIX}/godot" "$WORK/godot"
+  unzip -qo "$WORK/godot.zip" -d "$WORK/godot"
+  chmod +x "$WORK/godot/${GODOT_DIR}"
+  mv -f "$WORK/godot/${GODOT_DIR}" "${PREFIX}/godot/${GODOT_DIR}"
 fi
 ln -sf "${PREFIX}/godot/${GODOT_DIR}" "${BIN}/godot"
 
@@ -78,8 +80,12 @@ if [ "$WITH_TEMPLATES" -eq 1 ] && [ ! -f "${TEMPLATES_DIR}/version.txt" ]; then
   curl -fsSL -o "$WORK/templates.tpz" "${GODOT_BASE}/Godot_v${GODOT_VER}-stable_export_templates.tpz"
   echo "${TEMPLATES_SHA512}  $WORK/templates.tpz" | sha512sum -c -
   unzip -qo "$WORK/templates.tpz" -d "$WORK/templates"
-  mkdir -p "$TEMPLATES_DIR"
-  cp -a "$WORK/templates/templates/." "$TEMPLATES_DIR/"
+  # Atomic: copy to a sibling temp dir, then move into place (version.txt is the "installed" marker).
+  mkdir -p "$(dirname "$TEMPLATES_DIR")"
+  STAGE="$(mktemp -d "$(dirname "$TEMPLATES_DIR")/.stage.XXXXXX")"
+  cp -a "$WORK/templates/templates/." "$STAGE/"
+  rm -rf "$TEMPLATES_DIR"
+  mv "$STAGE" "$TEMPLATES_DIR"
 fi
 
 # --- Blender (optional) ---
@@ -87,7 +93,12 @@ if [ "$WITH_BLENDER" -eq 1 ]; then
   if [ ! -x "${PREFIX}/blender-${BLENDER_VER}-linux-x64/blender" ]; then
     curl -fsSL -o "$WORK/blender.tar.xz" "https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VER}-linux-x64.tar.xz"
     echo "${BLENDER_SHA256}  $WORK/blender.tar.xz" | sha256sum -c -
-    tar -xJf "$WORK/blender.tar.xz" -C "$PREFIX"
+    # Atomic: extract into a temp dir under $PREFIX (same filesystem), then move into place.
+    STAGE="$(mktemp -d "${PREFIX}/.blender-stage.XXXXXX")"
+    tar -xJf "$WORK/blender.tar.xz" -C "$STAGE"
+    rm -rf "${PREFIX}/blender-${BLENDER_VER}-linux-x64"
+    mv "$STAGE/blender-${BLENDER_VER}-linux-x64" "${PREFIX}/blender-${BLENDER_VER}-linux-x64"
+    rmdir "$STAGE"
   fi
   ln -sfn "${PREFIX}/blender-${BLENDER_VER}-linux-x64" "${PREFIX}/blender"
   ln -sf "${PREFIX}/blender/blender" "${BIN}/blender"
