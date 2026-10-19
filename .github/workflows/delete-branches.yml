@@ -1,0 +1,45 @@
+name: Delete branches
+
+# Manual cleanup of stale branches. The cloud sessions' git proxy refuses branch deletion, so
+# the orchestrator runs this instead (Actions → Delete branches → Run workflow, or workflow_dispatch).
+# Refuses the default branch and any branch with an open pull request; commits of closed PRs stay
+# reachable through refs/pull/<n>/head.
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: "Space-separated branch names to delete"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      DEFAULT: ${{ github.event.repository.default_branch }}
+      BRANCHES: ${{ inputs.branches }}
+    steps:
+      - name: Delete
+        run: |
+          set -u
+          failed=0
+          for b in $BRANCHES; do
+            if [ "$b" = "$DEFAULT" ]; then
+              echo "refuse $b: default branch"; failed=1; continue
+            fi
+            open=$(gh pr list -R "$REPO" --head "$b" --state open --json number --jq length)
+            if [ "$open" != "0" ]; then
+              echo "refuse $b: $open open pull request(s)"; failed=1; continue
+            fi
+            if gh api -X DELETE "repos/$REPO/git/refs/heads/$b" >/dev/null; then
+              echo "deleted $b"
+            else
+              echo "failed $b"; failed=1
+            fi
+          done
+          exit $failed
