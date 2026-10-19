@@ -12,9 +12,10 @@ on:
 permissions:
   contents: write
 
-# One release at a time: two quick merges must not delete each other's "latest" half-way through.
+# One run at a time per ref: two quick merges to main must not swap "latest" half-way through each other.
+# A tag gets its own group, so a v* run is never dropped as the "pending" run behind a main push.
 concurrency:
-  group: release
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -77,14 +78,25 @@ jobs:
       - name: Publish "latest (main)"
         if: github.ref == 'refs/heads/main'
         run: |
-          gh release delete latest --yes --cleanup-tag || true
-          gh release create latest \
-            --prerelease \
+          # Order matters: the old "latest" stays up until the new release is fully uploaded, so a failed
+          # upload leaves the previous build in place instead of a gap or a half-uploaded release.
+          # 1. Upload everything to a draft under a temporary tag (a draft is invisible and creates no tag).
+          gh release create "latest-$GITHUB_RUN_ID" \
+            --draft \
             --title "latest (main)" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --target "$GITHUB_SHA" \
             game/export/windows/overgrown-windows.exe \
             game/export/linux/overgrown-linux.x86_64
+          # 2. Only now remove the old one (and its tag). It may not exist on the first run.
+          gh release delete latest --yes --cleanup-tag || true
+          # 3. Retarget the finished draft to the real tag and publish it as the pre-release.
+          gh release edit "latest-$GITHUB_RUN_ID" \
+            --tag latest \
+            --target "$GITHUB_SHA" \
+            --title "latest (main)" \
+            --prerelease \
+            --draft=false
 
       - name: Publish the versioned release
         if: startsWith(github.ref, 'refs/tags/v')

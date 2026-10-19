@@ -3,7 +3,9 @@
 #   tools/godot/export.sh
 # Installs the Godot export templates if they are missing, stamps game/build_info.gd with the commit and
 # time, runs both export presets and prints the sizes. Exits non-zero if an export fails or an output is
-# missing or empty. The stamp is put back to the committed "dev" default on exit, so the tree stays clean.
+# missing or empty, or if Godot printed "SCRIPT ERROR" or a line starting "ERROR:" (Godot exports a game
+# with broken scripts and still exits 0, so neither the exit code nor the file size can be trusted, the same
+# as in test.sh). The stamp is put back to the committed "dev" default on exit, so the tree stays clean.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 GAME="$ROOT/game"
@@ -30,23 +32,29 @@ if [ ! -f "$TEMPLATES_MARKER" ]; then
   bash "$ROOT/tools/godot/setup.sh" --no-blender --templates
 fi
 
-trap 'write_stamp dev unbuilt' EXIT
+LOG="$(mktemp)"
+trap 'write_stamp dev unbuilt; rm -f "$LOG"' EXIT
 write_stamp "$(git -C "$ROOT" rev-parse --short=8 HEAD)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # A fresh checkout needs an import pass (class names, resources) before an export.
-godot --headless --path "$GAME" --import
+godot --headless --path "$GAME" --import 2>&1 | tee -a "$LOG"
 
 for build in "${BUILDS[@]}"; do
   preset="${build%%|*}"
   out="${build#*|}"
   rm -f "$GAME/$out"
   mkdir -p "$GAME/$(dirname "$out")"
-  godot --headless --path "$GAME" --export-release "$preset" "$out"
+  godot --headless --path "$GAME" --export-release "$preset" "$out" 2>&1 | tee -a "$LOG"
   if [ ! -s "$GAME/$out" ]; then
     echo "export.sh: $preset export did not produce a non-empty $GAME/$out" >&2
     exit 1
   fi
 done
+
+if grep -qE 'SCRIPT ERROR|^ERROR:' "$LOG"; then
+  echo "export.sh: Godot printed script errors (see SCRIPT ERROR / ERROR: lines above)" >&2
+  exit 1
+fi
 
 for build in "${BUILDS[@]}"; do
   out="${build#*|}"
