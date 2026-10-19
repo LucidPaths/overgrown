@@ -30,6 +30,10 @@ describe("createFbm", () => {
     expect(() => createFbm(1, [1.5])).toThrow(/wavelengths\[0\].*got 1\.5/);
   });
 
+  it("fixture holds at least 8 noise vectors (an emptied array would skip the contract samples)", () => {
+    expect(vectors.noise.length).toBeGreaterThanOrEqual(8);
+  });
+
   // Shared with game/tests/test_worldgen.gd: the exact float64 bit pattern, never a decimal (Godot's JSON float
   // parsing is not correctly rounded).
   it.each(vectors.noise.map((n) => [n.seed, n.wavelengths, n.x, n.y, n.bits] as const))(

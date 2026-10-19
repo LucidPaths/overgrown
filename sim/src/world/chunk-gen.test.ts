@@ -8,6 +8,10 @@ import { generateChunk, isFord, pickTile } from "./chunk-gen";
 import { Tile } from "./tile";
 
 describe("generateChunk", () => {
+  it("fixture holds at least 10 chunk vectors (an emptied array would skip the golden digests)", () => {
+    expect(vectors.chunks.length).toBeGreaterThanOrEqual(10);
+  });
+
   // Digests live in contracts/worldgen-vectors.json, shared with the GDScript port (game/tests/test_worldgen.gd):
   // same seed must mean same world, everywhere. Retuning any constant changes them on purpose; re-pin in the same PR.
   it.each(vectors.chunks.map((c) => [c.seed, c.cx, c.cy, c.tilesDigest, c.biomesDigest] as const))(
