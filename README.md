@@ -16,9 +16,35 @@ The exe is not signed, so the first time Windows SmartScreen says "unknown publi
 
 Linux: download `overgrown-linux.x86_64`, run `chmod +x overgrown-linux.x86_64`, then `./overgrown-linux.x86_64`.
 
-## Status
+## What you can do right now
 
-Pre-production, in the middle of the move to Godot (milestone G0, [`docs/overhaul/PLAN.md`](docs/overhaul/PLAN.md)). The design lives in [`docs/gdd/`](docs/gdd/README.md). Every task in the GDD has a stable ID; when a PR implements one, the box gets ticked and the PR gets linked next to it. See [the workflow](docs/gdd/README.md#workflow).
+![The placeholder wanderer attacking in a streamed, seeded world](docs/specs/GOD-006/attack.png)
+
+Milestone G0 is the foundation: a seeded, endless 3D world that streams in around you (grassland, forest, rivers, coasts, terraced mountains with cliffs) and a placeholder wanderer you can walk, sprint, dodge-roll and swing with. Cliffs and deep water block you, shallow water slows you. Colours and the character are stand-ins; the painted look from the mood board ([`docs/art/moodboard/`](docs/art/moodboard/)) and the real wanderer come in G1.
+
+| Action | Keyboard and mouse | Gamepad |
+|---|---|---|
+| Move | WASD or arrow keys | left stick |
+| Sprint (hold) | Shift | LB or left stick click |
+| Dodge roll | Space | B (east button) |
+| Attack (toward the cursor or right stick) | left click | X (west button) or RT |
+| Aim | mouse | right stick |
+| Zoom | mouse wheel | |
+| Vista view (hold) | V | Y (north button) |
+
+Whichever device you touched last is the one in use.
+
+## Roadmap
+
+From [`docs/overhaul/PLAN.md`](docs/overhaul/PLAN.md); tasks and their checklists are in [`docs/agents/MILESTONES.md`](docs/agents/MILESTONES.md).
+
+- **G0, Foundation (now):** Godot project, the release exe, the seeded world in 3D, the character rules and controls.
+- **G1, The look:** one biome and one vista that look like the mood board, with the real wanderer in motion.
+- **G2, First fight:** monsters that spawn and age, stamina and hit feel, weapons, levels, items, a HUD, the first sounds.
+- **G3, Co-op:** you host from the game menu and a friend joins over the internet, with a shared world save.
+- **Then** the rest of the GDD: NPCs, dungeons, ecology and so on.
+
+The design lives in [`docs/gdd/`](docs/gdd/README.md). Every task there has a stable ID; when a PR implements one, its box gets ticked with the PR linked next to it ([the workflow](docs/gdd/README.md#workflow)).
 
 ## Develop
 
