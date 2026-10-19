@@ -15,7 +15,7 @@ apt-get update -qq
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   xvfb mesa-vulkan-drivers libvulkan1 vulkan-tools mesa-utils libgl1-mesa-dri libegl1 libglx-mesa0 \
   libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libxrandr2 libxinerama1 libxcursor1 \
-  libfontconfig1 libasound2t64 libpulse0 unzip imagemagick >/dev/null
+  libfontconfig1 libasound2t64 libpulse0 unzip imagemagick bc >/dev/null
 
 mkdir -p /opt/dl
 cd /opt/dl

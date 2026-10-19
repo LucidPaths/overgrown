@@ -180,7 +180,7 @@ func build_environment() -> void:
 	env.glow_enabled = true
 	env.glow_intensity = 0.6
 	env.glow_bloom = 0.05
-	env.ssao_enabled = true  # Forward+ only; Mobile and Compatibility ignore it
+	env.ssao_enabled = true  # Forward+ and Compatibility; Mobile ignores it (and warns)
 	env.ssao_radius = 1.2
 	env.ssao_intensity = 2.0
 	# triage switches for renderer comparisons: --no-glow --no-fog --linear-tonemap
