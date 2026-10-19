@@ -1,0 +1,89 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.318 - Forward+ - Using Device #0: Unknown - llvmpipe (LLVM 20.1.2, 256 bits)
+SPAWN (-59.5, -59.5) m, search 2465 ms
+WORLD READY 9497 ms after scene start (15 chunks meshed)
+STEP world ready; seed 1, you at (-59.5, -59.5)
+STEP keyboard: D held 60 ticks (walk east)
+CHECK PASS HUD shows keyboard + mouse after a key: walk   5.0 m/s   input: keyboard + mouse
+CHECK PASS D walks east: dx 5.00 dz 0.00 over 60 ticks, max 5.00 m/s, actions ["walk"]
+CHECK PASS D: action walk, facing east: facing (1.0, 0.0)
+CHECK PASS D: walk speed 5 m/s (+-10%%; tile factor 1 on dry ground): 5.00 m/s
+CHECK PASS release D: idle: idle
+STEP keyboard: Shift+W held 60 ticks (sprint north)
+SHOT docs/e2e/G0/10-kb-sprint-north.png (OK) at (-52.83344, -65.63337), walk, facing (0.0, -1.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-53, -66) grass, Forest / walk   8.0 m/s   input: keyboard + mouse / chunks loaded 43   fps 3
+CHECK PASS Shift+W sprints north: dx 0.00 dz -8.00 over 60 ticks
+CHECK PASS sprint speed 8 m/s (5 * 1.6): 8.00 m/s
+CHECK PASS Shift+W: facing north: facing (0.0, -1.0)
+STEP keyboard: A held + Space tap (dodge west)
+SHOT docs/e2e/G0/11-kb-dodge-west.png (OK) at (-54.64294, -69.89997), dodge, facing (0.116603, -0.993179) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-55, -70) grass, Forest / dodge   8.6 m/s   input: keyboard + mouse / chunks loaded 53   fps 4
+CHECK PASS Space starts a dodge: action seen walk
+CHECK PASS dodge lasts 21 ticks: 21 ticks
+CHECK PASS dodge rolls ~3 m west: dx -3.00 dz 0.00
+CHECK PASS after the dodge: back to walk/idle: idle
+OBS total move from Space press: (-3.333317, 0.0)
+STEP mouse probe: a parsed InputEventMouseMotion alone (no warp) vs Input.warp_mouse
+OBS parsed motion to (332.096, 420.3577) only: viewport mouse (640.0, 360.0) (the aim reads the OS cursor, so a parsed motion alone doesn't move it)
+OBS after warp_mouse((332.096, 420.3577)): viewport mouse (332.0, 420.0)
+STEP mouse: warp the cursor to (899.9972, 420.5025) = east (right of the wanderer), left click
+OBS cursor (899.9972, 420.5025), viewport mouse (899.0, 420.0), aim (5.230217, -0.020218)
+SHOT docs/e2e/G0/12-mouse-attack-east.png (OK) at (-56.75008, -69.89997), attack, facing (0.999993, -0.003866) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-57, -70) grass, Grassland / attack   0.0 m/s   input: keyboard + mouse / chunks loaded 53   fps 5
+CHECK PASS click attacks (east (right of the wanderer)): seen ["idle"], 24 ticks
+CHECK PASS attack is rooted: dx 0.000 dz 0.000
+CHECK PASS facing toward the cursor (east (right of the wanderer)): facing (0.999993, -0.003866), want (1.0, 0.0)
+STEP mouse: warp the cursor to (639.9995, 160.5025) = north (above the wanderer), left click
+OBS cursor (639.9995, 160.5025), viewport mouse (639.0, 160.0), aim (-0.063049, -32.73072)
+SHOT docs/e2e/G0/12-mouse-attack-north.png (OK) at (-56.75008, -69.89997), attack, facing (-0.001926, -0.999998) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-57, -70) grass, Grassland / attack   0.0 m/s   input: keyboard + mouse / chunks loaded 53   fps 5
+CHECK PASS click attacks (north (above the wanderer)): seen ["idle"], 24 ticks
+CHECK PASS attack is rooted: dx 0.000 dz 0.000
+CHECK PASS facing toward the cursor (north (above the wanderer)): facing (-0.001926, -0.999998), want (0.0, -1.0)
+STEP mouse: warp the cursor to (439.9995, 580.5024) = south-west (below-left), left click
+OBS cursor (439.9995, 580.5024), viewport mouse (439.0, 580.0), aim (-2.861774, 4.524498)
+SHOT docs/e2e/G0/12-mouse-attack-southwest.png (OK) at (-56.75008, -69.89997), attack, facing (-0.534553, 0.845135) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-57, -70) grass, Grassland / attack   0.0 m/s   input: keyboard + mouse / chunks loaded 53   fps 5
+CHECK PASS click attacks (south-west (below-left)): seen ["idle"], 24 ticks
+CHECK PASS attack is rooted: dx 0.000 dz 0.000
+CHECK PASS facing toward the cursor (south-west (below-left)): facing (-0.534553, 0.845135), want (-0.534553, 0.845135)
+CHECK PASS south-west cursor gives a south-west aim: aim (-2.861774, 4.524498)
+STEP mouse: Space with no move key held rolls toward the cursor
+CHECK PASS idle dodge rolls along the mouse aim (east): dx 3.00 dz -0.01 facing (0.999993, -0.003866)
+STEP mouse: double click inside one attack (buffer): two presses, the second inside the last 12 ticks
+CHECK PASS a press in the buffer window chains a second attack: first start 566, second start 590
+STEP gamepad: left stick x = 1.0 held 60 ticks (walk east)
+CHECK PASS HUD shows gamepad after a stick move: walk   5.0 m/s   input: gamepad
+CHECK PASS left stick walks east at 5 m/s: dx 5.00 dz 0.00 over 60 ticks, max 5.00 m/s, actions ["walk"]
+STEP gamepad: LB held with the stick (sprint)
+SHOT docs/e2e/G0/13-pad-sprint-hud.png (OK) at (-40.95011, -69.91151), walk, facing (1.0, 0.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-41, -70) grass, Forest / walk   8.0 m/s   input: gamepad / chunks loaded 53   fps 6
+CHECK PASS LB sprints at 8 m/s: dx 4.00 dz 0.00 over 30 ticks, max 8.00 m/s, actions ["walk"]
+STEP gamepad: left stick diagonal (0.7, 0.7) held 30 ticks
+CHECK PASS diagonal stick walks south-east: dx 1.75 dz 1.75 over 30 ticks, max 4.94 m/s, actions ["walk"]
+CHECK PASS diagonal speed <= 5 m/s (stick rescaled past the deadzone): 4.94 m/s
+STEP gamepad: stick inside the deadzone (0.15, 0.1) -> no move
+CHECK PASS stick in the deadzone: idle: dx 0.00 dz 0.00 over 20 ticks, max 0.00 m/s, actions ["idle"]
+STEP gamepad: right stick (0, -1) (aim north), X
+SHOT docs/e2e/G0/14-pad-attack-north.png (OK) at (-35.69175, -66.65333), attack, facing (0.0, -1.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -67) grass, Forest / attack   0.0 m/s   input: gamepad / chunks loaded 53   fps 5
+CHECK PASS X attacks: seen ["idle"], 24 ticks
+CHECK PASS X attack faces the right stick (north): facing (0.0, -1.0)
+STEP gamepad: right stick (-1, 0) (aim west), right trigger pulled to 1.0 in steps, held, released, pulled again
+CHECK PASS RT pull = exactly one attack while held (repeats ignored): attack starts 948
+CHECK PASS RT attack faces the right stick (west): facing (-1.0, 0.0)
+CHECK PASS release and pull RT again = a second attack: seen idle
+STEP gamepad: left stick (0, 1) (south) held, B (dodge), right stick still west
+SHOT docs/e2e/G0/15-pad-dodge-south.png (OK) at (-35.69175, -64.84376), dodge, facing (-1.0, 0.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -65) grass, Forest / dodge   8.6 m/s   input: gamepad / chunks loaded 53   fps 5
+CHECK PASS B dodges along the stick (south ~3 m): seen ["walk"] dx 0.00 dz 3.00
+CHECK PASS dodge facing snaps to the right-stick aim (west, OQ-025): facing (-1.0, 0.0)
+STEP gamepad: stick (0, 1) still held, then a mouse jiggle (known: the held stick is ignored until it moves)
+OBS warp_mouse only (X delivers the motion): HUD idle   0.0 m/s   input: keyboard + mouse
+CHECK PASS mouse jiggle switches the HUD to keyboard + mouse: idle   0.0 m/s   input: keyboard + mouse
+OBS after the jiggle with the stick held: dx 0.00 dz 0.00 over 30 ticks, max 0.00 m/s, actions ["idle"], action idle
+CHECK PASS known feel note: held stick ignored after the jiggle: dx 0.00 dz 0.00 over 30 ticks, max 0.00 m/s, actions ["idle"]
+CHECK PASS moving the stick again takes the gamepad back: walk   4.7 m/s   input: gamepad, dx 0.00 dz 2.34 over 30 ticks, max 4.69 m/s, actions ["walk"]
+STEP keyboard after gamepad: a key press switches back
+CHECK PASS S after the gamepad: keyboard + mouse, walks south: walk   5.0 m/s   input: keyboard + mouse, dx 0.00 dz 1.67 over 20 ticks, max 5.00 m/s, actions ["walk"]
+OBS end of input steps at (-35.69175, -54.65334); total from spawn (23.80825, 4.846661)
+STEP camera: wheel down x3 (zoom out), wheel up x6 (zoom in)
+SHOT docs/e2e/G0/16-zoomed-out.png (OK) at (-35.69175, -54.32001), idle, facing (0.0, 1.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -55) grass, Forest / idle   0.0 m/s   input: keyboard + mouse / chunks loaded 56   fps 5
+CHECK PASS wheel zooms out then in, clamped 8..24 m: start 14, out 20, in 8
+SHOT docs/e2e/G0/17-zoomed-in.png (OK) at (-35.69175, -54.32001), idle, facing (0.0, 1.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -55) grass, Forest / idle   0.0 m/s   input: keyboard + mouse / chunks loaded 56   fps 5
+STEP camera: V held (vista), then the gamepad Y
+SHOT docs/e2e/G0/18-vista-held-V.png (OK) at (-35.69175, -54.32001), idle, facing (0.0, 1.0) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -55) grass, Forest / idle   0.0 m/s   input: keyboard + mouse / chunks loaded 56   fps 3
+CHECK PASS V and Y pull the camera out to the vista (~55 m) and back: V 55.0 m, released 14.0 m, Y 55.0 m
+DONE 43 checks, 0 failed

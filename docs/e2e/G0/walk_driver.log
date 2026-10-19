@@ -1,0 +1,30 @@
+SPAWN (-59.5, -59.5) m, search 2271 ms
+WORLD READY 8517 ms after scene start (11 chunks meshed)
+START at (-108.5000, -20.5000) on stone
+SPEED on stone: mean 4.966 m/s, min 1.233, max 5.000 over 111 moving ticks
+STOP after 112 ticks at (-99.3125, -20.5000), action 1, box right edge x = -99.0000; tile east of the edge (-99, -21) = cliff
+SHOT /home/user/wt/g0-e2e/docs/e2e/G0/30-cliff-flush.png (OK) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-100, -21) stone, Mountain / walk   0.0 m/s   input: keyboard + mouse / chunks loaded 42   fps 3
+DODGE max x during it -99.3125
+DODGE into it: dodge seen true, moved (0.0000, 0.0000), now (-99.3125, -20.5000)
+exit 0
+SPAWN (-59.5, -59.5) m, search 2302 ms
+WORLD READY 8586 ms after scene start (11 chunks meshed)
+START at (-162.5000, -21.5000) on grass
+SPEED on grass: mean 5.000 m/s, min 5.000, max 5.000 over 67 moving ticks
+SPEED on sand: mean 5.000 m/s, min 5.000, max 5.000 over 24 moving ticks
+SPEED on shallow water: mean 2.918 m/s, min 0.272, max 3.000 over 33 moving ticks
+STOP after 125 ticks at (-153.3125, -21.5000), action 1, box right edge x = -153.0000; tile east of the edge (-153, -22) = deep water
+SHOT /home/user/wt/g0-e2e/docs/e2e/G0/31-deep-water-flush.png (OK) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-154, -22) shallow water, River / walk   0.0 m/s   input: keyboard + mouse / chunks loaded 43   fps 3
+DODGE max x during it -153.3125
+DODGE into it: dodge seen true, moved (0.0000, 0.0000), now (-153.3125, -21.5000)
+exit 0
+SPAWN (-59.5, -59.5) m, search 2298 ms
+WORLD READY 8552 ms after scene start (9 chunks meshed)
+START at (-51.5000, -170.5000) on sand
+SPEED on sand: mean 5.000 m/s, min 5.000, max 5.000 over 115 moving ticks
+SPEED on shallow water: mean 3.000 m/s, min 3.000, max 3.000 over 125 moving ticks
+STOP after -1 ticks at (-35.6669, -170.5000), action 1, box right edge x = -35.3544; tile east of the edge (-36, -171) = shallow water
+SHOT /home/user/wt/g0-e2e/docs/e2e/G0/32-shallow-water-wading.png (OK) | HUD: overgrown G0  v0.1.0 (dev) / seed 1   tile (-36, -171) shallow water, Ocean / walk   3.0 m/s   input: keyboard + mouse / chunks loaded 49   fps 4
+DODGE max x during it -31.9170
+DODGE into it: dodge seen true, moved (3.7499, 0.0000), now (-31.9170, -170.5000)
+exit 0
