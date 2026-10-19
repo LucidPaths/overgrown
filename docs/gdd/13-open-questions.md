@@ -11,7 +11,7 @@ Undecided things go here, each with a **default** that code follows until it's d
 
 ## Resolved
 
-OQ-018 to OQ-028 were decided for the TypeScript/pixel stack. Their px, sprite, atlas and DPR parts are superseded by OQ-031, OQ-034 and OQ-035. The GOD task specs state what carries over, in metres.
+OQ-018 to OQ-028 were decided for the TypeScript/pixel stack. Their px, sprite, atlas and DPR parts are superseded by OQ-031, OQ-034 and OQ-035. Until a GOD task restates a value in metres (GOD-005 for terrain, GOD-006 for movement and collision), treat these rows as the TS-era reference, not as defaults for the Godot game.
 
 | ID | Question | Decision (2026-10-11) | Applied in |
 |----|----------|----------|------------|
