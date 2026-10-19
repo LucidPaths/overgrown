@@ -24,6 +24,6 @@ These are Lucid's own images and the **style reference** for overgrown's art. Ar
 - **Painted look:** oil or impasto brushwork with visible strokes and a canvas or paper grain. Edges are soft, and detail lives in the brushwork, not in geometry.
 - **Palette:** deep teal and blue grounds set against burnt orange and gold. Darks are very dark and lights glow. Each scene is tinted by its sky; image 03 is all green, image 09 all gold.
 - **The sky is a character:** cosmic eyes, spirals and galaxies hang over every scene. It is the game's signature.
-- **The wanderer:** a faceless figure in a dark poncho with orange geometric borders, a gold scarf and wind-blown dark hair, shown from behind or in three-quarter view and small against huge vistas. It is the north star for character design and for the game's identity, decided in OQ-033.
+- **The wanderer:** a faceless figure in a dark poncho with orange geometric borders, a gold scarf and wind-blown dark hair, shown from behind or in three-quarter view and small against huge vistas. It is the north star for character design and for the game's identity, decided in OQ-036 (D6).
 - **Wind everywhere:** hair, cloth, clouds and grass all move.
 - **Scale:** small figure, huge world.
