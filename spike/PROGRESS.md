@@ -11,4 +11,4 @@ Resume notes for a restarted run. Tools live under /opt (not in repo); if missin
 - [x] 3. Godot rendering: all three work under xvfb on llvmpipe/lavapipe. Forward+ ~250 ms/frame, Mobile ~135 ms (but renders much darker; unexplained), Compat ~160 ms. Cold first frame: F+ 17.7 s, Mobile 17.8 s, Compat 4.9 s; warm ~2.3 s / 0.5 s
 - [x] 4. One-command round trip: `spike/tools/rebuild.sh` (~86 s default, all 3 renderers + Cycles preview). Proved with `--tunic 0.10,0.22,0.65` (blue) and back; glb sha256 identical on return (693eeaca...)
 - [x] 5. ENet smoke test: `spike/tools/net_smoke.sh` (pass, both exit 0; no-host client exits 1)
-- [x] REPORT.md (spike/REPORT.md) — spike complete
+- [ ] REPORT.md: NOT written by the spike agent (harness blocks subagents from writing report .md files); full report text was handed back to the orchestrator to commit as spike/REPORT.md
