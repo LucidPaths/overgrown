@@ -2,7 +2,7 @@
 
 Resume notes for a restarted run. Tools live under /opt (not in repo); if missing, re-run spike/tools/setup.sh.
 
-- [ ] 0. Install tools (Godot, Blender, Mesa, xvfb)
+- [x] 0. Install tools: `spike/tools/setup.sh` (Godot 4.7.2, Blender 4.5.14 LTS, Mesa 25.2.8) — verified idempotent rerun
 - [ ] 1. Blender headless character build + render + glb
 - [ ] 2. Godot headless import + GDScript test
 - [ ] 3. Godot rendering (Forward+/Mobile/Compatibility)
