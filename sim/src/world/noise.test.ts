@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import vectors from "../../../contracts/worldgen-vectors.json";
 import { deriveSeed } from "../rng";
 import { createFbm } from "./noise";
 
@@ -28,4 +29,15 @@ describe("createFbm", () => {
     expect(() => createFbm(1, [1.5])).toThrow(RangeError);
     expect(() => createFbm(1, [1.5])).toThrow(/wavelengths\[0\].*got 1\.5/);
   });
+
+  // Shared with game/tests/test_worldgen.gd: the exact float64 bit pattern, never a decimal (Godot's JSON float
+  // parsing is not correctly rounded).
+  it.each(vectors.noise.map((n) => [n.seed, n.wavelengths, n.x, n.y, n.bits] as const))(
+    "contract sample: seed %d, wavelengths %j at (%d, %d)",
+    (seed, wavelengths, x, y, bits) => {
+      const view = new DataView(new ArrayBuffer(8));
+      view.setFloat64(0, createFbm(seed, wavelengths)(x, y));
+      expect(view.getBigUint64(0).toString(16).padStart(16, "0")).toBe(bits);
+    },
+  );
 });

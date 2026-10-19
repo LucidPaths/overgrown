@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import vectors from "../../../contracts/worldgen-vectors.json";
 import { CHUNK_TILES } from "../constants";
 import { Biome, type BiomeValue } from "./biome";
 import { generateChunk, type ChunkData } from "./chunk-gen";
@@ -84,4 +85,12 @@ describe("findSpawn", () => {
     }
     expect(findSpawn(createChunkStore(42))).toEqual(spawn);
   });
+
+  // Shared with game/tests/test_worldgen.gd.
+  it.each(vectors.spawn.map((v) => [v.seed, v.x, v.y] as const))(
+    "contract spawn: seed %d is (%d, %d)",
+    (seed, x, y) => {
+      expect(findSpawn(createChunkStore(seed))).toEqual({ x, y });
+    },
+  );
 });
