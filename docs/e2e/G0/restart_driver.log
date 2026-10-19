@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.318 - Forward+ - Using Device #0: Unknown - llvmpipe (LLVM 20.1.2, 256 bits)
+SPAWN (-59.5, -59.5) m, search 2304 ms
+WORLD READY 8560 ms after scene start (13 chunks meshed)
+ROUND 0: world ready, you at (-59.5, -59.5), sim tick 88
+ROUND 0: sprinted to (-39.49973, -59.5); chunk jobs in flight 4, loaded 38
+ROUND 0: reload_current_scene -> OK
+SPAWN (-59.5, -59.5) m, search 2269 ms
+WORLD READY 6876 ms after scene start (13 chunks meshed)
+ROUND 1: world ready, you at (-59.5, -59.5), sim tick 144
+ROUND 1: sprinted to (-39.49973, -59.5); chunk jobs in flight 4, loaded 40
+ROUND 1: reload_current_scene -> OK
+SPAWN (-59.5, -59.5) m, search 2329 ms
+WORLD READY 6619 ms after scene start (13 chunks meshed)
+ROUND 2: world ready, you at (-59.5, -59.5), sim tick 143
+ROUND 2: sprinted to (-39.49973, -59.5); chunk jobs in flight 4, loaded 38
+ROUND 2: reload_current_scene -> OK
+SPAWN (-59.5, -59.5) m, search 2310 ms
+WORLD READY 6679 ms after scene start (13 chunks meshed)
+ROUND 3: world ready, you at (-59.5, -59.5), sim tick 151
+ROUND 3: sprinted to (-39.49973, -59.5); chunk jobs in flight 4, loaded 37
+QUIT while streaming

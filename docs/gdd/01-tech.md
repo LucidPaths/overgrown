@@ -99,4 +99,5 @@ The rules below were written for the TS sim and are engine-neutral design. They 
 - [x] **GOD-003** Seeded RNG in GDScript, checked against `contracts/rng-vectors.json`. — #38
 - [x] **GOD-004** Worldgen port (noise, biomes, chunk generation, spawn search), with golden digests equal to the TypeScript output. — #39
 - [x] **GOD-005** Chunk streaming plus 3D terrain (heightfield and biome materials), and the tilted ARPG camera with a vista zoom. (OQ-034) — #41
-- [ ] **GOD-006** Character rules (move, sprint, dodge, attack, collision on walkability) as a shared rule set, plus input for keyboard, mouse and gamepad.
+- [x] **GOD-006** Character rules (move, sprint, dodge, attack, collision on walkability) as a shared rule set, plus input for keyboard, mouse and gamepad. — #43
+- [ ] **GOD-007** G0: `--capture-tick 0` never captures. `main.gd` sets `_frozen` at scene start instead of at world ready, so `sim.step()` (and with it chunk streaming) never runs, world ready never comes, and the run ends at the 90 s watchdog with exit 2. Freeze at world ready, as the flag's help says ("freeze the rules after N ticks counted from world ready"). (found in G0 E2E: `docs/e2e/G0.md`)
