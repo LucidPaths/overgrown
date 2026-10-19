@@ -10,7 +10,7 @@ const CAPTURE_TIMEOUT_S := 60.0
 
 
 func _ready() -> void:
-	_label.text = "overgrown: G0 scaffold\nv%s" % GameVersion.VERSION
+	_label.text = "overgrown: G0 scaffold\nv%s (%s)" % [GameVersion.VERSION, BuildInfo.COMMIT]
 	var args := OS.get_cmdline_user_args()
 	var i := args.find("--capture")
 	if i < 0:
