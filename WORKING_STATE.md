@@ -12,7 +12,7 @@ Last updated: 2026-10-19
 G0 waves:
 1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
 2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
-3. ⏳ GOD-005 (streaming, 3D terrain, tilted camera; branched from GOD-004): worker running · OVR-009 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check): critic PASS WITH NOTES, fixes in; merges after GOD-004
+3. ⏳ GOD-005 (streaming, 3D terrain, tilted camera; branched from GOD-004): worker running · OVR-009 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check): merged after 3 Fable loops (see Decisions)
 4. GOD-006 (character rules + keyboard/mouse/gamepad, replaces GOD-005's debug focus) after GOD-005
 5. OVR-010 (retire sim/, client/, tools/art/, scripts/, deploy.yml), then the G0 E2E, a release, Lucid's playtest of the exe
 
@@ -48,6 +48,7 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 - 2026-10-13 Lucid: features first, graphics later (the art labs on `art-lab` / PR #32 are parked).
 - 2026-10-19 Lucid: Godot overhaul (D1–D8 in docs/overhaul/PLAN.md, #35): Godot 4 desktop, exe from Releases, cloud-only development, mood-board art, tilted ARPG camera + vistas, agent-built Blender characters, loosened asset rule D8 (open licences + CREDITS). "Just build, merge": no per-PR sign-off.
 - 2026-10-19 GDScript cross-language fixtures carry floats as IEEE-754 hex bits (Godot's JSON float parsing isn't correctly rounded).
+- 2026-10-19 OVR-009 #40: 3 Fable loops, each finding new small doc-accuracy items (no failed fix); the last one-clause fix (OQ-032 asset names) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (same call as #30).
 - 2026-10-19 Third-party assets live in `game/assets/third_party/` (inside the Godot project so res:// can load them), credited in its CREDITS.md (OVR-009).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
