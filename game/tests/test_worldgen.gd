@@ -68,7 +68,7 @@ func test_chunk_digests(t: TestContext) -> void:
 			t.fail("seed %d chunk (%d, %d) tiles: got %d, expected %d" % [seed, cx, cy, tiles_digest, int(entry["tilesDigest"])])
 		if biomes_digest != int(entry["biomesDigest"]):
 			t.fail("seed %d chunk (%d, %d) biomes: got %d, expected %d" % [seed, cx, cy, biomes_digest, int(entry["biomesDigest"])])
-	t.check(list.size() == 10, "expected 10 chunk vectors, found %d" % list.size())
+	t.check(list.size() >= 10, "expected at least 10 chunk vectors, found %d" % list.size())
 
 
 func test_spawns(t: TestContext) -> void:
@@ -83,7 +83,7 @@ func test_spawns(t: TestContext) -> void:
 			t.fail("seed %d: find_spawn returned nothing" % seed)
 		elif got["x"] != int(entry["x"]) or got["y"] != int(entry["y"]):
 			t.fail("seed %d: spawn got (%d, %d), expected (%d, %d)" % [seed, got["x"], got["y"], int(entry["x"]), int(entry["y"])])
-	t.check(list.size() == 5, "expected 5 spawn vectors, found %d" % list.size())
+	t.check(list.size() >= 7, "expected at least 7 spawn vectors, found %d" % list.size())
 
 
 func test_noise_samples(t: TestContext) -> void:
@@ -102,7 +102,7 @@ func test_noise_samples(t: TestContext) -> void:
 		var got := _bits(fbm.sample(float(entry["x"]), float(entry["y"])))
 		if got != entry["bits"]:
 			t.fail("seed %d %s at (%s, %s): bits %s, expected %s" % [entry["seed"], str(wavelengths), str(entry["x"]), str(entry["y"]), got, entry["bits"]])
-	t.check(list.size() == 8, "expected 8 noise vectors, found %d" % list.size())
+	t.check(list.size() >= 8, "expected at least 8 noise vectors, found %d" % list.size())
 
 
 # Border-tile equality across chunk seams: every tile of the chunks on both sides of each seam equals the

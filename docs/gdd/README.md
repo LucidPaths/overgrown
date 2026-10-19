@@ -7,7 +7,7 @@ The GDD is the single source of truth for what the game is. Code that contradict
 | # | File | Prefix | Covers |
 |---|------|--------|--------|
 | 00 | [Overview](00-overview.md) | `OVR` | Pitch, pillars, tone, references, glossary |
-| 01 | [Tech & multiplayer](01-tech.md) | `TEC` | Stack, architecture, netcode, saves, auth, budgets |
+| 01 | [Tech & multiplayer](01-tech.md) | `TEC` / `GOD` | Stack, architecture, netcode, saves, auth, budgets. `GOD` = Godot engine and tooling tasks (OQ-031) |
 | 02 | [World](02-world.md) | `WLD` | Worldgen, chunks, biomes, difficulty, clock, weather, seasons, water |
 | 03 | [Ecology](03-ecology.md) | `ECO` | Monster aging, breeding, density, variants, flyers, territory bosses |
 | 04 | [Characters & progression](04-characters.md) | `CHR` | Species, levels, level points, traits, abilities, teachings |
@@ -16,7 +16,7 @@ The GDD is the single source of truth for what the game is. Code that contradict
 | 07 | [Dungeons & rifts](07-dungeons.md) | `DNG` | City dungeons, wild rifts, floors, death, lifecycle |
 | 08 | [Items & economy](08-items-economy.md) | `ITM` | Loot, crafting, materials, trade, stalls, corpses |
 | 09 | [Housing, camps & taming](09-housing-taming.md) | `HSG` | Claim & furnish, camps, beds, taming |
-| 10 | [Art & audio pipeline](10-art-audio.md) | `ART` / `AUD` | Procedural sprites, paper doll, palettes, VFX, synth audio |
+| 10 | [Art & audio pipeline](10-art-audio.md) | `ART` / `AUD` | Painted 3D look, Blender character pipeline, asset rule and credits, VFX, audio |
 | 11 | [UI & UX](11-ui-ux.md) | `UIX` | HUD, menus, onboarding (touch layout retired, OQ-029) |
 | 12 | [Content catalogs (DRAFT)](12-catalogs.md) | `CAT` | Weapons, traits, abilities, teachings, species, monsters, biomes, stations |
 | 13 | [Open questions](13-open-questions.md) | `OQ` | Undecided things, with a default until decided |

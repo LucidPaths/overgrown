@@ -33,7 +33,7 @@ Delegated micro-decisions: <list, or "none">
 ## Acceptance criteria
 - AC1 <observable statement> — proven by: <command / test name / grep>
 - AC2 …
-- Typecheck, lint and build clean — proven by: <commands>
+- Tests and export clean — proven by: <commands> (`bash tools/godot/test.sh`; `bash tools/godot/export.sh` when the export changes; TS side: `npm run check`, until OVR-010)
 
 ## Tests
 Which tests this task adds, and what silent breakage each one guards.
@@ -41,7 +41,7 @@ Or "none — <reason>" (e.g. pure rendering, covered by milestone E2E).
 
 ## Verification commands
 Copy-paste commands. The worker, the critic and the orchestrator all run them.
-Page-level checks: `npm -w @overgrown/client run preview -- --port <port> &` then `node scripts/check-page.mjs http://localhost:<port>/ [shot.png] [waitMs]`.
+Checks: `bash tools/godot/test.sh`, plus `bash tools/godot/capture.sh <out.png>` (xvfb) and looking at the PNG for visible changes. Old web client (TS, until OVR-010): `npm -w @overgrown/client run preview -- --port <port> &` then `node scripts/check-page.mjs http://localhost:<port>/ [shot.png] [waitMs]`.
 
 ## Files
 Allowed to change: …

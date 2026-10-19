@@ -38,9 +38,9 @@ MILESTONE complete? ─▶ E2E agent runs a full end-to-end pass ─▶ findings
 ## Testing policy (Lucid's rule)
 
 - **No ceremonial tests.** A test must guard something that would silently break: determinism (same seed → same output), formulas (damage skew), data contracts (save format, atlas JSON, sim↔renderer snapshot, net messages), and bugs we already hit once.
-- UI, rendering and feel are **not** unit-tested. They get checked by build + typecheck + the milestone E2E pass.
-- **Milestone E2E:** when all tasks of a milestone are merged, one E2E agent plays through the milestone's features in a real browser run and files findings as new GDD tasks. Milestones are defined in [MILESTONES.md](MILESTONES.md).
-- Per-task verification is the cheapest command that proves the ACs: typecheck, lint, build, the specific test(s) for that task. Never the "run everything" suite on every PR.
+- UI, rendering and feel are **not** unit-tested. They get checked by the Godot export, a capture and the milestone E2E pass (plus typecheck for the TS side, until OVR-010).
+- **Milestone E2E:** when all tasks of a milestone are merged, one E2E agent plays through the milestone's features in the Godot build (xvfb captures and scripted input, see [E2E.md](E2E.md)) and files findings as new GDD tasks. Milestones are defined in [MILESTONES.md](MILESTONES.md).
+- Per-task verification is the cheapest command that proves the ACs: the specific GDScript test(s) for that task (`bash tools/godot/test.sh`), an export or capture for visible changes (TS side, until OVR-010: typecheck, lint, build). Never the "run everything" suite on every PR.
 
 ## Model selection
 
