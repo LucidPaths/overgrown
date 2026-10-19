@@ -11,7 +11,7 @@
 
 ## Stack
 
-The TypeScript sim (`sim/`), the Pixi client (`client/`) and the Python art pipeline (`tools/art/`) are reference only. They are deleted by OVR-010 and stay in git history. Worldgen, RNG and walkability have been ported to GDScript and are checked against the same fixtures (see the contracts in `CLAUDE.md`).
+The TypeScript sim (`sim/`), the Pixi client (`client/`) and the Python art pipeline (`tools/art/`) are reference only. They are deleted by OVR-010 and stay in git history. Worldgen and RNG are checked against the shared fixtures in GDScript; walkability is a mirrored rules table (collision comes with GOD-006). See the contracts in `CLAUDE.md`.
 
 | Layer | Choice | Why |
 |-------|--------|-----|
