@@ -32,7 +32,24 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
-          path: ~/.local/opt/godot
-          key: godot-4.7.2-${{ runner.os }}
-      - run: tools/godot/setup.sh --no-blender
+          path: |
+            ~/.local/opt/godot
+            ~/.local/share/godot/export_templates
+          key: godot-4.7.2-templates-${{ runner.os }}
+      - run: tools/godot/setup.sh --no-blender --templates
       - run: tools/godot/test.sh
+      - run: tools/godot/export.sh
+      - name: Smoke-test the Linux build
+        run: |
+          rm -f /tmp/smoke.png
+          timeout 120 xvfb-run -a -s "-screen 0 1280x720x24" \
+            game/export/linux/overgrown-linux.x86_64 --audio-driver Dummy -- --capture /tmp/smoke.png
+          test -s /tmp/smoke.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: overgrown-builds
+          path: |
+            game/export/windows/overgrown-windows.exe
+            game/export/linux/overgrown-linux.x86_64
+          retention-days: 7
+          if-no-files-found: error
