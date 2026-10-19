@@ -226,6 +226,7 @@ func chunk(cx: int, cy: int) -> Chunk:
 		var job: _Job = _jobs[key]
 		WorkerThreadPool.wait_for_task_completion(job.task_id)
 		_jobs.erase(key)
+		job_usec.append(job.usec)
 		c = job.result
 	else:
 		generations += 1

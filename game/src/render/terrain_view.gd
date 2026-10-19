@@ -48,6 +48,26 @@ func _init() -> void:
 	_water_mat.metallic_specular = 0.6
 
 
+## The first mesh with each material costs 40-90 ms on the main thread (shader and pipeline compile, measured
+## under xvfb); pay it once here, before chunks stream in, with a one-triangle mesh in each mesh format.
+func _ready() -> void:
+	for spec: Array in [[_ground_mat, false], [_water_mat, true]]:
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.BACK])
+		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.UP, Vector3.UP, Vector3.UP])
+		arrays[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
+		if spec[1]:
+			arrays[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var warm := MeshInstance3D.new()
+		warm.mesh = mesh
+		warm.material_override = spec[0]
+		add_child(warm)
+		get_tree().process_frame.connect(warm.queue_free, CONNECT_ONE_SHOT)
+
+
 func setup(store: OgChunkStore) -> void:
 	_store = store
 	store.chunk_loaded.connect(_on_chunk_loaded)
