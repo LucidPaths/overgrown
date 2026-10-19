@@ -11,7 +11,7 @@ Last updated: 2026-10-19
 
 G0 waves:
 1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
-2. ⏳ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`): critic PASS WITH NOTES (tie-break seeds 34, 47 added), Fable gate running
+2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
 3. ⏳ GOD-005 (streaming, 3D terrain, tilted camera; branched from GOD-004): worker running · OVR-009 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check): critic PASS WITH NOTES, fixes in; merges after GOD-004
 4. GOD-006 (character rules + keyboard/mouse/gamepad, replaces GOD-005's debug focus) after GOD-005
 5. OVR-010 (retire sim/, client/, tools/art/, scripts/, deploy.yml), then the G0 E2E, a release, Lucid's playtest of the exe
@@ -24,7 +24,6 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 
 ## In flight
 
-- GOD-004 #39: critic → Fable → merge. Known gap: the spawn tie-break order isn't covered by any fixture seed.
 - GOD-005 worker (opus) in /home/user/wt/god-005; OVR-009 worker (sonnet) in /home/user/wt/ovr-009.
 - Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
 - Notes for later specs: `generate_chunk` costs ~120 ms in GDScript (GOD-005 streams on WorkerThreadPool); GOD-006 rules should port movement/actions/collision semantics from `sim/src/{movement,actions}.ts` and `world/collision.ts` in metres.

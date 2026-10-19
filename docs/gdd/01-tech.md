@@ -97,6 +97,6 @@ The rules below were written for the TS sim and are engine-neutral design. They 
 - [x] **GOD-001** Godot project scaffold in `game/`, plus a cloud setup script and a SessionStart hook so every fresh container has Godot and Blender installed and cached. Includes a headless GDScript test runner in CI. (OQ-031, OQ-033) — #36
 - [x] **GOD-002** Release pipeline: CI exports Windows and Linux builds and publishes them to GitHub Releases on every milestone merge, with a rolling "latest" pre-release from main. (OQ-032) — #37
 - [x] **GOD-003** Seeded RNG in GDScript, checked against `contracts/rng-vectors.json`. — #38
-- [ ] **GOD-004** Worldgen port (noise, biomes, chunk generation, spawn search), with golden digests equal to the TypeScript output.
+- [x] **GOD-004** Worldgen port (noise, biomes, chunk generation, spawn search), with golden digests equal to the TypeScript output. — #39
 - [ ] **GOD-005** Chunk streaming plus 3D terrain (heightfield and biome materials), and the tilted ARPG camera with a vista zoom. (OQ-034)
 - [ ] **GOD-006** Character rules (move, sprint, dodge, attack, collision on walkability) as a shared rule set, plus input for keyboard, mouse and gamepad.
