@@ -12,6 +12,11 @@ const N := OgWorld.CHUNK_TILES
 const CORNERS := OgTerrain.CORNERS
 const RW := OgTerrain.COLOR_RING_W
 
+## Cliff tiles and steep ground share this colour.
+const ROCK := Color(0.30, 0.27, 0.29)
+## Steep ground blends toward ROCK: none below SLOPE_ROCK_FROM (1 - normal.y), fully at SLOPE_ROCK_FULL.
+const SLOPE_ROCK_FROM := 0.12
+const SLOPE_ROCK_FULL := 0.45
 ## Placeholder palette until G1 (sRGB): mood-board direction, warm gold and orange land, cool stone,
 ## teal water. Tile colour times the biome tint.
 const TILE_COLORS := {
@@ -19,7 +24,7 @@ const TILE_COLORS := {
 	OgTile.DIRT: Color(0.50, 0.38, 0.24),
 	OgTile.SAND: Color(0.84, 0.72, 0.50),
 	OgTile.STONE: Color(0.48, 0.49, 0.53),
-	OgTile.CLIFF: Color(0.30, 0.27, 0.29),
+	OgTile.CLIFF: ROCK,
 	OgTile.SHALLOW_WATER: Color(0.62, 0.56, 0.40),
 	OgTile.DEEP_WATER: Color(0.30, 0.36, 0.34),
 	OgTile.VERY_DEEP_WATER: Color(0.16, 0.24, 0.27),
@@ -33,10 +38,6 @@ const BIOME_TINTS := {
 }
 ## Brightness jitter per tile, +- this fraction (breaks up flat fields).
 const TILE_JITTER := 0.08
-## Steep ground blends toward ROCK: none below SLOPE_ROCK_FROM (1 - normal.y), fully at SLOPE_ROCK_FULL.
-const ROCK := Color(0.30, 0.27, 0.29)
-const SLOPE_ROCK_FROM := 0.12
-const SLOPE_ROCK_FULL := 0.45
 ## Water vertex colour (sRGB, alpha = opacity) from shallow to WATER_DEEP_M of depth.
 const WATER_SHALLOW := Color(0.30, 0.72, 0.70, 0.5)
 const WATER_DEEP := Color(0.06, 0.30, 0.38, 0.88)

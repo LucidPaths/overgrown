@@ -263,7 +263,11 @@ func is_loaded(cx: int, cy: int) -> bool:
 	return _loaded.has(Vector2i(cx, cy))
 
 
-## Sorted by (y, x). For tests and the HUD.
+func loaded_count() -> int:
+	return _loaded.size()
+
+
+## Sorted by (y, x). For tests.
 func loaded_coords() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	out.assign(_loaded.keys())

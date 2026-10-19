@@ -145,7 +145,7 @@ func _process(_delta: float) -> void:
 		print("WORLD READY %.0f ms after scene start (%d chunks meshed)" % [_ready_usec / 1000.0, _terrain.meshed_count()])
 	_label.text = "overgrown G0  v%s (%s)\nseed %d   tile (%d, %d)   %s\nchunks loaded %d   fps %d" % [
 		GameVersion.VERSION, BuildInfo.COMMIT, _seed, tx, ty, BIOME_NAMES[_store.biome_at(tx, ty)],
-		_store.loaded_coords().size(), Engine.get_frames_per_second()]
+		_store.loaded_count(), Engine.get_frames_per_second()]
 
 
 func _world_ready(p: Vector3) -> bool:
