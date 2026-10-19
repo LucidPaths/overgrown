@@ -2,7 +2,7 @@
 
 ## Pitch
 
-A top-down, real-time hack-and-slash sandbox RPG in a saturated, cozy pixel world that you play on a desktop with a few friends, hosted on one machine. Worlds are generated from a seed and never end. You are not the chosen one. You are one more inhabitant of a living world, where NPCs and monsters live, learn, fight, breed, migrate and die by the same rules you do.
+A real-time hack-and-slash sandbox RPG in a saturated, cozy, painted 3D world, seen through a tilted action-RPG camera. You play it on a desktop with a few friends, hosted on one machine, from a Godot exe you download (OQ-031, OQ-034, OQ-035). Worlds are generated from a seed and never end. You are not the chosen one. You are one more inhabitant of a living world, where NPCs and monsters live, learn, fight, breed, migrate and die by the same rules you do.
 
 It looks lovely, but it isn't safe. A level 2 horned bunny grazes ten meters from a level 40 bear asleep in its den. Leave an area alone long enough and the monsters there grow older, stronger and more numerous until even the villages give up and leave.
 
@@ -13,7 +13,7 @@ It looks lovely, but it isn't safe. A level 2 horned bunny grazes ten meters fro
 3. **You grow by doing.** No classes, no attributes. Swing a sword and you get better with swords. Fight an ogre often enough and you learn its heavy swing. Your build is your history.
 4. **Cozy surface, brutal depth.** Saturated, lighthearted visuals and humor sit on top of permadeath (per world), corpse runs, open PvP and dungeons that remember who they killed.
 5. **Friends at the table.** A desktop game for you and a few friends (OQ-029). One machine hosts the world, friends join over LAN or the internet, and nobody needs an account.
-6. **Everything is ours.** Every pixel and every sound is authored by us (Lucid or overgrown's Claude agents), by any method: code, hand-authored data files, offline renders. Nothing is downloaded, traced or taken from outside services (OQ-030).
+6. **Everything is ours or credited.** What we make, by any method (including Lucid's AI-generated images and our agents' Blender scripts), and what we take under a compatible licence, with every third-party file listed in `game/assets/third_party/CREDITS.md`. Nothing unlicensed, NonCommercial or ripped from commercial games or artists (OQ-038, which supersedes OQ-030).
 
 ## Tone
 
@@ -56,4 +56,6 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 - [ ] **OVR-005** README quick start: prerequisites (Node 22, Python 3.13), the build/dev/test commands, and the `?seed=` URL parameter (found in M0 E2E).
 - [x] **OVR-006** Committed headless page checker `scripts/check-page.mjs` (`playwright-core` devDependency): loads a URL, prints canvas info and console errors, saves an optional screenshot, exits 1 on errors. Agent role files reference it (replaces M0's container-only checker). — #12
 - [x] **OVR-007** Dev-environment housekeeping: repo-root `.venv/` convention (ignored by git and eslint), replace the old container's paths and the stale proxy trap in `CLAUDE.md`, and copy the discipline skills from `LucidPaths/claude.md-workflow` into `.claude/skills/`. — #13
-- [x] **OVR-008** Retarget to a desktop game for a few friends and redefine 'everything is ours' as 'authored by us' (OQ-029, OQ-030). — #33
+- [x] **OVR-008** Retarget to a desktop game for a few friends and redefine 'everything is ours' as 'authored by us' (OQ-029, OQ-030; OQ-030 is superseded by OQ-038). — #33
+- [ ] **OVR-009** Record the Godot overhaul (decisions D1 to D8, OQ-031 to OQ-038): rewrite the GDD sections it touches, `CLAUDE.md`, the milestones and the root README, and add `game/assets/third_party/CREDITS.md` with its CI check `tools/check-credits.sh`. (`docs/overhaul/PLAN.md`)
+- [ ] **OVR-010** Retire the TypeScript sim, the Pixi client, the Python art pipeline and the browser scripts (`sim/`, `client/`, `tools/art/`, `scripts/`) and `deploy.yml`, once the GDScript ports (GOD-003, GOD-004) are proven against the shared fixtures. They stay in git history. (OQ-031)

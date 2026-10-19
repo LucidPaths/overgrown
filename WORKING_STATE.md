@@ -3,43 +3,30 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-13
+Last updated: 2026-10-19
 
 ## Current phase
 
-**PAUSED after M1 (2026-10-13).** M1 complete: all 14 tasks merged (#15–#28) and the M1 E2E passed (docs/e2e/M1.md, #31). Then: ART-024 #30/#29, OVR-008 #33 (desktop retarget, OQ-029/OQ-030). Lucid: features first, graphics later; M2 planning "not yet". Housekeeping done: OVR-006 #12, OVR-007 #13. M1 design locked (OQ-018..027 #14, OQ-028 #28). M1 waves:
-1. ✅ WLD-001 #15 · CHR-001 #16 · ART-005 #17
-2. ✅ WLD-002 #18 · ART-004 #19 · CMB-001 #20
-3. ✅ WLD-003 #22 · ART-006 #21
-4. ✅ WLD-004 #23 · TEC-022 #24
-5. ✅ CMB-002 #25 · UIX-002 #26 · TEC-020 #27 · TEC-021 #28
-6. ✅ M1 E2E — all 5 checklist + 9 extra items PASS, no new tasks (docs/e2e/M1.md)
-Shared M1 contracts (coords, Tile enum, snapshot fields, frame names, input/chunk messages) were locked in the orchestrator's scratchpad and are copied into each spec.
+**G0 of the Godot overhaul** (`docs/overhaul/PLAN.md`, merged #35). Lucid (2026-10-19): a proper game in Godot 4, a standalone `overgrown.exe` from GitHub Releases, everything built in the cloud, art from their painted mood board (`docs/art/moodboard/`), the D8 asset rule. **Durable authorization:** "just build, merge etc"; no sign-off needed per PR (the critic and Fable gates stay).
 
-Wave plan (dependencies → waves; parallel only on disjoint files):
-1. ✅ OVR-001 (+TEC-019) #1 · OVR-003 #2
-2. ✅ OVR-002 #5 · TEC-001 #3 · TEC-004 #4
-3. ✅ ART-001 #7 · TEC-002 #6
-4. ✅ ART-002 #9 · TEC-003 #8
-5. ✅ ART-003 #10 · TEC-005 #11
-6. ✅ M0 E2E — all 6 checklist items PASS (docs/e2e/M0.md). Proposed tasks added: OVR-005, TEC-020, TEC-021.
+G0 waves:
+1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
+2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
+3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ⏳ GOD-005 (streaming, 3D terrain, tilted camera; branched from GOD-004): worker running
+4. GOD-006 (character rules + keyboard/mouse/gamepad, replaces GOD-005's debug focus) after GOD-005
+5. OVR-010 (retire sim/, client/, tools/art/, scripts/, deploy.yml), then the G0 E2E, a release, Lucid's playtest of the exe
 
-Mechanics: main checkout /home/user/overgrown (claude.ai/code cloud container, ephemeral); worktrees in /home/user/wt/<id>; Python venv at repo-root `.venv/`; PR bodies in the scratchpad; PRs, comments and merges via the GitHub connector tools (`gh` has no valid token here; the git proxy refuses branch deletion).
+Pre-overhaul history: M0 and M1 complete (docs/e2e/M0.md, M1.md); the TS/Pixi game is reference only until OVR-010.
 
-Still open with Lucid (non-blocking): catalog review (OQ-017), OQ-002 name; enable GitHub Pages (Settings → Pages → Source: GitHub Actions); the Deploy workflow fails on every main push until then; Birdfolk *Glide* vs "no height-level system" (OQ-018) to raise when Glide is built; a stray `probe-workflow` branch the proxy won't let me delete (Lucid deletes it in the GitHub UI).
+Mechanics: main checkout /home/user/overgrown (claude.ai/code cloud container, ephemeral); worktrees in /home/user/wt/<id>; Python venv at repo-root `.venv/`; Godot 4.7.2 + Blender 4.5.14 installed by the SessionStart hook (`tools/godot/setup.sh`, log /tmp/godot-setup.log); specs drafted in the scratchpad, committed as `docs/specs/<ID>.md`; PRs, comments and merges via the GitHub connector tools.
+
+Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` and `/x` created by subagents in an old container (harmless; gone with the container); whether to commit the spike REPORT.md (branch `spike-godot`); catalog review (OQ-017), OQ-002 name; the stray `probe-workflow` branch.
 
 ## In flight
 
-**Nothing running (2026-10-13).** Lucid paused before M2: "focus on the game first, graphics later", and M2 planning is "not yet".
-
-Resume options when Lucid returns:
-- **M2 "First fight"** (MILESTONES § M2 is a draft; lock its design questions with Lucid first, as with OQ-018..027).
-- **Art, later:** branch `art-lab` = draft PR #32 (never merge as-is; it's a sandbox). Contents:
-  - ART-025 pixel-diorama world prototype (`art-lab/`, `docs/art/lab/`; Lucid: "land is decent, characters look ass").
-  - ART-026 character lab (`art-lab/characters/`, `docs/art/lab/characters/PROGRESS.md`; SDF-sculpted toon characters; stopped mid-run at Lucid's request, last commit 6c51de3 is half-finished WIP; Lucid: "don't look like 2015 anymore but still look ass").
-  - ART-025/026 GDD lines exist only on that branch.
-Open design calls for Lucid (from OVR-008): TEC-011 peer zone ownership vs one-machine hosting; player cap 10 vs "2, up to ~4"; OQ-001 "generated assets" wording; OQ-003/OQ-005 still mention a tab-hosted world; where authored asset files live.
-Older open items: a `?species=` dev parameter (only Humans spawn); biome-border colour band; ground shadows (ART-018); props (ART-007); an opt-in state hook for M2 E2E.
+- GOD-005 worker (opus) in /home/user/wt/god-005; merge main into it before its gates.
+- Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
+- Notes for later specs: `generate_chunk` costs ~120 ms in GDScript (GOD-005 streams on WorkerThreadPool); GOD-006 rules should port movement/actions/collision semantics from `sim/src/{movement,actions}.ts` and `world/collision.ts` in metres.
 
 ## Decisions (accumulate)
 
@@ -59,6 +46,10 @@ Older open items: a `?species=` dev parameter (only Humans spawn); biome-border 
 - 2026-10-12 Lucid: ART-024 art direction pass with full creative freedom inside the frame/cell/determinism contracts; preview images go in their own PR, not the scratchpad. After 3 Fable loops on #30 Lucid chose "fix both, merge" (fixes verified locally, no 4th gate).
 - 2026-10-13 Lucid: desktop game for Lucid and a few friends, same stack (OQ-029); assets "authored by us" by any method, no third-party packs (OQ-030); merged as OVR-008 #33.
 - 2026-10-13 Lucid: features first, graphics later (the art labs on `art-lab` / PR #32 are parked).
+- 2026-10-19 Lucid: Godot overhaul (D1–D8 in docs/overhaul/PLAN.md, #35): Godot 4 desktop, exe from Releases, cloud-only development, mood-board art, tilted ARPG camera + vistas, agent-built Blender characters, loosened asset rule D8 (open licences + CREDITS). "Just build, merge": no per-PR sign-off.
+- 2026-10-19 GDScript cross-language fixtures carry floats as IEEE-754 hex bits (Godot's JSON float parsing isn't correctly rounded).
+- 2026-10-19 OVR-009 #40: 3 Fable loops, each finding new small doc-accuracy items (no failed fix); the last one-clause fix (OQ-032 asset names) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (same call as #30).
+- 2026-10-19 Third-party assets live in `game/assets/third_party/` (inside the Godot project so res:// can load them), credited in its CREDITS.md (OVR-009).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
 ## Corrections (accumulate; mistakes not to repeat)

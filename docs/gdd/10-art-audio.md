@@ -1,32 +1,39 @@
 # 10 — Art & Audio Pipeline
 
-**Rule: every asset is authored by us** (Lucid or overgrown's Claude agents), by any method (OQ-030): procedural code at build time or runtime, hand-authored data files (models, animations, SVG, JSON), and offline renders and baked textures. Authored asset files may be committed. Not allowed: downloaded or third-party asset packs, traced or copied artwork, and assets from outside image or audio services. Libraries, engines and fonts used as tools are fine. Seeded generation stays deterministic: same code + same seed = identical output bytes. That keeps the art ours, reviewable in PRs and regenerable.
+**Rule (OQ-038, D8): everything in the game is ours or credited.**
+- **Allowed:** anything we make by any method, including Lucid's ChatGPT images and AI 3D generators; third-party assets under licences compatible with an MIT repo (CC0 or public domain, MIT, Apache-2.0, BSD, CC-BY with attribution, OFL for fonts); and inspiration from anything. Share-alike (CC-BY-SA, GPL art) is allowed only if the file keeps and is marked with its licence.
+- **Not allowed:** no licence or an unknown one, personal-use-only, NonCommercial, NoDerivatives, and ripped or traced work from commercial games or artists.
+- **Credits:** every third-party file lives under `game/assets/third_party/` and has a row in `game/assets/third_party/CREDITS.md` (path, source URL, licence, author, changes). CI runs `tools/check-credits.sh` and fails on an unlisted file, a row without a file, or a licence outside the allow-list.
+
+Seeded generation stays deterministic: same code + same seed = identical output. That keeps the art reviewable in PRs and regenerable.
 
 ## Visual spec
 
-- **Perspective:** top-down 3/4 (Zelda/Stardew-style). You see the fronts of characters and buildings.
-- **Resolution:** characters and monsters on a **32×32** base cell (big creatures use 64×64 or more). Ground tiles are **16×16**. 32 px gives room for fashion, visible gear and aging details.
-- **Directions:** 4 (down, up, left, right; right mirrors left where the design allows).
-- **Rendering:** integer scaling, nearest-neighbor, no sub-pixel jitter on sprites.
-- **Palette:** **per biome**, so each biome has a mood ramp. A global **pop palette** for magic, hits, loot glints, rarity colors and UI keeps those readable in every biome. Characters use a shared **actor palette** (skin, fur, feathers, scales, cloth), since they aren't bound to a biome (OQ-027). The overall vibe is saturated, cozy and lighthearted.
+- **Camera (OQ-034, D4):** a tilted action-RPG camera. It is low enough to see the horizon and sky during play, and pulls out to wide vistas at landmarks. The world is 3D (a heightfield terrain with biome materials), and 1 tile = 1 m. The tilt angle and the vista zoom are tuned in GOD-005 and G1.
+- **Direction (OQ-035, D5): Lucid's mood board** (`docs/art/moodboard/`). A painted look (oil and impasto), teal against orange and gold, cosmic skies, wind, and small figures in huge worlds. The images are Lucid's own and may also ship in-game (title and loading art). The G1 art bible turns the board into rules; the ART-024 art bible (`docs/art/DIRECTION.md`) was written for the pixel pipeline and is reference only until then.
+- **The wanderer (OQ-036, D6):** faceless, a poncho with orange geometric borders, a gold scarf, wind-blown hair. It is the north star for character design and for the game's identity. The details are decided in G1.
+- **Look stack:** Forward+ with a painterly post-process (brush and Kuwahara-style filtering, canvas grain, palette grading to the mood board, glow, volumetric fog), animated cosmic skies as a sky shader, and wind shaders on foliage, cloth and hair.
+- **Readability in fights:** the painted look must never hide a telegraph or a hit. This is a G1 acceptance criterion.
+- **Palette:** the old rule carries over as a goal: each biome has its own mood, and a global **pop** colour set for magic, hits, loot glints, rarity and UI stays readable in every biome (OQ-027). How that maps to materials and grading is decided in the G1 art bible. The overall vibe is saturated, cozy and lighthearted.
 
 ## Pipeline
 
 ```
-tools/art/  (Python)
-  palettes/        biome + pop + actor palettes (data)
-  lib/             primitives: shapes, outlines, shading ramps, dithering, noise
-  gen/             one generator per asset family (tiles, bodies, armor, weapons, monsters, props, vfx, icons)
-  build.py         runs all generators → atlases/*.webp (lossless, OQ-028) + atlases/*.json
+art/blender/              (planned, G1) headless Blender Python: model, rig, animate → .glb
+game/assets/              authored assets Godot imports (.glb, textures, audio)
+game/assets/third_party/  third-party files + CREDITS.md (checked in CI)
 ```
 
-- Generators are **parametric**: e.g. `monster(body_plan="quadruped", size=1.2, age="old", mutation=None, palette="forest")`. Variants are parameters, not new files.
-- **Contact sheet:** every build also writes a preview sheet of everything it generated, for PR review.
-- **Determinism test** in CI: build twice and compare the bytes.
+- **Characters and props are built by agents through headless Blender Python scripts** and exported as glTF (OQ-037, D7). Agents may start from CC0 or other permissively licensed bases (for example the Quaternius characters and animation library) or from AI-generated meshes, then rework them into the wanderer style. Blender MCP is optional for Lucid locally; its asset integrations may be used only for sources the D8 rule allows.
+- **Outputs:** `.glb` files are built in CI or committed as authored assets. Godot imports them; nothing is converted by hand.
+- **Parametric builds:** variants (size, age, mutation, palette) are parameters of a script, not new files.
+- **Determinism:** Blender rebuilds are byte-identical once the spike's non-determinism workarounds are applied; they carry into the build scripts.
+- **Review:** `tools/godot/capture.sh` renders an image of the work under xvfb for PR review. Software rendering runs at about 4 fps, so a capture proves how it looks, not how it performs.
+- **Retired:** the pixel atlas pipeline (`tools/art/`: 32×32 actors, 16×16 tiles, 4 directions, nearest-neighbour WebP atlases). OVR-010 deletes it; it stays in git history.
 
 ## Paper doll
 
-Characters are layered per frame: body → underwear/base clothes → legs → feet → chest → hands → head/hair → helmet → back → weapon/off hand. Each layer is generated against the same skeleton anchor points so every armor piece fits every species body plan. Fashion matters: dye channels, a cosmetic override slot per armor piece.
+Characters are layered: body → underwear/base clothes → legs → feet → chest → hands → head/hair → helmet → back → weapon/off hand. Each layer is generated against the same skeleton anchor points so every armor piece fits every species body plan. Fashion matters: dye channels, a cosmetic override slot per armor piece. How the layers work on Blender-built, glTF characters (meshes on the shared skeleton) is decided in G1.
 
 ## Living visuals
 
@@ -38,10 +45,10 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 
 ## Audio
 
-**Also authored by us (OQ-030).**
-- **SFX:** an sfxr-style synth in Python, run at build time (envelopes, oscillators, noise, filters). It covers hits per material, footsteps per terrain, UI, creature calls and spells.
+Audio follows the same D8 rule (OQ-038): we make it, or take CC0 or other allowed sounds with a CREDITS row.
+- **SFX:** hits per material, footsteps per terrain, UI, creature calls and spells. Synthesised by script (sfxr-style: envelopes, oscillators, noise, filters) or taken from CC0 sound libraries.
 - **Ambience:** per-biome beds (wind, birds, water, insects), modulated by weather and time of day.
-- **Music:** procedural and generated at runtime in WebAudio. Pieces have layers per biome, a day/night variation and an intensity layer for combat.
+- **Music:** procedural and generated at runtime. Pieces have layers per biome, a day/night variation and an intensity layer for combat.
 
 ## Tasks
 
@@ -67,10 +74,10 @@ Characters are layered per frame: body → underwear/base clothes → legs → f
 - [ ] **ART-020** UI icon generator (items, traits, abilities, status effects).
 - [ ] **ART-021** Determinism test in CI (byte-identical rebuilds).
 - [ ] **ART-022** Contact-sheet preview output for PR review.
-- [ ] **ART-023** Harden `draw.py` validation and tests: validate `shade_sphere` light via `_finite`; test np.bool_ rejection, np.float64 in `ellipse_mask`, and the uint8-overflow guard (`int(v)` conversion) found by the ART-003 critic and Fable gate.
+- [ ] ~~**ART-023** Harden `draw.py` validation and tests: validate `shade_sphere` light via `_finite`; test np.bool_ rejection, np.float64 in `ellipse_mask`, and the uint8-overflow guard (`int(v)` conversion) found by the ART-003 critic and Fable gate.~~ (dropped: Godot overhaul, OQ-031; `draw.py` is retired)
 - [x] **ART-024** Art direction pass: research open-source game-art practice and design skills, write the art bible (`docs/art/`), and redraw actors, ground tiles and palettes to it (Lucid, 2026-10-12). — #30
-- [ ] **AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.
+- [ ] ~~**AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.~~ (dropped: Godot overhaul, OQ-031; the Python atlas build is retired)
 - [ ] **AUD-002** SFX set: hits per material, footsteps per terrain, UI, creature calls, spells.
-- [ ] **AUD-003** Runtime WebAudio mixer with spatial panning and volume buses.
+- [ ] **AUD-003** Runtime audio mixer with spatial panning and volume buses.
 - [ ] **AUD-004** Biome ambience beds modulated by weather and time.
 - [ ] **AUD-005** Procedural runtime music: biome layers, day/night variation, combat intensity layer.
