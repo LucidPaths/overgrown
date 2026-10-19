@@ -42,7 +42,11 @@ func _init() -> void:
 				failed += 1
 				continue
 			var t := TestContext.new()
-			suite.call(method_name, t)
+			var r: Variant = suite.call(method_name, t)
+			if r != null:
+				printerr("FAIL %s::%s (test methods must not await or return a value: the runner quits before a coroutine resumes)" % [file, method_name])
+				failed += 1
+				continue
 			if t.failures.is_empty():
 				print("PASS %s::%s" % [file, method_name])
 				passed += 1
