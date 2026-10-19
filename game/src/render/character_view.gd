@@ -75,11 +75,11 @@ func _init() -> void:
 
 
 ## Starts drawing character c of sim; snaps to it (call again after a teleport).
-func setup(sim: OgSim, c: OgCharacter) -> void:
+func setup(sim: OgSim) -> void:
 	_sim = sim
-	_c = c
-	_yaw_angle = _yaw_of(c.facing)
-	_last_pos = c.pos
+	_c = sim.you
+	_yaw_angle = _yaw_of(_c.facing)
+	_last_pos = _c.pos
 	_sync(0.0)
 	reset_physics_interpolation()
 

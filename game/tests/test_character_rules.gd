@@ -116,7 +116,7 @@ func test_dodge_rolls_along_move_else_aim_else_facing_and_ignores_intent_mid_rol
 	b.intent.move = Vector2(1, 0.5)
 	b.intent.aim = Vector2(0, -10)
 	b.intent.buttons = OgCharacter.DODGE_PRESS
-	c.intent.aim = Vector2(0, 20)
+	c.intent.aim = Vector2(20, 0) # differs from the spawn facing (south), so the aim fallback shows
 	c.intent.buttons = OgCharacter.DODGE_PRESS
 	d.intent.move = Vector2(-1, 0)
 	_tick(chars, 0)
@@ -131,7 +131,7 @@ func test_dodge_rolls_along_move_else_aim_else_facing_and_ignores_intent_mid_rol
 	for tick in range(1, OgRules.DODGE_TICKS):
 		_tick(chars, tick)
 	t.check(absf(b.pos.length() - OgRules.DODGE_DISTANCE_M) < EPS and absf(b.pos.y / b.pos.x - 0.5) < EPS, "B rolled to %s, want %.1f m along (1, 0.5)" % [b.pos, OgRules.DODGE_DISTANCE_M])
-	t.check(_near(c.pos, Vector2(0, OgRules.DODGE_DISTANCE_M)) and c.facing == Vector2(0, 1), "C rolled to %s facing %s, want along the aim" % [c.pos, c.facing])
+	t.check(_near(c.pos, Vector2(OgRules.DODGE_DISTANCE_M, 0)) and c.facing == Vector2(1, 0), "C rolled to %s facing %s, want along the aim" % [c.pos, c.facing])
 	var b_end := b.pos
 	_tick(chars, OgRules.DODGE_TICKS)
 	t.check(b.action == A.WALK and b.action_start == OgRules.DODGE_TICKS and b.facing == Vector2(-1, 0), "B after the roll: action %d start %d facing %s" % [b.action, b.action_start, b.facing])
@@ -221,3 +221,30 @@ func test_non_finite_intent_is_reported_and_positions_stay_finite(t: TestContext
 	t.check(walker.pos == Vector2(0.5, 0.5) and walker.action == A.IDLE, "a NaN move moved the walker to %s" % walker.pos)
 	# Move and aim are treated as zero, so the roll goes along the facing (south).
 	t.check(_near(roller.pos, Vector2(0.5, 0.5 + OgRules.DODGE_DISTANCE_M)), "roller ended at %s, want a roll along its facing" % roller.pos)
+
+
+## Ports sim.test.ts "dodge beats attack on the same tick": the dodge starts and the attack press is dropped.
+func test_dodge_beats_attack_on_the_same_tick(t: TestContext) -> void:
+	var c := _spawn()
+	var chars: Array[OgCharacter] = [c]
+	c.intent.move = Vector2(1, 0)
+	c.intent.buttons = OgCharacter.ATTACK_PRESS | OgCharacter.DODGE_PRESS
+	_tick(chars, 0)
+	t.check(c.action == A.DODGE and c.action_start == 0, "both presses on one tick: action %d, want DODGE" % c.action)
+	t.check(c.intent.buttons & OgCharacter.PRESSES == 0, "both presses on one tick: buttons %d, want both presses gone" % c.intent.buttons)
+	for tick in range(1, OgRules.DODGE_TICKS + 2):
+		_tick(chars, tick)
+		if c.action == A.ATTACK:
+			t.fail("tick %d: the dropped attack press started an attack" % tick)
+			return
+
+
+func test_a_non_dyadic_half_size_is_reported_and_replaced(t: TestContext) -> void:
+	var errors: Array[String] = []
+	OgRng.error_hook = func(msg: String) -> void: errors.append(msg)
+	var bad := OgCharacter.new(Vector2.ZERO, 0, 0.3)
+	var good := OgCharacter.new(Vector2.ZERO, 0, 0.25)
+	OgRng.error_hook = Callable()
+	t.check(errors.size() == 1 and errors[0].contains("half size"), "want one half-size report, got %s" % str(errors))
+	t.check(bad.half_size == OgRules.FOOT_HALF_M, "half size 0.3 kept as %s, want FOOT_HALF_M" % bad.half_size)
+	t.check(good.half_size == 0.25, "half size 0.25 became %s" % good.half_size)

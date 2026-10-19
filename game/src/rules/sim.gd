@@ -25,9 +25,10 @@ static func create(seed: int) -> OgSim:
 	return sim
 
 
-## A new character at feet point `at` (metres), IDLE since this tick. The only way to make one.
-func add_character(at: Vector2) -> OgCharacter:
-	var c := OgCharacter.new(at, tick)
+## A new character at feet point `at` (metres), IDLE since this tick, with foot box half size `half`. The
+## only way a sim makes one.
+func add_character(at: Vector2, half: float = OgRules.FOOT_HALF_M) -> OgCharacter:
+	var c := OgCharacter.new(at, tick, half)
 	characters.append(c)
 	return c
 

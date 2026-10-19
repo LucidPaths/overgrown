@@ -86,7 +86,7 @@ func _ready() -> void:
 	_you = _sim.add_character(at)
 	_latch = _sim.drive(_you)
 	_sim.you = _you
-	_view.setup(_sim, _you)
+	_view.setup(_sim)
 	_local.camera = _rig.get_node("Camera3D")
 	_rig.target = _view
 	_rig.environment = _env.environment

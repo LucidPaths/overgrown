@@ -57,17 +57,25 @@ func test_latched_and_direct_characters_move_identically(t: TestContext) -> void
 
 
 func test_rules_files_never_reference_input_nodes_or_the_tree(t: TestContext) -> void:
-	var files := DirAccess.get_files_at(RULES_DIR)
 	var scripts := 0
 	var banned := RegEx.create_from_string("\\b(Input|Node|get_tree|InputMap)\\b")
-	for f in files:
-		if not f.ends_with(".gd"):
-			continue
+	for f in _scripts_under(RULES_DIR):
 		scripts += 1
-		var text := FileAccess.get_file_as_string("%s/%s" % [RULES_DIR, f])
+		var text := FileAccess.get_file_as_string(f)
 		var lines := text.split("\n")
 		for i in lines.size():
 			var m := banned.search(lines[i])
 			if m != null:
 				t.fail("%s:%d references %s: %s" % [f, i + 1, m.get_string(1), lines[i].strip_edges()])
 	t.check(scripts >= 7, "found only %d scripts in %s" % [scripts, RULES_DIR])
+
+
+## Every .gd file under dir, subfolders included.
+func _scripts_under(dir: String) -> Array[String]:
+	var out: Array[String] = []
+	for f in DirAccess.get_files_at(dir):
+		if f.ends_with(".gd"):
+			out.append("%s/%s" % [dir, f])
+	for d in DirAccess.get_directories_at(dir):
+		out.append_array(_scripts_under("%s/%s" % [dir, d]))
+	return out

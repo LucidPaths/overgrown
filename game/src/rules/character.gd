@@ -34,16 +34,23 @@ var facing := Vector2(0.0, 1.0)
 var action := Action.IDLE
 ## The tick the current action started.
 var action_start := 0
-## Foot box half-size in metres.
+## Foot box half-size in metres. Set only by _init, which keeps it a multiple of 1/1024 (dyadic: OgCollision's
+## flush stops are exact only then; see OgRules.FOOT_HALF_M).
 var half_size := OgRules.FOOT_HALF_M
 var intent := Intent.new()
 
 
-func _init(at: Vector2, tick: int) -> void:
+## A character with feet point `at`, IDLE since `tick`. A half size that is not a positive multiple of 1/1024 is
+## reported and replaced by OgRules.FOOT_HALF_M.
+func _init(at: Vector2, tick: int, half: float = OgRules.FOOT_HALF_M) -> void:
 	if not (is_finite(at.x) and is_finite(at.y)):
 		OgWorld.report("OgCharacter: position must be finite, got %s" % str(at))
 	pos = at
 	action_start = tick
+	if not (half > 0.0 and is_finite(half) and half * 1024.0 == floorf(half * 1024.0)):
+		OgWorld.report("OgCharacter: half size %s must be a positive multiple of 1/1024 m; using %s" % [half, OgRules.FOOT_HALF_M])
+		half = OgRules.FOOT_HALF_M
+	half_size = half
 
 
 ## Reports a non-finite intent move or aim and replaces it with zero, so it never reaches a position.
