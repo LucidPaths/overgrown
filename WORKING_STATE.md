@@ -13,8 +13,8 @@ G0 waves:
 1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
 2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
 3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ✅ GOD-005 #41 (chunk store on WorkerThreadPool, 3D terrain, tilted camera + vista, crisp placeholder palette)
-4. ✅ OVR-010 #42 (TS/Pixi/Python retired; reference commit e6eaee3) · ⏳ GOD-006 (character rules + keyboard/mouse/gamepad, placeholder wanderer): critic → Fable
-5. The G0 E2E (docs/agents/E2E.md, MILESTONES § G0), then Lucid's playtest of the latest exe
+4. ✅ OVR-010 #42 (TS/Pixi/Python retired; reference commit e6eaee3) · ✅ GOD-006 #43 (character rules, keyboard/mouse/gamepad, placeholder wanderer)
+5. ⏳ The G0 E2E (docs/agents/E2E.md, MILESTONES § G0; branch g0-e2e), then Lucid's playtest of the latest exe
 
 Pre-overhaul history: M0 and M1 complete (docs/e2e/M0.md, M1.md); the TS/Pixi game is reference only until OVR-010.
 
@@ -24,8 +24,9 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 
 ## In flight
 
-- GOD-006 #43 in /home/user/wt/god-006: worker done (50 tests); foot half-size 0.3125 m (dyadic, f32 Vector2).
-- Follow-ups noted (not yet tasks): `find_spawn` keeps its own chunk cache (1.8–2.6 s at start; could share the store's); river banks show sawtooth where the water plane cuts faceted slopes; curved mesa walls follow the tile staircase (G1 polish); the moisture field shows a near-straight N–S forest border near seed 1's spawn (value-noise lattice alignment).
+- G0 E2E agent in /home/user/wt/g0-e2e.
+- Asked Lucid (2026-10-19) to protect `main` (PR + required check `godot`, 0 approvals since merges run through Lucid's account), turn on auto-delete of head branches, and delete 42 stale branches (keep main, art-lab, spike-godot): the cloud git proxy refuses deletion and no tool sets protection.
+- Follow-ups noted (not yet tasks): `main.gd`'s `--at` check re-derives the foot-box tile span instead of calling `OgCollision` (Fable, #43); the device path in `local_input.gd` has no automated test (playtest); `find_spawn` keeps its own chunk cache (1.8–2.6 s at start; could share the store's); river banks show sawtooth where the water plane cuts faceted slopes; curved mesa walls follow the tile staircase (G1 polish); the moisture field shows a near-straight N–S forest border near seed 1's spawn (value-noise lattice alignment).
 - Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
 - Notes for later specs: `generate_chunk` costs ~120 ms in GDScript (GOD-005 streams on WorkerThreadPool); GOD-006 rules should port movement/actions/collision semantics from `sim/src/{movement,actions}.ts` and `world/collision.ts` in metres.
 
