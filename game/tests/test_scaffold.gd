@@ -17,5 +17,6 @@ func test_main_scene_has_tilted_camera(t: TestContext) -> void:
 		t.fail("expected one Camera3D, found %d" % cameras.size())
 	else:
 		var pitch := absf((cameras[0] as Camera3D).rotation_degrees.x)
-		t.check(pitch >= 40.0 and pitch <= 60.0, "camera pitch %.1f deg is outside 40..60" % pitch)
+		# PLAN D4 / GOD-005: the play view looks down about 30 deg minus a small raise, so the sky shows at the top.
+		t.check(pitch >= 20.0 and pitch <= 35.0, "camera pitch %.1f deg is outside 20..35" % pitch)
 	root.free()

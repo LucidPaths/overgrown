@@ -5,6 +5,9 @@ extends RefCounted
 
 ## Ground tile edge in world pixels.
 const TILE_PX := 16
+## Ground tile edge in metres: one tile is one metre. Tile (tx, ty) covers x in [tx, tx + 1) and z in
+## [ty, ty + 1); tile y-down is Godot +z (south), +y is up.
+const TILE_M := 1.0
 ## Chunk edge in tiles; a chunk holds CHUNK_TILES * CHUNK_TILES tiles.
 const CHUNK_TILES := 32
 const U32_MAX := 0xFFFFFFFF
