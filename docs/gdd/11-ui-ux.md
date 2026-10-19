@@ -5,7 +5,7 @@
 - **Desktop only, seen through the tilted camera.** The game is a Godot exe for a desktop (OQ-031, OQ-032). The camera is a tilted action-RPG view that shows the horizon and pulls out to vistas at landmarks (OQ-034). Inputs are keyboard, mouse and gamepad, and all three are first-class from G0.
 - **The first click is the game.** Launch it, see the world within seconds. There are no accounts; identity is a local profile name (OQ-029). Character creation is short (species + appearance) and can be skipped with a random roll.
 - **Diegetic where possible.** Danger is read from the characters themselves (size, scars, grey fur) before numbers. Numbers appear as your perception trait grows.
-- ~~**Touch and mouse are equals.** Every action works with both.~~ (retired, OQ-029: keyboard, mouse and gamepad are the inputs; the shipped touch layout lives in the TypeScript client and goes with it in OVR-010)
+- ~~**Touch and mouse are equals.** Every action works with both.~~ (retired, OQ-029: keyboard, mouse and gamepad are the inputs; the shipped touch layout lives in the TypeScript client and went with it in OVR-010)
 
 ## HUD
 
