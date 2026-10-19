@@ -12,8 +12,8 @@ Last updated: 2026-10-19
 G0 waves:
 1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
 2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
-3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ⏳ GOD-005 (streaming, 3D terrain, tilted camera; branched from GOD-004): worker running
-4. GOD-006 (character rules + keyboard/mouse/gamepad, replaces GOD-005's debug focus) after GOD-005
+3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ✅ GOD-005 #41 (chunk store on WorkerThreadPool, 3D terrain, tilted camera + vista, crisp placeholder palette)
+4. ⏳ GOD-006 (character rules + keyboard/mouse/gamepad, replaces GOD-005's debug focus): worker running
 5. OVR-010 (retire sim/, client/, tools/art/, scripts/, deploy.yml), then the G0 E2E, a release, Lucid's playtest of the exe
 
 Pre-overhaul history: M0 and M1 complete (docs/e2e/M0.md, M1.md); the TS/Pixi game is reference only until OVR-010.
@@ -24,7 +24,8 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 
 ## In flight
 
-- GOD-005 worker (opus) in /home/user/wt/god-005; merge main into it before its gates.
+- GOD-006 worker (opus) in /home/user/wt/god-006.
+- Follow-ups noted (not yet tasks): `find_spawn` keeps its own chunk cache (1.8–2.6 s at start; could share the store's); river banks show sawtooth where the water plane cuts faceted slopes; curved mesa walls follow the tile staircase (G1 polish); the moisture field shows a near-straight N–S forest border near seed 1's spawn (value-noise lattice alignment).
 - Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
 - Notes for later specs: `generate_chunk` costs ~120 ms in GDScript (GOD-005 streams on WorkerThreadPool); GOD-006 rules should port movement/actions/collision semantics from `sim/src/{movement,actions}.ts` and `world/collision.ts` in metres.
 

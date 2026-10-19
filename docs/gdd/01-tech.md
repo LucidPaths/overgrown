@@ -98,5 +98,5 @@ The rules below were written for the TS sim and are engine-neutral design. They 
 - [x] **GOD-002** Release pipeline: CI exports Windows and Linux builds and publishes them to GitHub Releases on every milestone merge, with a rolling "latest" pre-release from main. (OQ-032) — #37
 - [x] **GOD-003** Seeded RNG in GDScript, checked against `contracts/rng-vectors.json`. — #38
 - [x] **GOD-004** Worldgen port (noise, biomes, chunk generation, spawn search), with golden digests equal to the TypeScript output. — #39
-- [ ] **GOD-005** Chunk streaming plus 3D terrain (heightfield and biome materials), and the tilted ARPG camera with a vista zoom. (OQ-034)
+- [x] **GOD-005** Chunk streaming plus 3D terrain (heightfield and biome materials), and the tilted ARPG camera with a vista zoom. (OQ-034) — #41
 - [ ] **GOD-006** Character rules (move, sprint, dodge, attack, collision on walkability) as a shared rule set, plus input for keyboard, mouse and gamepad.
