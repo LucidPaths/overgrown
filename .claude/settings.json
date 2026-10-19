@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$CLAUDE_CODE_REMOTE\" = \"true\" ] && bash \"$CLAUDE_PROJECT_DIR/tools/godot/setup.sh\" >/tmp/godot-setup.log 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  }
+}
