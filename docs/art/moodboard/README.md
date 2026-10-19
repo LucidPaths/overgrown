@@ -2,7 +2,7 @@
 
 These are Lucid's own images, which he generated himself, and they are the **style reference** for overgrown's art. Art agents study them and match the style.
 
-**Reference only (Lucid, 2026-10-19):** nothing here ships in the game, and nothing in the game is traced or copied from these images. Every in-game asset is still authored by us (OQ-030).
+**Use (Lucid, 2026-10-19):** these are Lucid's own images. They are the style reference, and they may also ship in-game, for example as title or loading art (overhaul plan D8). Lucid may add more at any time.
 
 | # | Image | What to take from it |
 |---|---|---|

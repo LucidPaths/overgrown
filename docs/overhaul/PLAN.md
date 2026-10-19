@@ -10,10 +10,11 @@ Status: **draft for Lucid's sign-off** (2026-10-19). When Lucid approves it, tas
 | D2 | **Delivery: a standalone `overgrown.exe` from GitHub Releases.** Download, double-click, play. Linux builds too. | CI builds and publishes it. Lucid installs nothing else. |
 | D3 | **All development happens in the cloud.** Lucid's machine only plays builds and gives feedback (feel, real fps, co-op). | No Godot or Blender on Lucid's side. |
 | D4 | **Camera: a tilted action-RPG camera with vista moments.** It is low enough to see the horizon and sky during play, and pulls out to wide vistas at landmarks. | Replaces the strict top-down view. |
-| D5 | **Art direction: Lucid's mood board** (`docs/art/moodboard/`): painted (oil and impasto) look, teal against orange and gold, cosmic skies, wind, small figures in huge worlds. | The images are reference only; nothing from them ships (OQ-030 still holds). |
+| D5 | **Art direction: Lucid's mood board** (`docs/art/moodboard/`): painted (oil and impasto) look, teal against orange and gold, cosmic skies, wind, small figures in huge worlds. | The images are Lucid's own and may also ship in-game (title, loading art), under D8. |
 | D6 | **The wanderer** (faceless, poncho with orange geometric borders, gold scarf, wind-blown hair) is the north star for character design and for the game's identity. | Details are decided later. |
-| D7 | **Characters are modelled, rigged and animated by agents through headless Blender Python scripts**, exported as glTF. No AI 3D generators. | Blender MCP is optional for Lucid locally, with its asset and AI-generation integrations turned off. |
-| — | Kept: OQ-029 (a game for Lucid and a few friends; one machine hosts) and OQ-030 (assets authored by us). | |
+| D7 | **Characters are modelled, rigged and animated by agents through headless Blender Python scripts**, exported as glTF. Agents may start from CC0 or other permissively licensed bases (for example the Quaternius characters and animation library) or from AI-generated meshes, then rework them into the wanderer style. | Blender MCP is optional for Lucid locally. Its asset integrations may be used only for sources D8 allows. |
+| D8 | **Asset rule, loosened (replaces OQ-030's strict wording).** Allowed: anything we make by any method, including Lucid's ChatGPT images and AI 3D generators; third-party assets under licences compatible with an MIT repo (CC0 or public domain, MIT, Apache-2.0, BSD, CC-BY with attribution, OFL for fonts); and inspiration from anything. Share-alike (CC-BY-SA, GPL art) is allowed only if the file keeps and is marked with its licence. Not allowed: no licence or an unknown one, personal-use-only, NonCommercial, NoDerivatives, and ripped or traced work from commercial games or artists. | Every third-party file gets an entry in `assets/CREDITS` (path, source URL, licence, author). CI fails if a file under `assets/third_party/` has no entry. |
+| — | Kept: OQ-029 (a game for Lucid and a few friends; one machine hosts). OQ-030 is superseded by D8. | |
 
 ## What we keep, port and retire
 
@@ -62,12 +63,12 @@ Goal: Lucid downloads `overgrown.exe`, opens it, and a placeholder wanderer walk
 - **GOD-004** Worldgen port (noise, biomes, chunk generation, spawn search), with golden digests equal to the TypeScript output.
 - **GOD-005** Chunk streaming plus 3D terrain (heightfield and biome materials), and the tilted ARPG camera with a vista zoom.
 - **GOD-006** Character rules (move, sprint, dodge, attack, collision on walkability) as a shared rule set, plus input for keyboard, mouse and gamepad.
-- **OVR-009** Record D1–D7 as OQ rows, rewrite the affected GDD sections (01-tech, 10-art-audio, 11-ui-ux, MILESTONES), update CLAUDE.md, and retire the TypeScript, Pixi and Python packages once GOD-003 and GOD-004 are proven.
+- **OVR-009** Record D1–D8 as OQ rows (D8 supersedes OQ-030), add the `assets/CREDITS` manifest and its CI check, rewrite the affected GDD sections (01-tech, 10-art-audio, 11-ui-ux, MILESTONES), update CLAUDE.md, and retire the TypeScript, Pixi and Python packages once GOD-003 and GOD-004 are proven.
 - G0 E2E: a scripted playthrough in the cloud, plus **Lucid's playtest of the exe**.
 
 ### G1: Painted vertical slice
 Goal: one biome and one vista that look like the mood board, with the wanderer in motion.
-- An art bible built from the mood board, with full creative freedom (an Opus art lab, as before, now in Godot and Blender).
+- An art bible built from the mood board, with full creative freedom (an Opus art lab, as before, now in Godot and Blender), free to start from D8-allowed CC0 bases and from Lucid's images.
 - The painterly post stack, palette grading and cosmic sky shader.
 - Wind on everything.
 - The wanderer: Blender-built, rigged, with walk, run, dodge, attack and idle, and cloth and hair motion.
