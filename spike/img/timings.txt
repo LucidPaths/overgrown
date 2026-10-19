@@ -1,17 +1,17 @@
-[rebuild] blender_build              2.6s
+[rebuild] blender_build              3.0s
     [build] setup+materials: 0.15s
-    [build] body (skin modifier + subsurf + sculpt brushes): 0.30s
-    [build] head (sphere + brushes, ears, eyes, hair): 0.08s
+    [build] body (skin modifier + subsurf + sculpt brushes): 0.28s
+    [build] head (sphere + brushes, ears, eyes, hair): 0.07s
     [build] hands + boots (skin modifier): 0.04s
-    [build] clothes (region copy + solidify, belt): 0.03s
-    [build] vertex colour AO + fixed triangulation: 0.12s
+    [build] clothes (region copy + solidify, belt): 0.05s
+    [build] vertex colour AO + fixed triangulation: 0.19s
     [build] weights Body: 20 groups, 0 unweighted verts
     [build] weights Tunic: 20 groups, 0 unweighted verts
     [build] weights Trousers: 20 groups, 0 unweighted verts
     [build] weights Boot.L: 20 groups, 0 unweighted verts
     [build] weights Boot.R: 20 groups, 0 unweighted verts
-    [build] armature + automatic weights: 0.45s
-    [build] actions: walk, idle: 0.02s
+    [build] armature + automatic weights: 0.71s
+    [build] actions: walk, idle: 0.03s
     [build]   Belt: 748 tris
     [build]   Body: 8336 tris
     [build]   Boot.L: 912 tris
@@ -22,26 +22,19 @@
     [build]   Trousers: 5560 tris
     [build]   Tunic: 7528 tris
     [build] objects=9 tris=32408 bones=20
-    [build] save .blend: 0.03s
-    [build] export .glb: 0.55s
-    [build] TOTAL 1.77s
+    [build] save .blend: 0.04s
+    [build] export .glb: 0.53s
+    [build] TOTAL 2.08s
     glb sha256 693eeaca99c0a6b4db7d56a4941664ca4c34086041c5eff2d124dfa9e2bac0ba  spike/godot/assets/character.glb
-[rebuild] blender_cycles            35.7s
-    [render] CYCLES spike/build/cy_front.png frame=0 7.72s
-    [render] CYCLES spike/build/cy_walk_00.png frame=0 7.26s
-    [render] CYCLES spike/build/cy_walk_03.png frame=3 6.69s
-    [render] CYCLES spike/build/cy_walk_06.png frame=6 6.84s
-    [render] CYCLES spike/build/cy_walk_09.png frame=9 6.61s
-    [render] TOTAL 35.12s
-[rebuild] blender_eevee             40.7s
-    [render] BLENDER_EEVEE_NEXT spike/build/ee_front.png frame=0 8.63s
-    [render] BLENDER_EEVEE_NEXT spike/build/ee_walk_00.png frame=0 8.66s
-    [render] BLENDER_EEVEE_NEXT spike/build/ee_walk_03.png frame=3 7.71s
-    [render] BLENDER_EEVEE_NEXT spike/build/ee_walk_06.png frame=6 7.73s
-    [render] BLENDER_EEVEE_NEXT spike/build/ee_walk_09.png frame=9 7.39s
-    [render] TOTAL 40.11s
-[rebuild] godot_import               4.4s
-[rebuild] godot_test                 0.3s
+[rebuild] blender_cycles            34.1s
+    [render] CYCLES spike/build/cy_front.png frame=0 7.55s
+    [render] CYCLES spike/build/cy_walk_00.png frame=0 6.43s
+    [render] CYCLES spike/build/cy_walk_03.png frame=3 6.56s
+    [render] CYCLES spike/build/cy_walk_06.png frame=6 6.12s
+    [render] CYCLES spike/build/cy_walk_09.png frame=9 6.81s
+    [render] TOTAL 33.48s
+[rebuild] godot_import               4.5s
+[rebuild] godot_test                 0.2s
     PASS character.glb loads as PackedScene
     PASS one AnimationPlayer (got 1)
     PASS one Skeleton3D (got 1)
@@ -52,8 +45,8 @@
     PASS walk is ~1.0 s (got 1.000)
     PASS not forced to fail (--force-fail proves the exit code)
     RESULT failures=0
-[rebuild] godot_capture             43.2s
-    [capture] forward_plus      ok     19.8s  vulkan on llvmpipe (LLVM 20.1.2, 256 bits): median frame 252 ms (4.0 fps), first frame 2482 ms
-    [capture] mobile            ok     11.8s  vulkan on llvmpipe (LLVM 20.1.2, 256 bits): median frame 133 ms (7.5 fps), first frame 2249 ms
-    [capture] gl_compatibility  ok     11.6s  opengl3 on llvmpipe (LLVM 20.1.2, 256 bits): median frame 162 ms (6.2 fps), first frame 524 ms
-[rebuild] done; images in spike/img (4.8M)
+[rebuild] godot_capture             42.1s
+    [capture] forward_plus      ok     18.4s  vulkan on llvmpipe (LLVM 20.1.2, 256 bits): median frame 251 ms (4.0 fps), first frame 2268 ms
+    [capture] mobile            ok     12.3s  vulkan on llvmpipe (LLVM 20.1.2, 256 bits): median frame 136 ms (7.4 fps), first frame 2390 ms
+    [capture] gl_compatibility  ok     11.2s  opengl3 on llvmpipe (LLVM 20.1.2, 256 bits): median frame 159 ms (6.3 fps), first frame 517 ms
+[rebuild] done; images in spike/img (5.0M)

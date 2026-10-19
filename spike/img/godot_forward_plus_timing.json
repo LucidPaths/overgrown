@@ -2,21 +2,21 @@
   "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
   "adapter_vendor": "Unknown",
   "api_version": "1.4.318",
-  "first_frame_ms": 2482.205,
-  "fps_median": 3.96674282812897,
-  "frame_ms_max": 412.033,
-  "frame_ms_median": 252.096,
-  "frame_ms_min": 217.276,
+  "first_frame_ms": 2268.317,
+  "fps_median": 3.98547692209588,
+  "frame_ms_max": 377.127,
+  "frame_ms_median": 250.911,
+  "frame_ms_min": 220.167,
   "godot": "4.7.2-stable (official)",
-  "render_cpu_ms_median": 0.569000005722046,
-  "render_gpu_ms_median": 244.001007080078,
+  "render_cpu_ms_median": 0.519999980926514,
+  "render_gpu_ms_median": 243.332992553711,
   "rendering_driver": "vulkan",
   "rendering_method": "forward_plus",
   "tag": "forward_plus",
-  "total_capture_s": 18.356173,
+  "total_capture_s": 17.013134,
   "viewport": [
     1280.0,
     720.0
   ],
-  "warmup_5_frames_ms": 4513.838
+  "warmup_5_frames_ms": 3986.084
 }

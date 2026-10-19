@@ -677,7 +677,7 @@ def main():
         skin=material("Skin", (0.80, 0.55, 0.42), 0.55),
         eye=material("Eye", (0.03, 0.03, 0.04), 0.15, vcol=False),
         hair=material("Hair", (0.42, 0.13, 0.06), 0.8),
-        tunic=material("Tunic", (0.18, 0.42, 0.20), 0.85),
+        tunic=material("Tunic", tuple(float(c) for c in a.get("tunic", "0.18,0.42,0.20").split(",")), 0.85),
         trousers=material("Trousers", (0.30, 0.22, 0.15), 0.85),
         boot=material("Boot", (0.16, 0.09, 0.05), 0.6),
         leather=material("Leather", (0.35, 0.18, 0.07), 0.5),

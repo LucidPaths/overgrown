@@ -4,6 +4,7 @@
 #   -> contact sheets in spike/img/.
 #
 #   spike/tools/rebuild.sh [--renderers "forward_plus mobile gl_compatibility"] [--no-preview] [--eevee]
+#                          [--tunic r,g,b]   (a visible knob to prove the loop end to end)
 #
 # Needs the tools from spike/tools/setup.sh. Exit code != 0 if any stage fails.
 set -euo pipefail
@@ -12,11 +13,13 @@ cd "$ROOT"
 RENDERERS="forward_plus mobile gl_compatibility"
 PREVIEW=1
 EEVEE=0
+TUNIC=0.18,0.42,0.20
 while [ $# -gt 0 ]; do
   case "$1" in
     --renderers) RENDERERS="$2"; shift 2 ;;
     --no-preview) PREVIEW=0; shift ;;
     --eevee) EEVEE=1; shift ;;
+    --tunic) TUNIC="$2"; shift 2 ;;
     *) echo "unknown arg $1"; exit 2 ;;
   esac
 done
@@ -39,7 +42,7 @@ stage() { # stage <name> <cmd...>: run, time, log; abort on failure
 }
 
 stage blender_build blender --background --factory-startup --python spike/blender/build_character.py -- \
-  --blend "$BUILD/character.blend" --glb spike/godot/assets/character.glb
+  --blend "$BUILD/character.blend" --glb spike/godot/assets/character.glb --tunic "$TUNIC"
 grep -E '^\[build\]' "$BUILD/blender_build.log" | sed 's/^/    /' | tee -a "$TIMES"
 sha256sum spike/godot/assets/character.glb | sed 's/^/    glb sha256 /' | tee -a "$TIMES"
 
