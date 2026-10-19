@@ -6,8 +6,9 @@ extends RefCounted
 ##
 ## Units: one tile is OgWorld.TILE_M (1 m). Tile (tx, ty) covers x in [tx, tx + 1) and z in [ty, ty + 1);
 ## tile y-down is +z (south), +y is up. Corner (tx, ty) is the top-left (north-west) corner of tile (tx, ty).
-## Each tile quad is split along its TL-BR diagonal into the triangles (TL, TR, BR) and (TL, BR, BL); the
-## mesh (render/terrain_mesher.gd) and interpolate() both use this split.
+## Each tile quad is split into two triangles along the diagonal whose end corners differ less in height
+## (split_tl_br), so terrace walls stay straight whichever way they run; the mesh
+## (render/terrain_mesher.gd) and interpolate() both use this split.
 ## Float maths uses only + - * /, floor, abs, min, max (and sqrt for normals, which rules never read), so
 ## a later host and client agree (CLAUDE.md: engine-dependent float math).
 
@@ -74,12 +75,22 @@ static func tile_height(tile: int, e: float) -> float:
 			return land_height(e)
 
 
-## Height inside one tile quad from its corners (h00 = TL, h10 = TR, h01 = BL, h11 = BR) at the tile
-## fraction (fx, fz) in [0, 1]: the plane of the triangle (TL, TR, BR) where fx >= fz, else (TL, BR, BL).
+## True when the quad with corners h00 = TL, h10 = TR, h01 = BL, h11 = BR splits along TL-BR into the
+## triangles (TL, TR, BR) and (TL, BR, BL); false: along TR-BL into (TL, TR, BL) and (TR, BR, BL).
+static func split_tl_br(h00: float, h10: float, h01: float, h11: float) -> bool:
+	return absf(h00 - h11) <= absf(h10 - h01)
+
+
+## Height inside one tile quad from its corners at the tile fraction (fx, fz) in [0, 1], on the triangle
+## split_tl_br picks.
 static func interpolate(h00: float, h10: float, h01: float, h11: float, fx: float, fz: float) -> float:
-	if fx >= fz:
-		return h00 + (h10 - h00) * fx + (h11 - h10) * fz
-	return h00 + (h01 - h00) * fz + (h11 - h01) * fx
+	if split_tl_br(h00, h10, h01, h11):
+		if fx >= fz:
+			return h00 + (h10 - h00) * fx + (h11 - h10) * fz
+		return h00 + (h01 - h00) * fz + (h11 - h01) * fx
+	if fx + fz <= 1.0:
+		return h00 + (h10 - h00) * fx + (h01 - h00) * fz
+	return h11 + (h01 - h11) * (1.0 - fx) + (h10 - h11) * (1.0 - fz)
 
 
 ## The corner grids of chunk (cx, cy), from its generate_chunk tiles plus the ring sampled directly at world
