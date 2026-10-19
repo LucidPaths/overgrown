@@ -1,7 +1,20 @@
 class_name OgActions
 extends RefCounted
 ## The game's InputMap actions, registered in code. ensure() is idempotent: it adds only missing actions
-## and events, so calling it again (or after the user remapped) changes nothing. GOD-006 extends this file.
+## and events, so calling it again (or after the user remapped) changes nothing.
+##
+## Bindings (keys are physical positions; gamepad buttons by position, Xbox labels):
+##   move_left/right/up/down  A D W S, the arrows, the left stick (OgLocalInput reads the stick directly with a
+##                            radial deadzone; the stick events here keep the actions complete for remapping)
+##   sprint (held)            Shift, left stick click, LB
+##   dodge (press)            Space, B (east)
+##   attack (press)           left mouse button, X (west), RT
+##   camera_vista (held)      V, Y (north)
+##   camera_zoom_in/out       mouse wheel
+## Aim is not an action: the cursor (keyboard and mouse) or the right stick (gamepad), in OgLocalInput.
+
+## How far RT must be pulled to count as an attack press.
+const TRIGGER_DEADZONE := 0.5
 
 
 static func ensure() -> void:
@@ -12,11 +25,14 @@ static func ensure() -> void:
 	_action("camera_vista", [_key(KEY_V), _button(JOY_BUTTON_Y)])
 	_action("camera_zoom_in", [_mouse(MOUSE_BUTTON_WHEEL_UP)])
 	_action("camera_zoom_out", [_mouse(MOUSE_BUTTON_WHEEL_DOWN)])
+	_action("sprint", [_key(KEY_SHIFT), _button(JOY_BUTTON_LEFT_STICK), _button(JOY_BUTTON_LEFT_SHOULDER)])
+	_action("dodge", [_key(KEY_SPACE), _button(JOY_BUTTON_B)])
+	_action("attack", [_mouse(MOUSE_BUTTON_LEFT), _button(JOY_BUTTON_X), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)], TRIGGER_DEADZONE)
 
 
-static func _action(action: StringName, events: Array[InputEvent]) -> void:
+static func _action(action: StringName, events: Array[InputEvent], deadzone := 0.2) -> void:
 	if not InputMap.has_action(action):
-		InputMap.add_action(action)
+		InputMap.add_action(action, deadzone)
 	for e in events:
 		if not InputMap.action_has_event(action, e):
 			InputMap.action_add_event(action, e)

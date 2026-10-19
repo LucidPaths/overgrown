@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scenes/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://src/render/terrain_view.gd" id="2_terrain"]
 [ext_resource type="Script" path="res://src/render/camera_rig.gd" id="3_rig"]
+[ext_resource type="Script" path="res://src/render/character_view.gd" id="4_view"]
+[ext_resource type="Script" path="res://src/input/local_input.gd" id="5_input"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.08, 0.3, 0.38, 1)
@@ -32,15 +34,6 @@ fog_depth_curve = 1.6
 fog_depth_begin = 30.0
 fog_depth_end = 95.0
 
-[sub_resource type="CapsuleMesh" id="marker_mesh"]
-radius = 0.3
-height = 1.6
-
-[sub_resource type="StandardMaterial3D" id="marker_mat"]
-albedo_color = Color(0.95, 0.66, 0.18, 1)
-emission_enabled = true
-emission = Color(0.5, 0.3, 0.05, 1)
-
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
 
@@ -57,12 +50,11 @@ directional_shadow_max_distance = 140.0
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("2_terrain")
 
-[node name="Focus" type="Node3D" parent="."]
+[node name="Wanderer" type="Node3D" parent="."]
+script = ExtResource("4_view")
 
-[node name="Marker" type="MeshInstance3D" parent="Focus"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-mesh = SubResource("marker_mesh")
-surface_material_override/0 = SubResource("marker_mat")
+[node name="LocalInput" type="Node" parent="."]
+script = ExtResource("5_input")
 
 [node name="CameraRig" type="Node3D" parent="."]
 script = ExtResource("3_rig")
@@ -79,7 +71,7 @@ near = 0.1
 offset_left = 12.0
 offset_top = 8.0
 offset_right = 600.0
-offset_bottom = 90.0
+offset_bottom = 112.0
 theme_override_colors/font_color = Color(1, 0.97, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0.05, 0.08, 0.1, 1)
 theme_override_constants/outline_size = 6
