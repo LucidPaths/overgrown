@@ -101,9 +101,9 @@ def main() -> None:
     setup(a)
     out = a["out"]
     Path(out).parent.mkdir(parents=True, exist_ok=True)
-    total = shoot(f"{out}_front.png", 1, "idle", (2.0, -3.2, 1.9), (0, 0, 0.95))
+    total = shoot(f"{out}_front.png", 0, "idle", (2.0, -3.2, 1.9), (0, 0, 0.95))
     if a.get("walk", "1") == "1":
-        for f in (1, 4, 7, 10):
+        for f in (0, 3, 6, 9):
             total += shoot(f"{out}_walk_{f:02d}.png", f, "walk", (3.6, -0.25, 1.15), (0, 0, 0.88))
     print(f"[render] TOTAL {total:.2f}s", flush=True)
 

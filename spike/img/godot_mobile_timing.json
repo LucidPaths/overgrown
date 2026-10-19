@@ -1,0 +1,22 @@
+{
+  "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "adapter_vendor": "Unknown",
+  "api_version": "1.4.318",
+  "first_frame_ms": 2249.091,
+  "fps_median": 7.54494903386928,
+  "frame_ms_max": 271.772,
+  "frame_ms_median": 132.539,
+  "frame_ms_min": 117.06,
+  "godot": "4.7.2-stable (official)",
+  "render_cpu_ms_median": 0.456000000238419,
+  "render_gpu_ms_median": 127.166000366211,
+  "rendering_driver": "vulkan",
+  "rendering_method": "mobile",
+  "tag": "mobile",
+  "total_capture_s": 10.692354,
+  "viewport": [
+    1280.0,
+    720.0
+  ],
+  "warmup_5_frames_ms": 3459.826
+}

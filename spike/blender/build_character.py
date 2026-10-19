@@ -623,7 +623,7 @@ def build_animations(rig):
     walk_len = 24  # frames per cycle at 24 fps -> 1.0 s, two steps
 
     def walk(f):
-        t = (f - 1) / walk_len
+        t = f / walk_len
         w = 2 * math.pi * t
         for sfx, ph in (("L", 0.0), ("R", math.pi)):
             c = math.cos(w + ph)
@@ -645,7 +645,7 @@ def build_animations(rig):
     idle_len = 48
 
     def idle(f):
-        t = (f - 1) / idle_len
+        t = f / idle_len
         w = 2 * math.pi * t
         br = math.sin(w)
         set_pose(rig, "hips", world_q((0, 1, 0), 1.0 * math.sin(w)), (0, 0, -0.004 + 0.004 * br))
@@ -659,8 +659,9 @@ def build_animations(rig):
             set_pose(rig, f"shin.{sfx}", world_q((1, 0, 0), 6.0))
             set_pose(rig, f"foot.{sfx}", world_q((1, 0, 0), -3.0))
 
-    walk_act = make_action(rig, "walk", range(1, walk_len + 2, 2), walk)
-    idle_act = make_action(rig, "idle", range(1, idle_len + 2, 4), idle)
+    # keys from frame 0 so glTF times start at 0.0 s (frame 1 would start the clip at 1/24 s)
+    walk_act = make_action(rig, "walk", range(0, walk_len + 1, 2), walk)
+    idle_act = make_action(rig, "idle", range(0, idle_len + 1, 4), idle)
     rig.animation_data.action = idle_act
     return walk_act, idle_act
 

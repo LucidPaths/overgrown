@@ -1,0 +1,22 @@
+{
+  "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "adapter_vendor": "Mesa",
+  "api_version": "4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4",
+  "first_frame_ms": 524.036,
+  "fps_median": 6.17672855748681,
+  "frame_ms_max": 186.191,
+  "frame_ms_median": 161.898,
+  "frame_ms_min": 140.924,
+  "godot": "4.7.2-stable (official)",
+  "render_cpu_ms_median": 158.179000854492,
+  "render_gpu_ms_median": 156.889999389648,
+  "rendering_driver": "opengl3",
+  "rendering_method": "gl_compatibility",
+  "tag": "gl_compatibility",
+  "total_capture_s": 10.645512,
+  "viewport": [
+    1280.0,
+    720.0
+  ],
+  "warmup_5_frames_ms": 1144.867
+}
