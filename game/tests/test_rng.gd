@@ -76,6 +76,19 @@ func test_rng_int(t: TestContext) -> void:
 	t.check(expected.size() == 20, "expected 20 int vectors, found %d" % expected.size())
 
 
+# Pinned from the reference: sim/src/rng.ts, `new Rng(42)` then 20 × `.int(-5, 5)`, run with
+# `node --experimental-strip-types`. The shared vectors only cover 1..6, so this pins a negative `lo`.
+# (floor vs truncation toward zero cannot differ here: the argument f * (hi - lo + 1) is never negative.
+# What this guards is the `lo +` offset and the span arithmetic.)
+func test_rng_int_negative_range(t: TestContext) -> void:
+	var expected := [-3, 1, -4, -3, -1, 4, 4, 5, 0, 5, -3, 2, -2, 5, -1, 5, 4, -2, 0, 3]
+	var rng := OgRng.new(42)
+	for i in expected.size():
+		var got := rng.int_range(-5, 5)
+		if got != expected[i]:
+			t.fail("int_range(-5, 5)[%d]: got %d, expected %d" % [i, got, expected[i]])
+
+
 func test_derive_seed(t: TestContext) -> void:
 	var v := _vectors(t)
 	if v.is_empty():
@@ -110,6 +123,9 @@ func test_hash_string(t: TestContext) -> void:
 #   0x10001 * 0xFFFF0001 = (2^16 + 1)(2^32 - 2^16 + 1) = 2^48 + 1 = 1 mod 2^32
 #   M*0x10000 = -2^16 = 2^32 - 2^16 = 0xFFFF0000;  0xFFFF^2 = 2^32 - 2^17 + 1 = 0xFFFE0001
 # 0x9E3779B9 * 0xC2B2AE35 has no closed form: 1255797069 is Python's (a * b) & 0xFFFFFFFF.
+# GDScript ints wrap at 64 bits, and the low 32 bits of a wrapped product are the true low 32 bits, so a
+# plain `(a * b) & MASK` would pass this test too. The 16-bit split is defensive: it avoids relying on
+# C++ signed overflow. This test guards against a mis-split.
 func test_imul32_edge_products(t: TestContext) -> void:
 	var cases := [
 		[0xFFFFFFFF, 0xFFFFFFFF, 1],
@@ -135,10 +151,15 @@ func test_rejects_invalid_seed(t: TestContext) -> void:
 		var r := _run(func() -> Array:
 			var rng := OgRng.new(bad)
 			return [rng.is_valid(), rng.next_u32(), rng.next_float(), rng.int_range(1, 6)])
-		t.check(r["result"] == [false, -1, -1.0, -1], "Rng(%d) should be invalid and every draw -1 (got %s)" % [bad, str(r["result"])])
+		t.check(r["result"] == [false, -1, -1.0, OgRng.INVALID_INT], "Rng(%d) should be invalid and every draw invalid (got %s)" % [bad, str(r["result"])])
 		t.check(r["errors"].size() == 4, "seed %d: expected 4 reported errors, got %d" % [bad, r["errors"].size()])
 		var d := _run(func() -> int: return OgRng.derive_seed(bad, []))
 		t.check(d["result"] == -1 and d["errors"].size() == 1, "derive_seed(%d) should return -1 with one error (got %s, %d errors)" % [bad, str(d["result"]), d["errors"].size()])
+	# A float is rejected, not truncated to 1.
+	var f := _run(func() -> Array:
+		var rng := OgRng.new(1.5)
+		return [rng.is_valid(), OgRng.derive_seed(1.5, [])])
+	t.check(f["result"] == [false, -1] and f["errors"].size() == 2, "float seed 1.5 should be rejected by new and derive_seed (got %s, %d errors)" % [str(f["result"]), f["errors"].size()])
 	for ok in [0, 0xFFFFFFFF]:
 		var r := _run(func() -> bool: return OgRng.new(ok).is_valid())
 		t.check(r["result"] and r["errors"].is_empty(), "seed %d should be accepted, got %s" % [ok, str(r["errors"])])
@@ -166,7 +187,11 @@ func test_rejects_invalid_int_range(t: TestContext) -> void:
 	]
 	for rg: Array in bad_ranges:
 		var r := _run(func() -> int: return OgRng.new(1).int_range(rg[0], rg[1]))
-		t.check(r["result"] == -1 and r["errors"].size() == 1, "int_range(%d, %d) should return -1 with one error (got %s, %d errors)" % [rg[0], rg[1], str(r["result"]), r["errors"].size()])
+		t.check(r["result"] == OgRng.INVALID_INT and r["errors"].size() == 1, "int_range(%d, %d) should return INVALID_INT with one error (got %s, %d errors)" % [rg[0], rg[1], str(r["result"]), r["errors"].size()])
+	# Floats are rejected, not truncated.
+	for rg: Array in [[1.5, 6], [1, 6.5]]:
+		var r := _run(func() -> int: return OgRng.new(1).int_range(rg[0], rg[1]))
+		t.check(r["result"] == OgRng.INVALID_INT and r["errors"].size() == 1, "int_range(%s, %s) should return INVALID_INT with one error (got %s, %d errors)" % [str(rg[0]), str(rg[1]), str(r["result"]), r["errors"].size()])
 	var good_ranges := [[0, 0xFFFFFFFF], [-5, 5], [3, 3], [-0x80000000, 0x7FFFFFFF]]
 	for rg: Array in good_ranges:
 		var r := _run(func() -> int: return OgRng.new(1).int_range(rg[0], rg[1]))

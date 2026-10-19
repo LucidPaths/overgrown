@@ -5,12 +5,15 @@ extends RefCounted
 ##
 ## Every u32 is an int in 0..0xFFFFFFFF; each operation that can leave that range is masked.
 ## GDScript has no exceptions: where rng.ts throws, this file reports the same condition through
-## error_hook (default push_error) and returns -1 (a value no u32 function can produce).
-## int_range has no spare value, so it also returns -1 on error; the reported error is the signal.
+## error_hook (default push_error) and returns an invalid marker: -1 from the u32 functions (no u32
+## is negative), -1.0 from next_float, and INVALID_INT from int_range (-1 is a legal int_range result).
+## Seeds, parts, lo and hi must be TYPE_INT; a float such as 1.5 is rejected, never truncated.
 
 const MASK := 0xFFFFFFFF
 const GOLDEN := 0x9E3779B9
 const SAFE_INT_MAX := 9007199254740991 # 2^53 - 1, the same limit rng.ts and rng.py enforce
+## What int_range returns on error. Outside +-(2^53-1), so no accepted range can contain it.
+const INVALID_INT := -(1 << 62)
 
 ## Receives every validation error message. Unset (the default) means push_error. Tests set it to
 ## capture errors instead of printing them.
@@ -21,6 +24,10 @@ var _b := 0
 var _c := 0
 var _d := 0
 var _valid := false
+
+
+static func _is_int_in(v: Variant, lo: int, hi: int) -> bool:
+	return typeof(v) == TYPE_INT and v >= lo and v <= hi
 
 
 static func _report(msg: String) -> void:
@@ -56,14 +63,14 @@ static func mix_seed_part(h: int, part: int) -> int:
 
 
 ## Sub-seed from a seed plus integer parts, e.g. (world_seed, chunk_x, chunk_y). Returns -1 on invalid input.
-static func derive_seed(seed: int, parts: Array) -> int:
-	if seed < 0 or seed > MASK:
-		_report("seed must be an integer in 0..4294967295, got %d" % seed)
+static func derive_seed(seed: Variant, parts: Array) -> int:
+	if not _is_int_in(seed, 0, MASK):
+		_report("seed must be an integer in 0..4294967295, got %s" % str(seed))
 		return -1
 	var h := fmix32(seed)
 	for i in parts.size():
 		var p: Variant = parts[i]
-		if typeof(p) != TYPE_INT or p < -0x80000000 or p > MASK:
+		if not _is_int_in(p, -0x80000000, MASK):
 			_report("parts[%d] must be an integer in -2147483648..4294967295, got %s" % [i, str(p)])
 			return -1
 		h = mix_seed_part(h, p)
@@ -79,14 +86,14 @@ static func hash_string(s: String) -> int:
 	return fmix32(h)
 
 
-## seed must be an int in 0..4294967295. Otherwise an error is reported, valid stays false and
-## next_u32 returns -1.
-func _init(seed: int) -> void:
-	if seed < 0 or seed > MASK:
-		_report("seed must be an integer in 0..4294967295, got %d" % seed)
+## seed must be a TYPE_INT in 0..4294967295. Otherwise an error is reported, is_valid() stays false and
+## every draw returns its invalid marker.
+func _init(seed: Variant) -> void:
+	if not _is_int_in(seed, 0, MASK):
+		_report("seed must be an integer in 0..4294967295, got %s" % str(seed))
 		return
 	_valid = true
-	var s := seed
+	var s: int = seed
 	var out: Array[int] = []
 	for i in 4:
 		# splitmix32 step
@@ -129,19 +136,19 @@ func next_float() -> float:
 	return u / 4294967296.0
 
 
-## Uniform integer in [lo, hi], inclusive. Returns -1 and reports an error if lo or hi is beyond
-## +-(2^53-1), lo > hi, or hi - lo >= 2^32.
-func int_range(lo: int, hi: int) -> int:
-	if lo < -SAFE_INT_MAX or lo > SAFE_INT_MAX or hi < -SAFE_INT_MAX or hi > SAFE_INT_MAX:
-		_report("lo and hi must be within -(2^53-1)..2^53-1, got lo=%d hi=%d" % [lo, hi])
-		return -1
+## Uniform integer in [lo, hi], inclusive. Returns INVALID_INT and reports an error if lo or hi is not
+## a TYPE_INT within +-(2^53-1), lo > hi, or hi - lo >= 2^32.
+func int_range(lo: Variant, hi: Variant) -> int:
+	if not _is_int_in(lo, -SAFE_INT_MAX, SAFE_INT_MAX) or not _is_int_in(hi, -SAFE_INT_MAX, SAFE_INT_MAX):
+		_report("lo and hi must be integers within -(2^53-1)..2^53-1, got lo=%s hi=%s" % [str(lo), str(hi)])
+		return INVALID_INT
 	if lo > hi:
 		_report("lo must be <= hi, got lo=%d hi=%d" % [lo, hi])
-		return -1
+		return INVALID_INT
 	if hi - lo > MASK:
 		_report("hi - lo must be < 2^32, got lo=%d hi=%d" % [lo, hi])
-		return -1
+		return INVALID_INT
 	var f := next_float()
 	if f < 0.0:
-		return -1
+		return INVALID_INT
 	return lo + int(floor(f * (hi - lo + 1)))
