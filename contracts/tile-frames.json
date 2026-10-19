@@ -1,8 +1,0 @@
-{
-  "format": "tile/<palette>/<terrain>/<mask>/<variant>; mask bits TL=1 TR=2 BL=4 BR=8; palettes indexed by Biome value, terrains by Tile value; precedence lowest first",
-  "palettes": ["meadow", "forest", "river", "mountain", "ocean"],
-  "terrains": ["grass", "dirt", "sand", "stone", "cliff", "shallow_water", "deep_water", "very_deep_water"],
-  "precedence": ["very_deep_water", "deep_water", "shallow_water", "sand", "dirt", "grass", "stone", "cliff"],
-  "full_variants": 10,
-  "edge_variants": 2
-}

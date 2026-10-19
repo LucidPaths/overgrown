@@ -1,5 +1,7 @@
 # Art research (ART-024)
 
+> History: this research was written for the retired pixel-art pipeline (`tools/art/`, deleted in OVR-010). The Godot art direction is in `docs/gdd/10-art-audio.md`.
+
 What the best open-source game-art and design knowledge says, read for overgrown's 32 px actors, 16 px dual-grid ground and code-drawn pipeline. Every claim below comes from a page or repo I opened during this task (2026-10-12). Where a fetch failed or only a search summary was available, the entry says so. Anything that is my own judgement is marked **(ours)**.
 
 Licence column: only code and instruction text can be copied from, and we copy none of it. We learn techniques and write our own code (CLAUDE.md, "Everything is ours"). Where the code in `tools/art/` closely follows a published algorithm it credits it in a comment; the only one is Oklab (public domain / MIT), used offline to design the colour ramps in `tools/art/palettes/` and not in any generator.

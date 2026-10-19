@@ -29,7 +29,7 @@ game/assets/third_party/  third-party files + CREDITS.md (checked in CI)
 - **Parametric builds:** variants (size, age, mutation, palette) are parameters of a script, not new files.
 - **Determinism:** Blender rebuilds are byte-identical once the spike's non-determinism workarounds are applied; they carry into the build scripts.
 - **Review:** `tools/godot/capture.sh` renders an image of the work under xvfb for PR review. Software rendering runs at about 4 fps, so a capture proves how it looks, not how it performs.
-- **Retired:** the pixel atlas pipeline (`tools/art/`: 32×32 actors, 16×16 tiles, 4 directions, nearest-neighbour WebP atlases). OVR-010 deletes it; it stays in git history.
+- **Retired:** the pixel atlas pipeline (`tools/art/`: 32×32 actors, 16×16 tiles, 4 directions, nearest-neighbour WebP atlases). OVR-010 deleted it; it stays in git history.
 
 ## Paper doll
 

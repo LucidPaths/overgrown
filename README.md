@@ -31,7 +31,7 @@ bash tools/godot/export.sh           # Windows and Linux builds into game/export
 bash tools/godot/capture.sh out.png  # a screenshot of the main scene (xvfb, software rendering)
 ```
 
-The old TypeScript, Pixi and Python code (`sim/`, `client/`, `tools/art/`) is reference only and is deleted by OVR-010. Agents start from [`CLAUDE.md`](CLAUDE.md).
+Agents start from [`CLAUDE.md`](CLAUDE.md).
 
 ## License
 

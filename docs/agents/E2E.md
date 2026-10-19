@@ -19,8 +19,6 @@ The game is a Godot 4 project in `game/`, built into an exe (OQ-031, OQ-032). Th
 5. Check the cross-cutting rules: the same seed gives the same world (the shared fixtures in `contracts/` pass), nothing crashes on restart, and the Godot output has no `SCRIPT ERROR` or `ERROR:` lines.
 6. Tell the orchestrator what Lucid has to test in the exe, with the download link and the SmartScreen note ("More info", then "Run anyway").
 
-`scripts/check-page.mjs` (the headless page check for the old web client) stays only until OVR-010 deletes it. Don't use it for G0 or later milestones.
-
 ## Output
 
 - A report at `docs/e2e/<milestone>.md`: what was tested, evidence for each step (command → result, image path), what failed, and what is left for Lucid's playtest.
