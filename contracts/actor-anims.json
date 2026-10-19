@@ -1,6 +1,0 @@
-{
-  "format": "actor/<species>/<anim>/<dir>/<i>; right frames are pixel mirrors of left frames",
-  "species": ["human", "elf", "dwarf", "orc", "foxfolk", "bearfolk", "rabbitfolk", "birdfolk", "lizardfolk"],
-  "dirs": ["down", "left", "right", "up"],
-  "frames": {"idle": 2, "walk": 4, "attack_blade": 4, "attack_unarmed": 4, "dodge": 4, "hurt": 2, "death": 4}
-}

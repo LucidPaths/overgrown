@@ -1,5 +1,7 @@
 # ART-024 previews: before and after
 
+> History: these previews show the retired pixel-art pipeline and browser build (deleted in OVR-010).
+
 Images for Lucid's review of the art direction pass (`art-024-direction`: `docs/art/RESEARCH.md`, `docs/art/DIRECTION.md`, and the redrawn `tools/art/`). All images are nearest-neighbour upscales (x2 to x4) of frames from the built `core` atlas, or screenshots of the real game (`vite preview`, `?seed=N`, 1280x720 at the game's own 2x). The sheets and scenes are composed by a scratch script outside the repo: the terrain is the real dual-grid tile selection (same masks, precedence and variant hash as `client/src/render/tile-frames.ts`) over a made-up height map, not real worldgen. The "before" images are the atlas on `main` before #30 (476b6b7).
 
 Honest lines first: the cast is a big step up and I would show it; the ground is calm and consistent but the open expanses are still large and flat, and the biome borders in the real game show a visible palette seam (see the beach shot).
