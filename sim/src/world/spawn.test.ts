@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import vectors from "../../../contracts/worldgen-vectors.json";
 import { CHUNK_TILES } from "../constants";
 import { Biome, type BiomeValue } from "./biome";
 import { generateChunk, type ChunkData } from "./chunk-gen";
@@ -84,4 +85,16 @@ describe("findSpawn", () => {
     }
     expect(findSpawn(createChunkStore(42))).toEqual(spawn);
   });
+
+  // Shared with game/tests/test_worldgen.gd. Seeds 34 and 47 are ties in the winning ring, so they pin the ty-before-tx tie-break.
+  it("fixture holds at least 7 spawn vectors (an emptied array would skip the contract spawns)", () => {
+    expect(vectors.spawn.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it.each(vectors.spawn.map((v) => [v.seed, v.x, v.y] as const))(
+    "contract spawn: seed %d is (%d, %d)",
+    (seed, x, y) => {
+      expect(findSpawn(createChunkStore(seed))).toEqual({ x, y });
+    },
+  );
 });

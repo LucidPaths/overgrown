@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import vectors from "../../../contracts/worldgen-vectors.json";
 import { CHUNK_TILES } from "../constants";
 import { deriveSeed } from "../rng";
 import { Biome, type BiomeValue } from "./biome";
@@ -7,28 +8,24 @@ import { generateChunk, isFord, pickTile } from "./chunk-gen";
 import { Tile } from "./tile";
 
 describe("generateChunk", () => {
-  // Digests pinned from the spec's reference implementation (WLD-002): same seed must mean same world, everywhere.
-  // Retuning any constant changes these on purpose; re-pin in the same PR and say so.
-  it.each([
-    [42, 0, 0, 1915587938, 3925879910],
-    [42, -7, -10, 3296536726, 4270543085],
-    [42, -3, 10, 2392050323, 1517910948],
-    [42, -9, 10, 2843203185, 1398303617],
-    [42, 10, -12, 2581766421, 1340117147],
-    [0, -12, -3, 2146707795, 4291061362],
-    [0, 1, 10, 2828726546, 1883677180],
-    [4294967295, -2, 5, 1292694308, 1731315570],
-    [42, -67108864, 67108863, 3000448224, 2729932670],
-    [0, 67108863, -67108864, 689241650, 2220377030],
-  ])("golden digests for seed %d chunk (%d, %d)", (seed, cx, cy, tilesDigest, biomesDigest) => {
-    const chunk = generateChunk(seed, cx, cy);
-    expect(chunk.cx).toBe(cx);
-    expect(chunk.cy).toBe(cy);
-    expect(chunk.tiles.length).toBe(1024);
-    expect(chunk.biomes.length).toBe(1024);
-    expect(deriveSeed(0, ...chunk.tiles)).toBe(tilesDigest);
-    expect(deriveSeed(0, ...chunk.biomes)).toBe(biomesDigest);
+  it("fixture holds at least 10 chunk vectors (an emptied array would skip the golden digests)", () => {
+    expect(vectors.chunks.length).toBeGreaterThanOrEqual(10);
   });
+
+  // Digests live in contracts/worldgen-vectors.json, shared with the GDScript port (game/tests/test_worldgen.gd):
+  // same seed must mean same world, everywhere. Retuning any constant changes them on purpose; re-pin in the same PR.
+  it.each(vectors.chunks.map((c) => [c.seed, c.cx, c.cy, c.tilesDigest, c.biomesDigest] as const))(
+    "golden digests for seed %d chunk (%d, %d)",
+    (seed, cx, cy, tilesDigest, biomesDigest) => {
+      const chunk = generateChunk(seed, cx, cy);
+      expect(chunk.cx).toBe(cx);
+      expect(chunk.cy).toBe(cy);
+      expect(chunk.tiles.length).toBe(1024);
+      expect(chunk.biomes.length).toBe(1024);
+      expect(deriveSeed(0, ...chunk.tiles)).toBe(tilesDigest);
+      expect(deriveSeed(0, ...chunk.biomes)).toBe(biomesDigest);
+    },
+  );
 
   it.each([
     [-1, -1],
