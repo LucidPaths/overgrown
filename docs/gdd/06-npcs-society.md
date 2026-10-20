@@ -23,6 +23,7 @@ In warm zones, NPCs collapse into **settlement statistics** (headcount by job, f
 - Sizes: hamlet → village → town → city. They grow with food, safety and trade, and shrink without them.
 - **Every midsize city or larger has at least one dungeon** (→ DNG).
 - **Settlements can die.** Overrun by monsters, starved or abandoned, they become ruins that monsters move into.
+- **Church and healer NPCs unseal abilities** that a dungeon death sealed (OQ-045), for players and NPCs alike (pillar 1). What unsealing costs is decided in CHR-024.
 - **Migration:** when a settlement thins out, its NPCs pack up and travel to the nearest larger settlement. Migration caravans are slow, valuable and easy prey for monsters and rogues, so escort quests pay well.
 
 ## The tug of war (OQ-044)

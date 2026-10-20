@@ -82,7 +82,13 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 | **Permadeath** (every world) | Character deleted. Everything they carried stays in the grave (the corpse container, → ITM). Reputation, traits and level are gone. The world remembers the character: the grave becomes a landmark and a civilization anchor, and an heirloom, the knowledge codex and lit beacons help the next character (OQ-044, → 04-characters). |
 | **Hardcore** (solo only, an optional host setting) | Character deleted **and the world is deleted** (Minecraft hardcore-style). Can't be opened to friends. |
 
-**Dungeon/rift death (every world):** you're teleported to the entrance and lose XP. The loss **scales with floor depth and can de-level you** (Metin2-style, harsh; amounts tunable). The dungeon's difficulty rises for everyone (→ DNG). Dungeons are the no-permadeath side of the play loop (→ 00-overview).
+**Dungeon/rift death (every world, OQ-045):** you're teleported to the entrance. There is **no XP loss and no de-leveling**. Instead:
+- One of your abilities (or draft picks) is **sealed** until a church or healer NPC unseals it (→ 06-npcs-society). Which ability, and what unsealing costs, is decided in CHR-024.
+- The **world difficulty level** rises for everyone in that world, permanently (→ 02-world). What it scales and by how much is decided in WLD-025.
+- The dungeon's own difficulty tier rises for everyone too, as before (→ 07-dungeons).
+- There is no death limit per character. NPCs follow the same rule (pillar 1).
+
+Dungeons are the no-permadeath side of the play loop (→ 00-overview).
 
 ## Tasks
 
@@ -106,7 +112,7 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 - [ ] **CMB-018** Open PvP: players can damage players; kill attribution for the crime system.
 - [ ] **CMB-019** Death in the overworld is always permadeath: the character is deleted and its inventory stays in the grave; Hardcore (solo-only, an optional host setting) also deletes the world (rewritten: OQ-042 removed the Respawn mode).
 - [ ] **CMB-020** Corpse container (the grave, OQ-044): holds the full inventory, lootable by anyone, persists in the world save.
-- [ ] **CMB-021** Dungeon death: teleport to entrance, depth-scaled XP loss that can de-level, notify the dungeon difficulty system (→ DNG-009).
+- [ ] **CMB-021** Dungeon death: teleport to the entrance, seal one ability, notify the dungeon difficulty system and the world difficulty level (rewritten: OQ-045 replaced the depth-scaled XP loss and de-level) (→ DNG-009, CHR-024, WLD-025).
 - [ ] **CMB-022** Juice settings: screen-shake and flash intensity sliders.
 - [ ] **CMB-023** Hitting flyers during their attack pass (→ ECO-012).
 - [ ] **CMB-024** Optional click-to-move control scheme (settings toggle).

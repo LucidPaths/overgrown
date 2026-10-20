@@ -62,6 +62,8 @@ New in G2:
 
 The meta progression (OQ-044) comes after G2, planned when G2 is done: ITM-019 (grave landmark plus heirloom) · CHR-022 (knowledge codex) · WLD-024 (beacons and waystones that stay lit) · NPC-023 (civilization anchors versus monster takeover, the tug of war). CHR-023 gains the lit-beacon start with WLD-024. Balancing the tug of war comes later still.
 
+Dungeon death (OQ-045) comes later too, because dungeons are not in G2: CMB-021 · DNG-008 · CHR-024 · WLD-025 are planned with the dungeons, when G3 is done.
+
 ## G3 — Co-op
 
 Lucid hosts from the game menu and a friend joins over the internet: the ENet host/join flow, reconnects, and a shared world save. GDD tasks: TEC-006 · TEC-007 · TEC-009 · TEC-010 · UIX-008. The final list is set when G3 is planned.

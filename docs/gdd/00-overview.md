@@ -6,7 +6,7 @@ A real-time hack-and-slash sandbox RPG in a saturated, cozy, painted 3D world, s
 
 It looks lovely, but it isn't safe. A level 2 horned bunny grazes ten meters from a level 40 bear asleep in its den. Leave an area alone long enough and the monsters there grow older, stronger and more numerous until even the villages give up and leave.
 
-The play loop runs between the **frontier** and the dungeons: the overworld is a real-time horde slayer that gets wilder the further you walk from the origin (calm near it, "monster horde nonsense" far out), and every level-up offers a draft of three choices that builds your character (OQ-040, OQ-041, OQ-043). Dying in the overworld is always permadeath and leaves your grave behind, while dungeons are the safer side of the loop: no permadeath, only an XP-loss penalty (OQ-042). The world remembers what your characters did, and the next one benefits. The frontier is a tug of war: graves, lit beacons and settlements push back against the monsters spreading, and the monsters push back where nobody holds the line (OQ-044).
+The play loop runs between the **frontier** and the dungeons: the overworld is a real-time horde slayer that gets wilder the further you walk from the origin (calm near it, "monster horde nonsense" far out), and every level-up offers a draft of three choices that builds your character (OQ-040, OQ-041, OQ-043). Dying in the overworld is always permadeath and leaves your grave behind, while dungeons are the safer side of the loop: no permadeath, but a death there seals one of your abilities and raises the world's difficulty for good (OQ-042, OQ-045). The world remembers what your characters did, and the next one benefits. The frontier is a tug of war: graves, lit beacons and settlements push back against the monsters spreading, and the monsters push back where nobody holds the line (OQ-044).
 
 ## Pillars
 
@@ -26,7 +26,7 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 | Game | Take | Avoid |
 |------|------|-------|
 | Valheim | Seeded worlds, characters that travel between worlds, host-run sessions, corpse runs, stamina combat, zone-split simulation | Rigid biome rings where difficulty equals biome |
-| Metin2 | Real-time hack-and-slash feel, XP loss on death, player shops, karma | Grind for its own sake, pay-to-win |
+| Metin2 | Real-time hack-and-slash feel, player shops, karma | Grind for its own sake, pay-to-win |
 | Minecraft | Infinite chunk worlds, day/night with sleep skipping, share-and-join simplicity | Empty procedural sameness |
 | Risk of Rain | Time as the difficulty clock | Run-only structure |
 | Cube World | Infinite world with RPG loot | Progression that doesn't mean anything (it lost the point of exploring) |
