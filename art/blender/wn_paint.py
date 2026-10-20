@@ -40,12 +40,12 @@ CAPE_GEM_B = 44  # gem centre row in the cape region
 NAVY = (0.1, 0.19, 0.22)
 NAVY_DARK = (0.035, 0.07, 0.095)
 NAVY_HI = (0.24, 0.35, 0.37)
-ORANGE = (0.85, 0.37, 0.11)
-RUST = (0.52, 0.17, 0.06)
-GOLD = (0.93, 0.68, 0.26)
-SCARF = (0.8, 0.6, 0.22)
-SCARF_DARK = (0.46, 0.3, 0.1)
-SCARF_HI = (0.98, 0.84, 0.46)
+ORANGE = (0.74, 0.3, 0.09)
+RUST = (0.44, 0.14, 0.05)
+GOLD = (0.84, 0.58, 0.24)
+SCARF = (0.74, 0.55, 0.2)
+SCARF_DARK = (0.4, 0.26, 0.09)
+SCARF_HI = (0.92, 0.76, 0.42)
 TURQUOISE = (0.2, 0.75, 0.72)
 
 

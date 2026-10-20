@@ -42,7 +42,7 @@ const STRAFE_MAX_DEG := 65.0
 ## (root to tip), max bend from the rest direction (degrees), collision groups.
 const CLOTH := {
 	"robe": {"g": 1.0, "air": 1.6, "damp": 0.06, "stiff": [0.02, 0.012, 0.008], "limit": 70.0, "groups": ["legs", "pelvis"]},
-	"cape": {"g": 1.0, "air": 2.0, "damp": 0.08, "stiff": [0.03, 0.015], "limit": 62.0, "groups": ["arms", "torso"]},
+	"cape": {"g": 1.0, "air": 1.0, "damp": 0.08, "stiff": [0.03, 0.018, 0.012], "limit": 62.0, "groups": ["arms", "torso", "skirt"]},
 	"hair": {"g": 0.35, "air": 3.2, "damp": 0.1, "stiff": [0.04, 0.025, 0.015], "limit": 80.0, "groups": ["head"]},
 	"scarf": {"g": 1.0, "air": 3.4, "damp": 0.05, "stiff": [0.008, 0.006, 0.005, 0.004], "limit": 130.0, "groups": ["back"]},
 }
@@ -308,6 +308,7 @@ func _define_capsules() -> void:
 		["thigh_L", "shin_L", 0.1, "legs"], ["thigh_R", "shin_R", 0.1, "legs"],
 		["shin_L", "foot_L", 0.075, "legs"], ["shin_R", "foot_R", 0.075, "legs"],
 		["hips", "spine", 0.17, "pelvis"],
+		["thigh_L", "shin_L", 0.24, "skirt"], ["thigh_R", "shin_R", 0.24, "skirt"], ["hips", "spine", 0.26, "skirt"],
 		["upper_arm_L", "forearm_L", 0.075, "arms"], ["upper_arm_R", "forearm_R", 0.075, "arms"],
 		["forearm_L", "hand_L", 0.085, "arms"], ["forearm_R", "hand_R", 0.085, "arms"],
 		["spine", "neck", 0.15, "torso"],

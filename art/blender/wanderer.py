@@ -369,7 +369,8 @@ HAIR_CHAINS = [
     (96.0, -6.0, 0.24, 0.05, -0.2),
     (-96.0, -6.0, 0.23, 0.05, -0.2),
 ]
-WIND_DRIFT = Vector((0.22, 0.0, 0.0))  # the rest pose already leans the hair a little to the left (+X)
+WIND_DRIFT = Vector((0.34, 0.0, 0.0))  # the rest pose already leans the hair to the left (+X), downwind
+HAIR_LEN = 1.3  # every lock is this much longer than its table length: the mood board's hair streams
 
 
 def lock_path(az, el, length, rise, wiggle, n=8):
@@ -406,6 +407,7 @@ def resample(path, ts):
 def build_hair_locks(geo, chains):
     for ci, (az, el, ln, wd, rise) in enumerate(HAIR_CHAINS):
         prefix = f"hair_{ci}"
+        ln *= HAIR_LEN
         main, nrm = lock_path(az, el, ln, rise, 0.7 * ci + 0.3)
         chains.append((prefix, "head", resample(main, [0.0, 1 / 3, 2 / 3, 1.0])))
         locks = [(main, nrm, wd)]
@@ -426,21 +428,24 @@ def build_hair_locks(geo, chains):
 
 # ---------------------------------------------------------------- the cape (poncho top)
 CAPE_NI = 72
-CAPE_NJ = 13
+CAPE_NJ = 19
+CAPE_JOINT_ROWS = [6, 10, 14, 18]  # chain joints: 3 bones from s = 1/3 to the hem
 
 
 def cape_raw(th, s):
     sn, cs = math.sin(th), math.cos(th)
     C = Vector((0.118 * sn, -0.104 * cs + 0.006, 1.505))
     Q = Vector((0.33 * sn, -0.22 * cs + 0.01, 1.49))
-    # hem: lowest at the back, a little higher in front, highest over the arms' outer line
-    # a square poncho worn diamond-wise: points hang at the front, back and over the arms
+    # hem: a long poncho (mood-board 01, 09, 12): a long back panel to the knees, the front to mid-thigh, the
+    # sides draped over the arms and ending at the wrists so the hands show below; the front and back points
+    # are a little sharper than the Fourier curve
     c2 = math.cos(2 * th)
-    zh = 1.05 - 0.085 * c2 * c2 * (1.0 if c2 > 0 else 0.75) - 0.04 * max(0.0, -cs) ** 2
-    rr = 1.0 + 0.06 * c2 * c2
-    H = Vector((0.49 * sn * rr, (-0.35 * cs) * rr + 0.015, zh))
+    zh = 0.8 + 0.08 * cs - 0.1 * c2 - 0.03 * max(0.0, cs) ** 8 - 0.04 * max(0.0, -cs) ** 6
+    rr = 1.0 + 0.05 * c2 * c2
+    ry = 0.3 if cs > 0 else 0.34
+    H = Vector((0.53 * sn * rr, (-ry * cs) * rr + 0.015, zh))
     p = C * ((1 - s) ** 2) + Q * (2 * s * (1 - s)) + H * (s * s)
-    fold = 0.034 * s**1.5 * (0.55 * math.sin(9 * th + 0.7) + 0.3 * math.sin(5 * th + 2.1) + 0.15 * math.sin(14 * th))
+    fold = 0.04 * s**1.5 * (0.55 * math.sin(9 * th + 0.7) + 0.3 * math.sin(5 * th + 2.1) + 0.15 * math.sin(14 * th))
     radial = Vector((p.x, p.y, 0.0))
     if radial.length > 1e-6:
         p += radial.normalized() * fold
@@ -455,9 +460,8 @@ def build_cape(geo, chains):
     N = M.grid_normals(P, CAPE_NI, CAPE_NJ, True)
     for k in range(8):
         i = k * CAPE_NI // 8
-        js = [4, 8, 12]
         joints = []
-        for j in js:
+        for j in CAPE_JOINT_ROWS:
             n = N[i][j]
             out = Vector((P[i][j].x, P[i][j].y, 0))
             if n.dot(out) < 0:
@@ -479,18 +483,33 @@ def build_cape(geo, chains):
         k0 = int(math.floor(u)) % 8
         k1 = (k0 + 1) % 8
         a = u - math.floor(u)
-        f = max(0.0, (s - 1 / 3) / (1 / 3))  # joint units from the chain root (s = 1/3)
-        w0 = tent_weights(f, 2, f"cape_{k0}", "chest", 0.0)
-        w1 = tent_weights(f, 2, f"cape_{k1}", "chest", 0.0)
+        nb = len(CAPE_JOINT_ROWS) - 1
+        f = max(0.0, (s - 1 / 3) / ((2 / 3) / nb))  # joint units from the chain root (s = 1/3)
+        w0 = tent_weights(f, nb, f"cape_{k0}", "chest", 0.0)
+        w1 = tent_weights(f, nb, f"cape_{k1}", "chest", 0.0)
         top = blend(({"chest": 1}, 0.75), ({"neck": 1}, 0.25)) if s < 0.12 else {"chest": 1.0}
         return blend((w0, chain_share * (1 - a)), (w1, chain_share * a), ({arm_bone: 1}, arm * 0.8),
                      ({sh_bone: 1}, arm * 0.2 + abs(sn) ** 2 * 0.15 * rest), (top, rest * (1 - abs(sn) ** 2 * 0.15)))
 
+    # v by arc length up from the hem (the longest column spans the whole region), so the hem band keeps one
+    # width around a hem whose length varies from the arms to the back
+    arc = []
+    for i in range(CAPE_NI):
+        acc = [0.0]
+        for j in range(1, CAPE_NJ):
+            acc.append(acc[-1] + (P[i][j] - P[i][j - 1]).length)
+        arc.append(acc)
+    longest = max(a[-1] for a in arc)
+
+    def v_of(c, j):
+        a = arc[c % CAPE_NI]
+        return 1.0 - (a[-1] - a[j]) / longest
+
     def uv_out(c, j):
-        return paint.uv("cape", c / CAPE_NI, j / (CAPE_NJ - 1))
+        return paint.uv("cape", c / CAPE_NI, v_of(c, j))
 
     def uv_in(c, j):
-        return paint.uv("lining", c / CAPE_NI, j / (CAPE_NJ - 1))
+        return paint.uv("lining", c / CAPE_NI, v_of(c, j))
 
     M.add_sheet(geo, P, True, uv_out, uv_in, 0.011, weight, "cape",
                 rim_uv=lambda c, j: paint.uv("cape", c / CAPE_NI, 0.985))
@@ -628,7 +647,7 @@ def build_scarf(geo, chains, cape_P):
         M.add_tube(geo, path, radii, 10, "scarf", lambda k, t, co, wd=wd: wd, "scarf", closed_loop=True,
                    u_scale=1.0, u0=0.0)
     # two tails from the knot at the back-left, hanging over the cape
-    tails = [("scarf_0", 150.0, 0.06, 0.62, 0.046), ("scarf_1", 172.0, 0.05, 0.46, 0.04)]
+    tails = [("scarf_0", 150.0, 0.05, 0.44, 0.046), ("scarf_1", 172.0, 0.04, 0.33, 0.04)]
     for name, az, s0, s1, wd0 in tails:
         th = math.radians(az)
         pts = [cape_point(cape_P, th, lerp(s0, s1, t), 0.03 + 0.012 * t) for t in [k / 8 for k in range(9)]]
@@ -655,7 +674,7 @@ def bake_ao(geo):
             if abs(co.x) > 0.25 and co.z < 1.15:
                 k = 0.9
         elif tag == "robe":
-            k = 0.5 + 0.5 * sstep(1.16, 1.0, co.z)  # under the cape
+            k = 0.5 + 0.5 * sstep(1.05, 0.8, co.z)  # under the cape
             k *= 0.88 + 0.12 * sstep(0.36, 0.6, co.z)
         elif tag == "cape":
             k = 0.75 + 0.25 * sstep(1.47, 1.4, co.z)
