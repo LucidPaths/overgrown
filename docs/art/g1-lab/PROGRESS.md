@@ -154,9 +154,32 @@ stack into one diagonal. Island enlarged (r 11, depth 9), the tree-free glade wi
 ring stands in open grass, metering centre weight lowered (the glyph's glow was darkening the frame) and the
 exposure key raised 0.27 → 0.31.
 
-## Next
-- Final captures (exact plan): play views Grassland `--at -75.5,-95.5`, Forest `--at -20.5,-45.5`, river
-  `--at -165.5,-53.5`; landmark vista `--vista --at -55.5,-70.5 --yaw -90`; readability `--autopilot
-  --capture-tick 206 --at -170.5,-2.5 --yaw -40`; post off/low/high at the river. All `--capture-tick 0`
-  unless noted. Then side-by-sides with mood boards 02, 03, 06, 10, 05 into `final/`.
-- `docs/art/BIBLE.md` (replaces DIRECTION.md as the source of truth), report with GPU costs.
+### Finals (`final/`)
+- Final set: `play-grassland`, `play-forest`, `play-river`, `play-spawn-landmark`, `landmark-vista`
+  (`--vista --at -55.5,-70.5 --yaw -90`), `landmark-play`, `readability-attack` (`--autopilot
+  --capture-tick 206 --at -170.5,-2.5 --yaw -40`), `post-off`, `post-low`, `post-high`, `eye-debug-shot`
+  (`--shot 0,-22,5`, debug camera), the triptych `post-off-low-high`, side-by-sides `side-*-vs-NN`
+  (02, 03, 05, 06, 10, 01) and before/after pairs (`before-after-g0-vs-final`,
+  `before-after-river-l5-vs-final`).
+- **Capture trap:** cloud shadows drift with the shader TIME (wall clock), so two captures of one spot
+  differ by where the clouds are. The river, off and low finals use `--frames 40` so they match; compare
+  quality levels only with matched timing.
+- Last fix in the finals: the island casts no sun shadow (its 22 m shadow put the seed-1 spawn view in
+  murk).
+- `docs/art/BIBLE.md` written (principles, palette values, layer construction, rules for future art,
+  trait → technique map, GPU cost per pass); `DIRECTION.md`'s header points to it.
+- Checks at the end: `test.sh` 55/55, `export.sh` both builds, the CI smoke capture of the Linux export
+  renders, `check-credits.sh` ok.
+
+## Status: done (ART-027 deliverables complete)
+
+## Next (after ART-027; for a future task, not this lab)
+- Measure on Lucid's machine (HUD fps, `--post off|low|high`); first knob if slow: composite LIC taps 5 → 3.
+- Camera (GOD/rig, not changed here): a vista look-raise of ~12–15° would put the eye and the pillar in the
+  vista; terrain between camera and wanderer at some orbit yaws hides the wanderer (no camera collision).
+- Attack arc (character_view, ART-028/GOD): additive and brighter with a dark under-stroke so it reads on gold.
+- Forest: broadleaf crowns still read low-poly up close (leaf cards or a Blender-made crown); forest floor
+  could take dappled gold.
+- The geoglyph draws only for the nearest landmark (one global); two in view would need a second slot.
+- Freeze shader time in capture mode (an `og_time` global from the sim tick) for repeatable captures.
+- Focal outline for more characters (a list of focus points) when NPCs arrive (G2).
