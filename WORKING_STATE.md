@@ -3,13 +3,13 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-20 (≈03:55 UTC), resumed after Lucid's pause
+Last updated: 2026-10-20 (≈04:20 UTC)
 
 ## Current phase
 
 **G0 done except polish; G1 (the look) in progress; G2 replanned around "the frontier".** Godot overhaul: `docs/overhaul/PLAN.md` (#35). **Durable authorization from Lucid:** "just build, merge etc": no per-PR sign-off (critic + Fable gates stay). **Art exception:** nothing art-related merges until Lucid has seen pictures (my promise, 2026-10-19). Lucid dislikes emojis in replies.
 
-Merged so far (newest last): GOD-001 #36, GOD-002 #37, GOD-003 #38, GOD-004 #39, OVR-009 #40, GOD-005 #41, OVR-010 #42, GOD-006 #43, G0 E2E #44 (docs/e2e/G0.md), ops delete-branches workflow #45, GOD-008 #46 (+GOD-007: camera orbit, attack while moving OQ-039, dodge dash), OVR-011 #47 (frontier design OQ-040..044, G2 replanned), OVR-012 #50 (dungeon death, OQ-045), ART-028 #51 (wanderer v1).
+Merged so far (newest last): GOD-001 #36, GOD-002 #37, GOD-003 #38, GOD-004 #39, OVR-009 #40, GOD-005 #41, OVR-010 #42, GOD-006 #43, G0 E2E #44 (docs/e2e/G0.md), ops delete-branches workflow #45, GOD-008 #46 (+GOD-007: camera orbit, attack while moving OQ-039, dodge dash), OVR-011 #47 (frontier design OQ-040..044, G2 replanned), OVR-012 #50 (dungeon death, OQ-045), ART-028 #51 (wanderer v1), GOD-009 #48 (camera looks 45° up, smooth spring arm).
 
 Lucid's playtests:
 - Round 1 (2026-10-19, exe at 6112b6a): wanted right-drag camera orbit, attacks that don't stop movement, a non-shrinking dodge → GOD-008 #46.
@@ -26,8 +26,14 @@ Mechanics: main checkout /home/user/overgrown; worktrees in /home/user/wt/<id>; 
 
 Lucid paused the pipeline at ≈02:20 UTC to save usage and asked to resume at 5:31 German time (03:31 UTC, a one-shot scheduled self-message); resumed then. Lesson: on a pause, stop agents, commit + push every worktree's uncommitted work as a marked WIP commit, record per-PR resume points here; on resume, SendMessage the stopped agents (they keep their transcripts).
 
-- **#48 GOD-009** (camera look-up), branch `god-009-camera-look-up`: round 2 done (orbit pitch −40..65, view 45° above to 60° below the horizon; camera settles to 4° and rises 1.5 m below 23°; continuous hard lift for 0.6/0.3 m clearance; spring arm with line of sight + 0.8 m cushion, eased in 6/s out 2/s; probe |Δk| > 0.5 jumps 11 → 0). Main merged in (wanderer), CLAUDE.md Device-input row updated, ART-028 ticked; this WORKING_STATE rides along. Next: Fable → merge → tick GOD-009 in 01-tech. Playtest questions for Lucid: the wanderer leaves the frame below orbit −10 (the last 30° of drag is all sky), maybe a −30 minimum; mouse aim near the horizon is compressed. Noted: `height_at` can build a chunk synchronously; `screen_to_world`'s doc comment still says "below the horizon".
-- **#49 ART-027 world look** (draft), branch `g1-world-lab`: lab done (two-ramp teal/gold grade, auto exposure, wanderer outline, canopy cut, geoglyph landmark + floating island + pillar, `docs/art/BIBLE.md`). Main merged in (wanderer v1, 58 tests, CI green at 677fe5d). Final captures sent to Lucid 2026-10-20. Critic running → Fable → mark ready, merge → tick ART-027. Lab notes: vista could look 12–15° higher to frame the eye and pillar; attack arc loses contrast on gold; broadleaf crowns low-poly; freeze shader time in captures; `10-art-audio.md` should point to BIBLE.md instead of DIRECTION.md.
+- **#49 ART-027 world look**, branch `g1-world-lab`: lab done; main merged in twice (wanderer #51, camera #48); critic PASS WITH NOTES, fixed: compat renderer falls back to the post-off look, rocks/ruins dither between camera and wanderer (as BIBLE §4 says), foliage test checks prop height (mutation h+4 m fails it). This commit also ticks GOD-009, amends the GOD-009 spec (round-2 numbers, AC2 capture list) and points 10-art-audio at BIBLE.md. Next: Fable → mark ready → merge → tick ART-027 → G1 E2E + Lucid playtest.
+- **G1 follow-ups found by the gates (not yet tasks):**
+  - **Compatibility (OpenGL) renderer renders garbage on the art branch** (main renders fine): one of the new world shaders breaks under GL, even with `--post off`. Matters only on machines without Vulkan/D3D12 (Godot falls back to GL); Lucid's machine is fine. Bisect the shaders (terrain/foliage/sky) with `capture.sh <png> gl_compatibility`.
+  - **Landmark sites ignore terrain**: ~40% of sites (seeds 1–8) land on water, cliff or stone (geoglyph under water, island over the ocean). Needs a render-side site search over loaded chunks; seed 1's is on land.
+  - **Attack arc readability** with the v1 wanderer: a hairline on dark teal at 1280×720 (`--seed 1 --autopilot --capture-tick 206 --at -170.5,-2.5 --yaw -40`); the lab's `final/readability-attack.jpg` predates the wanderer merge. Needs a brighter additive arc with a dark under-stroke (wanderer_view) — a G1 E2E item.
+  - Vista could look 12–15° higher to frame the eye and pillar; broadleaf crowns low-poly up close; freeze shader time in captures; paint_post frees RIDs off the render thread (fine in the default thread model).
+  - Camera (from #48's gate): when the arm collapses to the pivot against a cliff the look can turn up to 11.8° in one tick; over water the camera can sit below the water surface (clearance is against the terrain floor); `local_input.gd`'s `screen_to_world` comment still says "below the horizon"; `height_at` can build a chunk synchronously.
+  - Playtest questions for Lucid: the wanderer leaves the frame below orbit −10 (last ~30° of drag all sky) — maybe a −30 minimum; mouse aim near the horizon is compressed.
 - **Wanderer v1 follow-ups** (from #51's gates): albedo import has mipmaps off while the shader samples mipmaps (possible shimmer); glb import animation fps 30 vs 60 fps keys; rig ≈1.3 ms/frame/character in a debug build (distance LOD before crowds).
 - Next after these: G1 E2E (MILESTONES § G1) + Lucid playtest; then G2 specs (frontier: WLD-007/WLD-023 hordes, CHR-020/021 draft, CMB-019/020 permadeath + grave, CHR-023 new character, CMB-006/027 mana + toggles).
 - Repo housekeeping done: `main` protected, auto-delete head branches on, 3 branches left besides PR branches (main, art-lab, spike-godot).

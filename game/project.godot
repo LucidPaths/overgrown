@@ -21,3 +21,26 @@ common/physics_interpolation=true
 [rendering]
 
 renderer/rendering_method="forward_plus"
+
+[shader_globals]
+
+og_wind={
+"type": "vec4",
+"value": Vector4(0.8, -0.6, 1, 0)
+}
+og_eye_dir={
+"type": "vec3",
+"value": Vector3(0, 0.25, -0.97)
+}
+og_sun_dir={
+"type": "vec3",
+"value": Vector3(-0.5, 0.6, -0.6)
+}
+og_focus={
+"type": "vec3",
+"value": Vector3(0, 0, 0)
+}
+og_landmark={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
+}
