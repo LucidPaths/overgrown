@@ -18,14 +18,15 @@ const POST_NAMES: Array[String] = ["off", "low", "high"]
 const SUN_AZIMUTH_DEG := -38.0
 const SUN_ELEVATION_DEG := 34.0
 const SUN_COLOR := Color(1.0, 0.80, 0.52)
-const SUN_ENERGY := 1.55
-## The cosmic eye hangs low in the north (the default camera looks north), big enough that its iris and
-## nebula ring fill the strip of sky the tilted camera shows, and the water reflects it.
-const EYE_AZIMUTH_DEG := 8.0
-const EYE_ELEVATION_DEG := 17.0
+const SUN_ENERGY := 1.9
+## The cosmic eye hangs in the north (the default camera looks north) at the height the tilted camera's
+## water reflects: look down at a river and the eye looks back up at you. Its nebula ring reaches the strip of
+## sky at the top of the frame.
+const EYE_AZIMUTH_DEG := 4.0
+const EYE_ELEVATION_DEG := 40.0
 ## Shadow fill: teal, from the sky (sRGB).
 const AMBIENT_COLOR := Color(0.28, 0.52, 0.58)
-const AMBIENT_ENERGY := 0.62
+const AMBIENT_ENERGY := 1.0
 ## Wind: base direction (degrees clockwise from north, the way it blows toward), strength, and how far the
 ## direction wanders over time.
 const WIND_TOWARD_DEG := 62.0
@@ -98,6 +99,8 @@ func _setup_environment() -> void:
 	sky_mat.shader = load("res://src/render/shaders/sky.gdshader")
 	var sky := Sky.new()
 	sky.sky_material = sky_mat
+	sky_mat.set_shader_parameter("post_on", post != Post.OFF)
+	sky_mat.set_shader_parameter("below_color", OFF_FOG_COLOR)
 	sky.radiance_size = Sky.RADIANCE_SIZE_32
 	sky.process_mode = Sky.PROCESS_MODE_INCREMENTAL
 	_env.background_mode = Environment.BG_SKY
@@ -142,7 +145,8 @@ func _update(delta: float) -> void:
 		RenderingServer.global_shader_parameter_set("og_focus", _focus.global_position)
 	var wander := deg_to_rad(WIND_WANDER_DEG) * sin(_time * 0.05) + deg_to_rad(WIND_WANDER_DEG) * 0.5 * sin(_time * 0.13 + 1.7)
 	var a := deg_to_rad(WIND_TOWARD_DEG) + wander
-	RenderingServer.global_shader_parameter_set("og_wind", Vector4(sin(a), -cos(a), WIND_STRENGTH, 0.0))
+	var wind := Vector4(sin(a), -cos(a), WIND_STRENGTH, 0.0)
+	RenderingServer.global_shader_parameter_set("og_wind", wind)
 	if _post_effect != null and _env != null:
 		_post_effect.fog_begin = _env.fog_depth_begin
 		_post_effect.fog_end = _env.fog_depth_end
@@ -155,6 +159,7 @@ func _update(delta: float) -> void:
 		_shot_cam.look_at(f, Vector3.UP)
 	if _post_effect != null:
 		_post_effect.time = _time
+		_post_effect.wind = wind
 		_post_effect.eye_dir = dir_from(EYE_AZIMUTH_DEG, EYE_ELEVATION_DEG)
 		var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
 		if cam != null and _focus != null:

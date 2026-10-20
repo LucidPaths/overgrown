@@ -1,25 +1,27 @@
 // overgrown G1 sky: the cosmic eye, nebulae, stars and wind-driven painted clouds (docs/art/BIBLE.md, "Sky").
-// Included by the sky shader and by the water (which reflects it). Needs og_common.gdshaderinc first.
-// Colours are authored in sRGB and returned in linear HDR (the eye's core goes above 1 so it glows).
+// One source for every place the sky appears: the sky shader (sky.gdshader), the water reflection
+// (water.gdshader) and the post stack, which repaints the sky and fogs the distance toward it
+// (post/paint_prep.glsl). Pure functions in the Godot-shading-language / GLSL 450 common subset: every input
+// is a parameter (eye = unit direction to the eye, wind = unit wind direction in world xz, t = seconds).
+// Needs og_noise.gdshaderinc first. Colours are authored in sRGB and returned in linear HDR (the eye's core
+// goes above 1 so it glows).
 
 // The eye: angular radius of the iris (tan of the angle); the nebula ring reaches about 2.6x this.
 const float OG_EYE_R = 0.27;
 
 // The horizon band colour for a horizontal direction: warm gold toward the eye, deep teal away from it.
-// The post fog uses the same formula (post/paint_composite.glsl, horizon_color) so fogged ground meets the
-// sky without a seam.
-vec3 og_horizon(vec3 d) {
+vec3 og_horizon(vec3 d, vec3 eye) {
 	vec2 h = normalize(d.xz + vec2(1e-5, 0.0));
-	vec2 e = normalize(og_eye_dir.xz + vec2(1e-5, 0.0));
+	vec2 e = normalize(eye.xz + vec2(1e-5, 0.0));
 	float toward = dot(h, e) * 0.5 + 0.5;
-	vec3 cool = og_lin(vec3(0.16, 0.36, 0.38));
-	vec3 warm = og_lin(vec3(0.96, 0.66, 0.30));
-	return mix(cool, warm, pow(toward, 2.6));
+	vec3 cool = og_lin(vec3(0.12, 0.27, 0.30));
+	vec3 warm = og_lin(vec3(0.80, 0.60, 0.34));
+	return mix(cool, warm, pow(toward, 6.0));
 }
 
 // The eye: colour (linear HDR) and coverage (0..1) for view direction d.
-vec4 og_eye(vec3 d, float t, int detail) {
-	vec3 ed = og_eye_dir;
+vec4 og_eye(vec3 d, float t, int detail, vec3 eye) {
+	vec3 ed = eye;
 	float c = dot(d, ed);
 	if (c <= 0.05) {
 		return vec4(0.0);
@@ -122,20 +124,22 @@ vec3 og_stars(vec3 d, float t) {
 	return col;
 }
 
-// The sky colour (linear HDR) for unit view direction d. detail 0 is the cheap version (water reflection,
-// radiance), 1 the full one.
-vec3 og_sky(vec3 d, float t, int detail) {
-	float y = d.y;
-	vec3 hor = og_horizon(d);
+// The sky without stars (linear HDR) for unit view direction d. detail 0 is the cheap version (water
+// reflection, radiance), 1 the full one. Below the horizon the sky mirrors itself (d.y -> |d.y|) under a
+// thickening haze: the post fog fades distant ground toward exactly this, so the streaming edge never shows.
+vec3 og_sky_base(vec3 d, float t, int detail, vec3 eye, vec2 wind) {
+	float below = smoothstep(0.0, -0.12, d.y);
+	d.y = abs(d.y);
+	float ya = d.y;
+	vec3 hor = og_horizon(d, eye);
 	vec3 low = og_lin(vec3(0.07, 0.25, 0.30));
 	vec3 high = og_lin(vec3(0.025, 0.07, 0.11));
 	vec3 zen = og_lin(vec3(0.01, 0.025, 0.05));
-	float ya = max(y, 0.0);
 	vec3 col = mix(hor, low, smoothstep(0.0, 0.22, ya));
 	col = mix(col, high, smoothstep(0.15, 0.55, ya));
 	col = mix(col, zen, smoothstep(0.5, 1.0, ya));
 	// The eye's light washes the sky around it.
-	float toward_eye = max(dot(d, og_eye_dir), 0.0);
+	float toward_eye = max(dot(d, eye), 0.0);
 	col += og_lin(vec3(0.95, 0.62, 0.28)) * pow(toward_eye, 10.0) * 0.35 * (1.0 - smoothstep(0.0, 0.5, ya) * 0.4);
 
 	// Big nebula veils: burnt orange and teal, broken, with dark lanes.
@@ -146,25 +150,30 @@ vec3 og_sky(vec3 d, float t, int detail) {
 	vec3 veil_col = mix(og_lin(vec3(0.62, 0.24, 0.09)), og_lin(vec3(0.16, 0.48, 0.46)), smoothstep(0.35, 0.65, nw));
 	col = mix(col, veil_col, veil * 0.55);
 
-	if (y > -0.02) {
-		col += og_stars(d, t) * smoothstep(0.0, 0.2, ya) * (1.0 - veil * 0.6);
-	}
-
-	vec4 eye = og_eye(d, t, detail);
-	col = mix(col, eye.rgb, eye.a);
-	col += eye.rgb * (1.0 - eye.a) * 0.6;
+	vec4 e = og_eye(d, t, detail, eye);
+	col = mix(col, e.rgb, e.a);
+	col += e.rgb * (1.0 - e.a) * 0.6;
 
 	// Painted cloud banks near the horizon, drifting downwind; lit gold on the eye side.
-	vec2 cp = d.xz / (ya + 0.06) * 0.35 + og_wind.xy * t * 0.006;
+	vec2 cp = d.xz / (ya + 0.06) * 0.35 + wind * t * 0.006;
 	float cw = og_fbm(cp * 0.7, 2);
 	float cn = og_fbm(cp + cw * 1.3, detail > 0 ? 5 : 3);
 	float band = 1.0 - smoothstep(0.08, 0.32, ya);
-	float cloud = smoothstep(0.52, 0.66, cn) * band * smoothstep(-0.02, 0.02, y);
+	float cloud = smoothstep(0.52, 0.66, cn) * band;
 	float lit = smoothstep(0.55, 0.85, cn + toward_eye * 0.25);
 	vec3 cloud_col = mix(og_lin(vec3(0.10, 0.22, 0.24)), og_lin(vec3(0.98, 0.70, 0.34)), lit * (0.35 + 0.65 * pow(toward_eye, 2.0)));
 	col = mix(col, cloud_col, cloud * 0.92);
 
-	// Below the horizon the sky is the horizon colour (it only shows past the streaming edge, under fog).
-	col = mix(hor, col, smoothstep(-0.03, 0.0, y));
+	// Haze: the horizon colour thickens toward the horizon and below it.
+	float haze = max(1.0 - smoothstep(0.0, 0.05, ya), below);
+	return mix(col, hor, haze * 0.65 + below * 0.3);
+}
+
+// The full sky: og_sky_base plus the stars above the horizon.
+vec3 og_sky(vec3 d, float t, int detail, vec3 eye, vec2 wind) {
+	vec3 col = og_sky_base(d, t, detail, eye, wind);
+	if (d.y > 0.0) {
+		col += og_stars(d, t) * smoothstep(0.0, 0.2, d.y);
+	}
 	return col;
 }

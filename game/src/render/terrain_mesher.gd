@@ -53,9 +53,8 @@ const TILE_JITTER := 0.025
 ## Extra brightness jitter on stone per STONE_PATCH_TILES square, +- this fraction (plateau variation).
 const STONE_PATCH_JITTER := 0.06
 const STONE_PATCH_TILES := 6.0
-## Water vertex colour (sRGB, alpha = opacity) from shallow to WATER_DEEP_M of depth.
-const WATER_SHALLOW := Color(0.30, 0.72, 0.70, 0.5)
-const WATER_DEEP := Color(0.06, 0.30, 0.38, 0.88)
+## Water vertex colour: r = depth fraction (0 at the shore, 1 at WATER_DEEP_M or deeper); the water shader
+## (water.gdshader) turns it into colour and opacity.
 const WATER_DEEP_M := 3.0
 
 
@@ -68,6 +67,11 @@ static func build(c: OgChunkStore.Chunk) -> Dictionary:
 ## +-1 hash of a world tile (or patch) coordinate, for colour jitter only.
 static func _hash(salt: int, x: int, y: int) -> float:
 	return OgRng.mix_seed_part(OgRng.mix_seed_part(salt, x), y) / 2147483648.0 - 1.0
+
+
+## The ground colour of world tile (tx, ty) (sRGB, alpha = surface kind). Props take it for their roots.
+static func tile_color(tile: int, biome: int, tx: int, ty: int) -> Color:
+	return _tile_color(tile, biome, tx, ty)
 
 
 static func _tile_color(tile: int, biome: int, tx: int, ty: int) -> Color:
@@ -174,7 +178,7 @@ static func _water(c: OgChunkStore.Chunk) -> Array:
 					verts.append(Vector3(corner.x * OgWorld.TILE_M, c.water[ci], corner.y * OgWorld.TILE_M))
 					surface.append(c.water[ci])
 					var depth := clampf((c.water[ci] - c.heights[ci]) / WATER_DEEP_M, 0.0, 1.0)
-					colors.append(WATER_SHALLOW.lerp(WATER_DEEP, depth))
+					colors.append(Color(depth, 0.0, 0.0, 1.0))
 				q.append(vertex_of[ci])
 			indices.resize(indices.size() + 6)
 			_quad(indices, indices.size() - 6, surface, q[0], q[1], q[2], q[3])

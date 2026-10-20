@@ -13,18 +13,20 @@ extends CompositorEffect
 ## Quality: OgWorldLook.Post.LOW (isotropic, smaller paint buffer, no blur) or HIGH.
 
 ## Paint buffer height cap per quality (px). Below the cap the paint runs at the screen resolution.
-const PAINT_HEIGHT_LOW := 540
-const PAINT_HEIGHT_HIGH := 720
+const PAINT_HEIGHT_LOW := 400
+const PAINT_HEIGHT_HIGH := 540
 ## Kuwahara radius in paint px (tunable).
 const RADIUS_LOW := 3.0
-const RADIUS_HIGH := 4.0
+const RADIUS_HIGH := 5.0
 ## Structure tensor smoothing (paint px).
 const TENSOR_SIGMA := 2.0
 ## Brush hair strength and LIC half-length (full-res px at 720p; scaled with the height).
-const STROKE := 0.32
+const STROKE := 0.45
 const STROKE_LEN_PX := 6.0
-const GRADE := 0.85
+const GRADE := 0.8
 const GRAIN := 0.045
+## Unsharp mask on the upsampled paint (0 = soft upscale).
+const SHARPEN := 0.9
 ## Valley mist strength.
 const MIST := 0.85
 ## Focal clarity: radius as a fraction of the screen height, and how much of the sharp render it keeps.
@@ -40,6 +42,8 @@ var fog_begin := 30.0
 var fog_end := 90.0
 var time := 0.0
 var eye_dir := Vector3(0, 0.3, -0.95)
+## (x, z unit direction, strength, 0), as og_wind.
+var wind := Vector4(1, 0, 1, 0)
 ## Focus point in screen uv (0..1), or negative to disable.
 var focus_uv := Vector2(-10, -10)
 
@@ -101,7 +105,7 @@ func _init_rd() -> void:
 	_ok = true
 
 
-const FRAME_BYTES := 16 * 4 * 2 + 16 * 4
+const FRAME_BYTES := 16 * 4 * 2 + 16 * 5
 
 
 func _render_callback(_type: int, render_data: RenderData) -> void:
@@ -134,7 +138,8 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 	data.append_array([fog_begin, fog_end, time, MIST,
 		eye_dir.x, eye_dir.y, eye_dir.z, 0.0,
 		focus_uv.x, focus_uv.y, focus_r, FOCUS_STRENGTH,
-		full.x, full.y, paint.x, paint.y])
+		full.x, full.y, paint.x, paint.y,
+		wind.x, wind.y, wind.z, 0.0])
 	var bytes := data.to_byte_array()
 	_rd.buffer_update(_frame_ubo, 0, bytes.size(), bytes)
 
@@ -158,7 +163,7 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		# 5 composite
 		var stroke := STROKE if quality == 2 else STROKE * 0.6
 		_dispatch("composite", full, [_image(0, color), _sampled(1, depth, _nearest), _sampled(2, tex_paint, _linear),
-			_sampled(3, tex_tensor, _linear), _ubo(4)], PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN]))
+			_sampled(3, tex_tensor, _linear), _ubo(4)], PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN, SHARPEN, 0, 0, 0]))
 
 
 func _ensure_textures(buffers: RenderSceneBuffersRD, paint: Vector2i) -> void:

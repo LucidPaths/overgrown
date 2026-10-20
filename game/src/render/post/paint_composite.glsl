@@ -19,17 +19,21 @@ layout(set = 0, binding = 4, std140) uniform Frame {
 	vec4 eye_dir;
 	vec4 focus; // u, v, radius (fraction of height), strength
 	vec4 sizes; // full w, h, paint w, h
+	vec4 wind; // xy unit wind direction (world xz), z strength
 } frame;
 layout(push_constant, std430) uniform Params {
 	float stroke; // brush-stroke texture strength
 	float stroke_len; // LIC half-length in full-res px
 	float grade; // grading strength 0..1
 	float grain;
+	float sharpen;
+	float pad0;
+	float pad1;
+	float pad2;
 } params;
 
-vec3 lin(vec3 c) {
-	return c * c * (c * 0.305306 + 0.682171) + 0.012523 * c;
-}
+#include "res://src/render/shaders/og_noise.gdshaderinc"
+#include "res://src/render/shaders/og_sky.gdshaderinc"
 
 vec3 to_gamma(vec3 c) {
 	return pow(max(c, vec3(0.0)), vec3(1.0 / 2.2));
@@ -39,38 +43,12 @@ vec3 to_linear(vec3 c) {
 	return pow(max(c, vec3(0.0)), vec3(2.2));
 }
 
-float hash12(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
-float hash13(vec3 p3) {
-	p3 = fract(p3 * 0.1031);
-	p3 += dot(p3, p3.zyx + 31.32);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
 float vnoise3(vec3 p) {
 	vec3 i = floor(p);
 	vec3 f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x), mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
-		mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x), mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
-}
-
-float vnoise2(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash12(i), hash12(i + vec2(1, 0)), f.x), mix(hash12(i + vec2(0, 1)), hash12(i + vec2(1, 1)), f.x), f.y);
-}
-
-vec3 horizon_color(vec3 d) {
-	vec2 h = normalize(d.xz + vec2(1e-5, 0.0));
-	vec2 e = normalize(frame.eye_dir.xz + vec2(1e-5, 0.0));
-	float toward = dot(h, e) * 0.5 + 0.5;
-	return mix(lin(vec3(0.16, 0.36, 0.38)), lin(vec3(0.96, 0.66, 0.30)), pow(toward, 2.6));
+	return mix(mix(mix(og_hash13(i), og_hash13(i + vec3(1, 0, 0)), f.x), mix(og_hash13(i + vec3(0, 1, 0)), og_hash13(i + vec3(1, 1, 0)), f.x), f.y),
+		mix(mix(og_hash13(i + vec3(0, 0, 1)), og_hash13(i + vec3(1, 0, 1)), f.x), mix(og_hash13(i + vec3(0, 1, 1)), og_hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
 
 vec3 tonemap(vec3 c) {
@@ -97,30 +75,27 @@ float hair(vec4 w) {
 	return vnoise3(p) * 0.65 + vnoise3(p * 2.7 + 5.0) * 0.35;
 }
 
-// The sharp scene colour at a pixel, fogged and tonemapped like the paint (for the focal point).
-vec3 sharp_at(ivec2 px, vec4 w, float dist) {
-	vec3 c = imageLoad(color_image, px).rgb;
-	if (w.w > 0.0) {
-		vec3 cam = frame.cam_to_world[3].xyz;
-		float f = clamp((dist - frame.fog.x) / max(frame.fog.y - frame.fog.x, 1.0), 0.0, 1.0);
-		f = f * f * (3.0 - 2.0 * f);
-		c = mix(c, horizon_color(normalize(w.xyz - cam)), f);
-	}
-	return tonemap(c);
+// The sharp scene colour at a pixel, tonemapped like the paint (for the focal point, which sits well inside
+// the fog's clear range).
+vec3 sharp_at(ivec2 px) {
+	return tonemap(imageLoad(color_image, px).rgb);
 }
 
-// Palette grade (sRGB-ish gamma space in and out). A gradient map keyed by luminance, blended with the
-// local colour, plus split toning and a gentle S-curve: one palette over the whole frame, like the paintings.
+// Palette grade (gamma space in and out). A gradient map keyed by luminance, blended with the local colour:
+// one palette over the whole frame, like the paintings. The ramp runs blue-black, deep teal, teal, olive
+// gold, burnt gold, gold, cream (docs/art/BIBLE.md "Palette"); local chroma survives at CHROMA_KEEP so a
+// red flower stays red, but lime and emerald greens fall into the teal-to-gold ramp.
+const float CHROMA_KEEP = 0.55;
+
 vec3 grade(vec3 g, float amount) {
 	float l = dot(g, vec3(0.299, 0.587, 0.114));
-	// The ramp: blue-black, deep teal, teal, olive gold, burnt gold, gold, cream.
-	vec3 c0 = vec3(0.02, 0.035, 0.055);
-	vec3 c1 = vec3(0.05, 0.16, 0.20);
-	vec3 c2 = vec3(0.12, 0.34, 0.35);
-	vec3 c3 = vec3(0.45, 0.47, 0.25);
-	vec3 c4 = vec3(0.80, 0.55, 0.22);
-	vec3 c5 = vec3(0.95, 0.76, 0.36);
-	vec3 c6 = vec3(1.0, 0.94, 0.78);
+	vec3 c0 = vec3(0.015, 0.03, 0.05);
+	vec3 c1 = vec3(0.04, 0.13, 0.17);
+	vec3 c2 = vec3(0.10, 0.28, 0.30);
+	vec3 c3 = vec3(0.40, 0.42, 0.24);
+	vec3 c4 = vec3(0.76, 0.54, 0.24);
+	vec3 c5 = vec3(0.95, 0.76, 0.40);
+	vec3 c6 = vec3(1.0, 0.93, 0.76);
 	vec3 ramp = c0;
 	ramp = mix(ramp, c1, smoothstep(0.0, 0.16, l));
 	ramp = mix(ramp, c2, smoothstep(0.14, 0.34, l));
@@ -128,16 +103,15 @@ vec3 grade(vec3 g, float amount) {
 	ramp = mix(ramp, c4, smoothstep(0.5, 0.68, l));
 	ramp = mix(ramp, c5, smoothstep(0.66, 0.82, l));
 	ramp = mix(ramp, c6, smoothstep(0.84, 1.0, l));
-	// Keep local hue: tint the ramp by the colour's own chroma.
 	vec3 chroma = g - vec3(l);
-	vec3 mapped = ramp + chroma * 0.9;
+	// Greens lose more of their own chroma than warm colours (the ramp supplies teal and gold instead).
+	float greenness = clamp((g.g - max(g.r, g.b)) * 4.0, 0.0, 1.0);
+	vec3 mapped = ramp + chroma * CHROMA_KEEP * (1.0 - 0.5 * greenness);
 	vec3 o = mix(g, mapped, amount);
-	// Saturation lift in the mid tones.
-	float lo = dot(o, vec3(0.299, 0.587, 0.114));
-	o = mix(vec3(lo), o, 1.0 + 0.25 * amount * smoothstep(0.05, 0.4, lo) * (1.0 - smoothstep(0.7, 1.0, lo)));
 	// S-curve: deeper darks, glowing lights.
-	o = mix(o, o * o * (3.0 - 2.0 * o), 0.35 * amount);
-	return clamp(o, 0.0, 1.0);
+	o = clamp(o, 0.0, 1.0);
+	o = mix(o, o * o * (3.0 - 2.0 * o), 0.3 * amount);
+	return o;
 }
 
 void main() {
@@ -148,7 +122,11 @@ void main() {
 	}
 	vec2 uv = (vec2(p) + 0.5) / frame.sizes.xy;
 	vec4 paint = texture(paint_tex, uv);
-	vec3 col = paint.rgb;
+	// Unsharp mask on the upsampled paint: crisp dab edges instead of a soft upscale.
+	vec2 texel = 1.0 / frame.sizes.zw;
+	vec3 blur = (texture(paint_tex, uv + texel * vec2(-0.75, -0.75)).rgb + texture(paint_tex, uv + texel * vec2(0.75, -0.75)).rgb
+		+ texture(paint_tex, uv + texel * vec2(-0.75, 0.75)).rgb + texture(paint_tex, uv + texel * vec2(0.75, 0.75)).rgb) * 0.25;
+	vec3 col = max(paint.rgb + (paint.rgb - blur) * params.sharpen, vec3(0.0));
 	float aniso = paint.a;
 
 	vec4 w0 = world_at(vec2(p) + 0.5);
@@ -184,7 +162,13 @@ void main() {
 	vec2 fd = (uv - frame.focus.xy) * vec2(frame.sizes.x / frame.sizes.y, 1.0);
 	float focal = (1.0 - smoothstep(frame.focus.z * 0.5, frame.focus.z, length(fd))) * frame.focus.w;
 	if (focal > 0.0) {
-		col = mix(col, sharp_at(p, w0, dist), focal);
+		col = mix(col, sharp_at(p), focal);
+	}
+
+	// Stars over the painted sky, at full resolution (the Kuwahara pass would wipe points this small).
+	if (w0.w == 0.0) {
+		vec3 st = og_stars(normalize(w0.xyz), frame.fog.z);
+		col += (vec3(1.0) - exp(-st)) * (1.0 - smoothstep(0.6, 0.9, dot(col, vec3(0.333))));
 	}
 
 	vec3 g2 = to_gamma(col);
@@ -193,7 +177,7 @@ void main() {
 	// Canvas: a fine weave plus paper tooth, fixed to the screen like a real canvas.
 	vec2 fp = vec2(p);
 	float weave = (sin(fp.x * 1.5708) * sin(fp.y * 1.5708)) * 0.5 + 0.5;
-	float tooth = vnoise2(fp * 0.35) * 0.6 + hash12(fp) * 0.4;
+	float tooth = og_vnoise(fp * 0.35) * 0.6 + og_hash12(fp) * 0.4;
 	float canvas = (weave * 0.35 + tooth * 0.65 - 0.5);
 	g2 += canvas * params.grain * (0.6 + 0.4 * (1.0 - dot(g2, vec3(0.333))));
 

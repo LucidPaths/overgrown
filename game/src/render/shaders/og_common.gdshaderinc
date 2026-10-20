@@ -1,5 +1,8 @@
-// overgrown G1 look: shared noise, palette and wind helpers (ART-027, docs/art/BIBLE.md).
+// overgrown G1 look: shared globals, wind and dither helpers (ART-027, docs/art/BIBLE.md).
 // Visual only: nothing here feeds the rules. Every world shader includes this file.
+
+#include "res://src/render/shaders/og_noise.gdshaderinc"
+
 
 // Wind: xy = unit direction in world (x, z), z = strength (0..2), w unused. Set by OgWorldLook.
 global uniform vec4 og_wind;
@@ -9,79 +12,6 @@ global uniform vec3 og_eye_dir;
 global uniform vec3 og_sun_dir;
 // The wanderer's feet point in world metres (foliage between it and the camera thins out).
 global uniform vec3 og_focus;
-
-// sRGB authoring -> linear. The palette in the bible is written in sRGB hex.
-vec3 og_lin(vec3 c) {
-	return c * c * (c * 0.305306 + 0.682171) + 0.012523 * c;
-}
-
-float og_hash12(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
-vec2 og_hash22(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.xx + p3.yz) * p3.zy);
-}
-
-float og_hash13(vec3 p3) {
-	p3 = fract(p3 * 0.1031);
-	p3 += dot(p3, p3.zyx + 31.32);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
-// Value noise in 0..1, smooth (quintic) interpolation.
-float og_vnoise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
-	float a = og_hash12(i);
-	float b = og_hash12(i + vec2(1.0, 0.0));
-	float c = og_hash12(i + vec2(0.0, 1.0));
-	float d = og_hash12(i + vec2(1.0, 1.0));
-	return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-}
-
-// Value noise whose x lattice wraps every `period` cells (for polar coordinates without a seam).
-float og_pnoise(vec2 p, float period) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	vec2 u = f * f * (3.0 - 2.0 * f);
-	float x0 = mod(i.x, period);
-	float x1 = mod(i.x + 1.0, period);
-	float a = og_hash12(vec2(x0, i.y));
-	float b = og_hash12(vec2(x1, i.y));
-	float c = og_hash12(vec2(x0, i.y + 1.0));
-	float d = og_hash12(vec2(x1, i.y + 1.0));
-	return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-}
-
-float og_fbm(vec2 p, int octaves) {
-	float s = 0.0;
-	float a = 0.5;
-	mat2 rot = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8));
-	for (int i = 0; i < octaves; i++) {
-		s += a * og_vnoise(p);
-		p = rot * p * 2.03 + vec2(17.1, 3.7);
-		a *= 0.5;
-	}
-	return s;
-}
-
-float og_pfbm(vec2 p, float period, int octaves) {
-	float s = 0.0;
-	float a = 0.5;
-	for (int i = 0; i < octaves; i++) {
-		s += a * og_pnoise(p, period);
-		p = p * 2.0 + vec2(0.0, 5.3);
-		period *= 2.0;
-		a *= 0.5;
-	}
-	return s;
-}
 
 // Wind as a 3D world vector (y = 0) and its strength.
 vec3 og_wind_vec() {
@@ -101,4 +31,24 @@ float og_cloud_shadow(vec2 xz, float t) {
 	vec2 p = xz * 0.011 - og_wind.xy * t * 0.03;
 	float n = og_fbm(p, 3);
 	return mix(0.38, 1.0, smoothstep(0.38, 0.6, n));
+}
+
+// 4x4 ordered dither threshold in 0..1 for a screen pixel.
+float og_bayer4(vec2 frag) {
+	ivec2 p = ivec2(mod(frag, 4.0));
+	int i = p.x + p.y * 4;
+	int m[16] = int[](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+	return (float(m[i]) + 0.5) / 16.0;
+}
+
+// How much a surface at world point w hides the wanderer from the camera: 1 when it sits on the line from the
+// camera to the wanderer's chest, closer than the wanderer; 0 elsewhere. Foliage dithers itself away by it.
+float og_occluder(vec3 w, vec3 cam) {
+	vec3 f = og_focus + vec3(0.0, 0.9, 0.0);
+	vec3 ab = f - cam;
+	float t = dot(w - cam, ab) / max(dot(ab, ab), 1e-4);
+	float d = length(w - (cam + ab * clamp(t, 0.0, 1.0)));
+	float r0 = 2.0 + 0.12 * length(ab);
+	float near_cam = 1.0 - smoothstep(3.0, 6.0, length(w - cam));
+	return max((1.0 - smoothstep(r0, r0 * 2.0, d)) * (1.0 - smoothstep(0.88, 0.98, t)), near_cam);
 }

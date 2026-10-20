@@ -85,7 +85,7 @@ func _ready() -> void:
 		_sim = null
 		get_tree().quit(2)
 		return
-	_terrain.setup(_sim.store)
+	_terrain.setup(_sim.store, _seed)
 	_you = _sim.add_character(at)
 	_latch = _sim.drive(_you)
 	_sim.you = _you
