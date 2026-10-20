@@ -3,7 +3,7 @@
 ## Claim and furnish
 
 - Houses in settlements can be **bought or rented** (vacant ones, including ones freed when an NPC dies or migrates).
-- Furnish with crafted or bought furniture: bed (respawn point in respawn worlds), storage, crafting stations, decorations.
+- Furnish with crafted or bought furniture: bed (for sleeping, WLD-010; not a respawn point, OQ-042), storage, crafting stations, decorations.
 - A home belongs to the character in that world. If the settlement dies, so does your neighborhood.
 - No free-form base building for now. It may come after MVP (OQ-010).
 
@@ -24,7 +24,7 @@
 
 - [ ] **HSG-001** Buy or rent vacant houses in settlements.
 - [ ] **HSG-002** Furniture placement on a grid inside owned houses.
-- [ ] **HSG-003** Bed as respawn point (respawn worlds).
+- [ ] ~~**HSG-003** Bed as respawn point (respawn worlds).~~ (dropped: the Respawn mode is removed, OQ-042; a bed still skips the night, WLD-010)
 - [ ] **HSG-004** Home storage.
 - [ ] **HSG-005** Camp kit: bedroll, campfire, small storage, basic workbench.
 - [ ] **HSG-006** Camp decay and monster damage to camps.

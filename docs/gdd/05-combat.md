@@ -2,6 +2,13 @@
 
 Real-time hack-and-slash with physical weight, closer to Valheim and Metin2 than to auto-attack survivors games.
 
+## The horde slayer (OQ-040)
+
+The shape of the game is a **hack-and-slash horde slayer**. The player aims, swings and dodges by hand (the controls below), and hordes are the normal encounter far from the origin (OQ-043, → 02-world). The level-up draft and the sheer scale of builds are borrowed from "bullet heaven" games, but the fighting is not automatic.
+
+- **Auto-fire toggles.** Some skills can be toggled on to fire by themselves while they **pay mana** for as long as they are on. Passives can make toggles cheaper or easier, for example through mana regeneration or cost reduction. Which skills can toggle, the mana rates, the key binding and the passives are decided in CMB-027.
+- **Real buildable OP, with pay-offs.** Builds can scale to absurd strength, and strong builds carry trade-offs. The concrete trade-offs are decided in CHR-021 (draft picks) and CMB-027 (toggles).
+
 ## Controls
 
 **Desktop (default):**
@@ -18,7 +25,7 @@ Real-time hack-and-slash with physical weight, closer to Valheim and Metin2 than
 ## Resources
 
 - **Stamina:** spent by basic attacks, heavy attacks, dodges, sprinting, swimming and blocking. Regenerates after a short pause.
-- **Mana:** spent by abilities, focus-bound abilities and magic teachings. Regeneration grows with the mana regen trait.
+- **Mana:** spent by abilities, focus-bound abilities and magic teachings, and paid by auto-fire toggles while they are on (OQ-040; the rate is decided in CMB-027). Regeneration grows with the mana regen trait.
 - **Ability fatigue:** casting abilities back to back stacks a fatigue counter, which adds a stamina cost to further casts until it decays. Spamming is possible but punished.
 - **HP:** healing comes from food, potions, resting and abilities. No passive regen in combat.
 
@@ -28,7 +35,7 @@ Every weapon has a **damage range (min–max)**, a speed, a reach and a family. 
 
 Families: blades (sword, dagger, greatsword) · blunt (mace, hammer, club) · axes · polearms (spear, halberd) · bows · crossbows · throwing weapons · shields (off-hand, bash) · magic foci (staff, wand, tome).
 
-**Magic is just another thing in the world**, not a separate class. Magic foci (staff, wand, tome) are weapons with one difference: **a focus has no basic attack.** Instead, each focus comes with a built-in **focus-bound ability**, shaped by that focus (a fire staff might carry a flame jet, a stone wand a shard burst). It costs mana and no level points, and it grows with the focus mastery trait, the same way a sword's swing grows with blade mastery.
+**Magic is just another thing in the world**, not a separate class. Magic foci (staff, wand, tome) are weapons with one difference: **a focus has no basic attack.** Instead, each focus comes with a built-in **focus-bound ability**, shaped by that focus (a fire staff might carry a flame jet, a stone wand a shard burst). It costs mana, it comes with the focus rather than from the level-up draft, and it grows with the focus mastery trait, the same way a sword's swing grows with blade mastery.
 
 A mage's toolkit has four sources, so no mage depends on Ability Books alone:
 1. the **focus-bound ability** of the equipped focus
@@ -62,21 +69,20 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 
 - **Open PvP everywhere.** Any player can attack any player or NPC.
 - **Consequences are witness-based** (→ NPC crime): a kill only counts as a crime if a living NPC saw it and gets back to a settlement to report it.
-- Corpses are lootable by anyone.
+- Corpses (graves, OQ-044) are lootable by anyone.
 
 ## Death
 
-**Downed first.** At 0 HP a character is **downed** for ~10 s (tunable): they can't act, they can be finished off, and any ally can revive them by channeling next to them. If nobody does, they die. This works in every world mode. In PvP it means looters wait out the 10 s.
+**Downed first.** At 0 HP a character is **downed** for ~10 s (tunable): they can't act, they can be finished off, and any ally can revive them by channeling next to them. If nobody does, they die. This works in every world. In PvP it means looters wait out the 10 s.
 
-**World modes**, picked by the host at world creation:
+**Overworld death is always permadeath** (OQ-042), in every world. The earlier per-world "Respawn" mode (OQ-011) was removed.
 
-| Mode | Overworld death |
-|------|-----------------|
-| **Respawn** | Respawn at your bed or the world spawn. Your corpse keeps your inventory until you recover it (Valheim-style). |
-| **Permadeath** | Character deleted. Everything they carried stays on the corpse in that world. Reputation, traits and level are gone. |
-| **Hardcore** (solo only) | Character deleted **and the world is deleted** (Minecraft hardcore-style). Can't be opened to friends. |
+| Setting | Overworld death |
+|---------|-----------------|
+| **Permadeath** (every world) | Character deleted. Everything they carried stays in the grave (the corpse container, → ITM). Reputation, traits and level are gone. The world remembers the character: the grave becomes a landmark and a civilization anchor, and an heirloom, the knowledge codex and lit beacons help the next character (OQ-044, → 04-characters). |
+| **Hardcore** (solo only, an optional host setting) | Character deleted **and the world is deleted** (Minecraft hardcore-style). Can't be opened to friends. |
 
-**Dungeon/rift death (all modes):** you're teleported to the entrance and lose XP. The loss **scales with floor depth and can de-level you** (Metin2-style, harsh; amounts tunable). The dungeon's difficulty rises for everyone (→ DNG).
+**Dungeon/rift death (every world):** you're teleported to the entrance and lose XP. The loss **scales with floor depth and can de-level you** (Metin2-style, harsh; amounts tunable). The dungeon's difficulty rises for everyone (→ DNG). Dungeons are the no-permadeath side of the play loop (→ 00-overview).
 
 ## Tasks
 
@@ -98,11 +104,12 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 - [ ] **CMB-016** Crits.
 - [ ] **CMB-017** Environmental damage from props (→ WLD-020).
 - [ ] **CMB-018** Open PvP: players can damage players; kill attribution for the crime system.
-- [ ] **CMB-019** Death in the overworld per world mode: respawn, permadeath, hardcore (solo-only, deletes the world).
-- [ ] **CMB-020** Corpse container: holds the full inventory, lootable by anyone, persists in the world save.
+- [ ] **CMB-019** Death in the overworld is always permadeath: the character is deleted and its inventory stays in the grave; Hardcore (solo-only, an optional host setting) also deletes the world (rewritten: OQ-042 removed the Respawn mode).
+- [ ] **CMB-020** Corpse container (the grave, OQ-044): holds the full inventory, lootable by anyone, persists in the world save.
 - [ ] **CMB-021** Dungeon death: teleport to entrance, depth-scaled XP loss that can de-level, notify the dungeon difficulty system (→ DNG-009).
 - [ ] **CMB-022** Juice settings: screen-shake and flash intensity sliders.
 - [ ] **CMB-023** Hitting flyers during their attack pass (→ ECO-012).
 - [ ] **CMB-024** Optional click-to-move control scheme (settings toggle).
 - [ ] **CMB-025** Downed state: ~10 s at 0 HP, ally revive by channeling, death on expiry or finishing blow; corpse is lootable only after death.
 - [ ] **CMB-026** Gamepad input: move, aim, attack, dodge, sprint through the shared HostInput. (OQ-029)
+- [ ] **CMB-027** Auto-fire skill toggles with mana upkeep: a toggled skill fires by itself and pays mana while on; passives can make toggles cheaper or easier (OQ-040) (→ CMB-003, CMB-006).

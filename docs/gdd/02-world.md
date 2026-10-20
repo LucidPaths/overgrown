@@ -30,6 +30,16 @@ creature_level ≈ f(species base, age, local density pressure, distance from wo
 - **Local density and age** add to it: an unchecked area becomes nastier over time (→ ECO).
 - Whether a creature's level is visible depends on the observer's perception trait (→ CHR, UIX).
 
+## The frontier: hordes by distance (OQ-043)
+
+- Monster **density and horde size grow with distance from the world origin.** This adds to the creature-level distribution above (WLD-007): far out you meet more monsters, in bigger groups, as well as higher-level ones.
+- Near the origin it's calm. Far out it's "monster horde nonsense" (Lucid), the normal encounter for the horde-slayer combat (→ CMB).
+- Biomes stay about place, not difficulty (see Biomes). The density and horde-size curves and where "far" begins are decided in WLD-023.
+
+## Beacons and waystones (OQ-044)
+
+A beacon or waystone at the frontier, once lit, **stays lit**: it is part of what the world remembers about the characters who passed through. Lit beacons are civilization anchors that push back against monsters (→ 03-ecology, 06-npcs-society), and a new character can start at one (→ CHR-023). Who lights them, how, and their reach are decided in WLD-024. A lit beacon is a lasting change, so chunk retention (WLD-022) has to keep it.
+
 ## Time
 
 - **One in-game day = 60 real minutes**: 30 min of daylight, 30 min of night.
@@ -95,3 +105,5 @@ These are the main source of "feel", so give them real visual budget.
 - [ ] **WLD-020** Falling-prop physics: trees topple in the direction they were hit and deal damage on impact.
 - [ ] **WLD-021** Frozen rivers in winter (walkable ice that can crack).
 - [ ] **WLD-022** Chunk retention: drop visited chunks that have no lasting changes and regenerate them from the seed on revisit; region sim statistics are kept.
+- [ ] **WLD-023** Horde spawning and density by distance: monster density and horde size grow with distance from the origin, on top of the level distribution (OQ-043) (→ WLD-007, ECO-001, ECO-005).
+- [ ] **WLD-024** Beacons and waystones at the frontier that stay lit once lit, kept across chunk retention (OQ-044) (→ WLD-006, WLD-022).
