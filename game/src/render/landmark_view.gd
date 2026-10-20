@@ -129,6 +129,9 @@ func _build(site_seed: int, ground: float) -> Node3D:
 	var body := MeshInstance3D.new()
 	body.mesh = _island()
 	body.material_override = _terrain_material()
+	# No sun shadow from the island: its 22 m shadow drowned the glyph and the meadow around it in murk (the
+	# spawn view of seed 1 sits in it). A painter lights the landmark, not the hole under it.
+	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	island.add_child(body)
 
 	# Grass on the cap.
