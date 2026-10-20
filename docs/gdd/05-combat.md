@@ -86,7 +86,7 @@ Anything can hurt anything. Falling trees, rolling rocks, thrown props and frien
 - One of your abilities (or draft picks) is **sealed** until a church or healer NPC unseals it (→ 06-npcs-society). Which ability, and what unsealing costs, is decided in CHR-024.
 - The **world difficulty level** rises for everyone in that world, permanently (→ 02-world). What it scales and by how much is decided in WLD-025.
 - The dungeon's own difficulty tier rises for everyone too, as before (→ 07-dungeons).
-- There is no death limit per character. NPCs follow the same rule (pillar 1).
+- There is no death limit per character. NPCs follow the same rule for sealing and unsealing (pillar 1); whether NPC deaths raise the world difficulty is decided in WLD-025.
 
 Dungeons are the no-permadeath side of the play loop (→ 00-overview).
 
