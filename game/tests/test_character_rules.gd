@@ -88,23 +88,48 @@ func test_facing_follows_velocity_holds_when_idle_and_snaps_to_aim_on_actions(t:
 	t.check(_near(d.facing, Vector2(-0.6, 0.8)), "attack aimed at (-3, 4): facing %s, want (-0.6, 0.8)" % d.facing)
 
 
-func test_attack_roots_then_walking_resumes(t: TestContext) -> void:
+## OQ-039: an attack walks at ATTACK_MOVE_FACTOR * walk speed (sprint ignored), facing held to the aim, and stays
+## ATTACK until it ends; the tile speed factor and the walls still apply.
+func test_attack_moves_at_attack_move_factor_facing_held_sprint_ignored(t: TestContext) -> void:
+	var attack_m := OgRules.WALK_SPEED_M_S * OgRules.ATTACK_MOVE_FACTOR / OgRules.TICK_HZ
 	var c := _spawn()
 	var chars: Array[OgCharacter] = [c]
 	c.intent.move = Vector2(1, 0)
 	c.intent.aim = Vector2(0, -10)
-	c.intent.buttons = OgCharacter.ATTACK_PRESS
+	c.intent.buttons = OgCharacter.ATTACK_PRESS | OgCharacter.SPRINT
 	_tick(chars, 0)
 	t.check(c.action == A.ATTACK and c.action_start == 0 and c.facing == Vector2(0, -1), "attack start: action %d start %d facing %s" % [c.action, c.action_start, c.facing])
 	t.check(c.intent.buttons & OgCharacter.ATTACK_PRESS == 0, "the attack press was not consumed")
 	for tick in range(1, OgRules.ATTACK_TICKS):
+		# Strafe south-east, then east: facing stays on the aim whatever the move.
+		c.intent.move = Vector2(1, 1) if tick < 12 else Vector2(1, 0)
+		var before := c.pos
 		_tick(chars, tick)
-		if c.pos != Vector2.ZERO or c.action != A.ATTACK or c.vel != Vector2.ZERO:
-			t.fail("tick %d: pos %s vel %s action %d, want rooted ATTACK" % [tick, c.pos, c.vel, c.action])
+		var step := c.pos - before
+		if c.action != A.ATTACK or c.facing != Vector2(0, -1) or absf(step.length() - attack_m) > EPS or absf(c.vel.length() - attack_m * OgRules.TICK_HZ) > EPS:
+			t.fail("tick %d: action %d facing %s step %s vel %s, want ATTACK facing (0, -1) moving %.6f m/tick" % [tick, c.action, c.facing, step, c.vel, attack_m])
 			return
 	_tick(chars, OgRules.ATTACK_TICKS)
-	t.check(c.action == A.WALK and c.action_start == OgRules.ATTACK_TICKS, "after the attack: action %d start %d, want WALK at %d" % [c.action, c.action_start, OgRules.ATTACK_TICKS])
-	t.check(_near(c.pos, Vector2(OgRules.WALK_SPEED_M_S / OgRules.TICK_HZ, 0)) and c.facing == Vector2(1, 0), "after the attack: pos %s facing %s" % [c.pos, c.facing])
+	t.check(c.action == A.WALK and c.action_start == OgRules.ATTACK_TICKS and c.facing == Vector2(1, 0), "after the attack: action %d start %d facing %s, want WALK east at %d" % [c.action, c.action_start, c.facing, OgRules.ATTACK_TICKS])
+	t.check(absf(c.vel.length() - OgRules.WALK_SPEED_M_S * OgRules.SPRINT_MULTIPLIER) < EPS, "after the attack: vel %s, want the sprint speed back" % c.vel)
+
+	# Shallow water scales the attack walk like any walk.
+	var shallow := Ground.new([], 0, 0, OgTile.SHALLOW_WATER)
+	var start := Vector2(0.5, 0.5)
+	var wade := _spawn(start)
+	wade.intent.move = Vector2(1, 0)
+	wade.intent.buttons = OgCharacter.ATTACK_PRESS
+	_tick([wade] as Array[OgCharacter], 0, shallow)
+	t.check(wade.action == A.ATTACK and _near(wade.pos, start + Vector2(attack_m * OgWalkability.SHALLOW_WATER_SPEED, 0)), "shallow attack tick: action %d pos %s" % [wade.action, wade.pos])
+
+	# A cliff stops the attack walk flush; the action stays ATTACK.
+	var wall := Ground.new(["#", "#", "#", "#", "#", "#"], 2, -3)
+	var w := _spawn(Vector2(0.5, 0.5))
+	w.intent.move = Vector2(1, 0)
+	w.intent.buttons = OgCharacter.ATTACK_PRESS
+	for tick in OgRules.ATTACK_TICKS:
+		_tick([w] as Array[OgCharacter], tick, wall)
+	t.check(w.action == A.ATTACK and w.pos == Vector2(2.0 - OgRules.FOOT_HALF_M, 0.5), "attack into the cliff: action %d at %s, want ATTACK flush at (%.4f, 0.5)" % [w.action, w.pos, 2.0 - OgRules.FOOT_HALF_M])
 
 
 func test_dodge_rolls_along_move_else_aim_else_facing_and_ignores_intent_mid_roll(t: TestContext) -> void:

@@ -7,12 +7,15 @@ extends Node3D
 ##   --at X,Z           start the wanderer at world metres (X, Z) instead of the spawn (the foot box must be on
 ##                      walkable tiles)
 ##   --vista            hold the vista pose
+##   --yaw DEG          start the camera orbit at this yaw (0: looking north; 90: looking west; default 0)
+##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range (default 30)
 ##   --wanderer old|new the wanderer's look: new = the Blender-built model (OgWandererView, default), old = the G0
 ##                      placeholder (OgCharacterView)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
 ##                      save the PNG, quit 0
-##   --capture-tick N   with --capture: freeze the rules after N ticks counted from world ready, then capture
+##   --capture-tick N   with --capture: freeze the rules after N ticks counted from world ready (0: at world
+##                      ready), then capture
 ##   --walk N           after world ready, sprint the wanderer east across N chunks (through the latch, with
 ##                      collision; ends early if blocked) and print the timings, then capture or quit 0
 ## World ready: every chunk within READY_RADIUS of the wanderer's chunk is meshed; its time from scene start
@@ -98,6 +101,7 @@ func _ready() -> void:
 	_rig.target = _view
 	_rig.environment = _env.environment
 	_rig.force_vista = opts["vista"]
+	_rig.set_orbit(opts["yaw"], opts["pitch"])
 	_rig.snap()
 	if opts["autopilot"]:
 		_driver = Driver.AUTOPILOT
@@ -116,10 +120,12 @@ func _blocked_tile_under_box(p: Vector2) -> String:
 	return ""
 
 
-## {seed, at, has_at, vista, autopilot, capture, capture_tick, frames, walk, wanderer}, or {} after printing what is wrong.
+## {seed, at, has_at, vista, yaw, pitch, autopilot, capture, capture_tick, frames, walk, wanderer}, or {} after
+## printing what is wrong.
 func _parse_args(args: PackedStringArray) -> Dictionary:
-	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "autopilot": false, "capture": "",
-		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "wanderer": "new"}
+	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "yaw": 0.0,
+		"pitch": OgCameraRig.PLAY_PITCH_DEG, "autopilot": false, "capture": "", "capture_tick": -1,
+		"frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "wanderer": "new"}
 	var i := 0
 	while i < args.size():
 		var a := args[i]
@@ -141,6 +147,11 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 					return {}
 				o["at"] = Vector2(parts[0].to_float(), parts[1].to_float())
 				o["has_at"] = true
+			"--yaw", "--pitch":
+				if not v.is_valid_float():
+					printerr("%s needs an angle in degrees, got '%s'" % [a, v])
+					return {}
+				o[a.substr(2)] = v.to_float()
 			"--capture":
 				if v == "":
 					printerr("--capture needs a PNG path")
@@ -183,6 +194,10 @@ func _physics_process(_delta: float) -> void:
 	if _you == null or _frozen:
 		return
 	var running := _ready_usec >= 0
+	if running and _script_tick == _freeze_at:
+		# Freezing counts from world ready, so the chunk streaming in sim.step() runs until then (GOD-007).
+		_frozen = true
+		return
 	var f: OgInputLatch.InputFrame
 	match _driver:
 		Driver.AUTOPILOT:
@@ -204,8 +219,6 @@ func _physics_process(_delta: float) -> void:
 		_track_walk()
 	if running:
 		_script_tick += 1
-		if _script_tick == _freeze_at:
-			_frozen = true
 
 
 func _track_walk() -> void:
@@ -235,9 +248,10 @@ func _process(_delta: float) -> void:
 		_ready_usec = now - _scene_start_usec
 		print("WORLD READY %.0f ms after scene start (%d chunks meshed)" % [_ready_usec / 1000.0, _terrain.meshed_count()])
 	var source: String = ["", "autopilot", "walk script"][_driver] if _driver != Driver.DEVICES else _local.device_name()
-	_label.text = "overgrown G0  v%s (%s)\nseed %d   tile (%d, %d) %s, %s\n%s   %.1f m/s   input: %s\nchunks loaded %d   fps %d" % [
+	var orbit := _rig.orbit_deg()
+	_label.text = "overgrown G0  v%s (%s)\nseed %d   tile (%d, %d) %s, %s\n%s   %.1f m/s   input: %s\nchunks loaded %d   fps %d   camera yaw %.0f pitch %.0f" % [
 		GameVersion.VERSION, BuildInfo.COMMIT, _seed, tx, ty, TILE_NAMES[_sim.store.tile_at(tx, ty)], BIOME_NAMES[_sim.store.biome_at(tx, ty)],
-		ACTION_NAMES[_you.action], _speed, source, _sim.store.loaded_count(), Engine.get_frames_per_second()]
+		ACTION_NAMES[_you.action], _speed, source, _sim.store.loaded_count(), Engine.get_frames_per_second(), orbit.x, orbit.y]
 
 
 func _world_ready(p: Vector2) -> bool:
@@ -254,9 +268,7 @@ func _run_script(path: String, frames: int, walk_chunks: int, capture_tick: int)
 	get_tree().create_timer(WATCHDOG_S).timeout.connect(func() -> void:
 		printerr("WATCHDOG TIMEOUT")
 		get_tree().quit(2))
-	if capture_tick >= 0:
-		_freeze_at = capture_tick
-		_frozen = capture_tick == 0
+	_freeze_at = capture_tick
 	while _ready_usec < 0:
 		await get_tree().process_frame
 	_print_timings()
