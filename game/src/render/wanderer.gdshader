@@ -12,8 +12,8 @@ uniform float band_hi = 0.62;
 uniform float band_soft = 0.1;
 uniform float lit_floor = 0.18;
 uniform vec3 rim_color : source_color = vec3(1.0, 0.72, 0.36);
-uniform float rim_strength = 0.8;
-uniform float rim_width = 0.22;
+uniform float rim_strength = 0.7;
+uniform float rim_width = 0.15;
 uniform float face_glow = 2.5;
 
 // Linings and the robe under the cape carry baked occlusion <= 0.6: no rim there (it lit the inner lining).

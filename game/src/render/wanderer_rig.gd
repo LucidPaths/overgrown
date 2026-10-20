@@ -43,7 +43,7 @@ const STRAFE_MAX_DEG := 65.0
 const CLOTH := {
 	"robe": {"g": 1.0, "air": 1.6, "damp": 0.06, "stiff": [0.02, 0.012, 0.008], "limit": 70.0, "groups": ["legs", "pelvis"]},
 	"cape": {"g": 1.0, "air": 1.0, "damp": 0.08, "stiff": [0.03, 0.018, 0.012], "limit": 62.0, "groups": ["arms", "torso", "skirt"]},
-	"hair": {"g": 0.35, "air": 3.2, "damp": 0.1, "stiff": [0.04, 0.025, 0.015], "limit": 80.0, "groups": ["head"]},
+	"hair": {"g": 0.35, "air": 3.2, "damp": 0.1, "stiff": [0.04, 0.025, 0.015], "limit": 65.0, "groups": ["head"]},
 	"scarf": {"g": 1.0, "air": 3.4, "damp": 0.05, "stiff": [0.008, 0.006, 0.005, 0.004], "limit": 130.0, "groups": ["back"]},
 }
 const STEP_S := 1.0 / 60.0

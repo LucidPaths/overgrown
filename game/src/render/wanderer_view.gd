@@ -22,10 +22,10 @@ const TELEPORT_M := 2.0
 const WIND := Vector3(2.2, 0.0, -0.8)
 ## The attack's wind arc: a painted gold crescent swept with the palm.
 const ARC_SPAN_DEG := 120.0
-const ARC_INNER_M := 0.5
-const ARC_OUTER_M := 1.45
+const ARC_INNER_M := 1.2
+const ARC_OUTER_M := 1.65
 const ARC_HEIGHT_M := 1.05
-const ARC_TILT_DEG := 12.0
+const ARC_TILT_DEG := 22.0
 const ARC_SWEEP_DEG := 150.0
 
 var rig := OgWandererRig.new()
@@ -159,11 +159,11 @@ func _build_arc() -> void:
 		var dir := Vector3(-sin(a), 0.0, -cos(a))
 		var alpha := pow(1.0 - u, 1.4)
 		var outer := ARC_OUTER_M * (1.0 - 0.05 * u)
-		var inner := outer - lerpf(ARC_OUTER_M - ARC_INNER_M, 0.04, pow(u, 0.7)) * (0.85 + 0.15 * sin(u * 41.0))
+		var inner := outer - lerpf(ARC_OUTER_M - ARC_INNER_M, 0.03, pow(u, 0.6)) * (0.8 + 0.2 * sin(u * 41.0))
 		verts.append(dir * inner)
 		verts.append(dir * outer)
 		colors.append(Color(0.9, 0.42, 0.1, 0.0))
-		colors.append(Color(1.0, 0.8, 0.42, alpha * 0.9))
+		colors.append(Color(1.0, 0.68, 0.26, alpha * 0.85))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts

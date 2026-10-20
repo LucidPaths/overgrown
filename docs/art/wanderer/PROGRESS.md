@@ -66,3 +66,29 @@ Resume here after a restart. Spec: `docs/specs/ART-028.md`. Branch `g1-wanderer-
   image 03 a dark face that still reads brow and nose.
 - Changed: the void is a deep navy (still faceless), bigger stars (emissive), one more front lock (12 hair chains).
 - Determinism: two clean builds give identical sha256 for the .glb and the .png.
+
+### Restart (2026-10-20)
+- The container restarted after loop 6; the renders were never committed. From here on the deliverable images are
+  committed under `docs/art/wanderer/` as they are made.
+
+### Loop 7: the poncho is a poncho, not a capelet
+- Re-read mood-board 01, 02, 06, 09 and 12 next to a fresh turnaround. Critique: ours was a capelet over a dress.
+  The mood board's poncho is the figure: it falls over the arms to the wrists and, at the back, to the knees,
+  with the robe showing only below it; the back carries a gem and a zigzag (01). The orange was neon next to the
+  burnt orange of the paintings, the scarf lemon instead of ochre, the hair a short cap instead of streaming locks.
+- Changed: the hem is a Fourier curve (back z 0.62, front 0.78, sides 0.90 so the hands show below it, sharper
+  front and back points), 19 rows instead of 13 and 3 bones per cape chain instead of 2 (124 bones); the cape's
+  UV v runs by arc length up from the hem so the band keeps one width around a hem of varying length; scarf tails
+  re-fitted to the longer back; the robe darkens under the cape down to z 0.8. Palette: ORANGE 0.74/0.30/0.09,
+  RUST, GOLD and SCARF all deeper. Hair locks 1.3x longer, more downwind drift.
+- Rig: a `skirt` collision group (thighs 0.24 m, hips 0.26 m) so the long back panel rides over the legs and the
+  robe instead of through them; cape air drag 2.0 -> 1.0 (at 5 m/s the long panel stood out like a board).
+
+### Loop 8: in-game captures (default zoom and 4 m close-up: walk, sprint, dodge, attack while walking, idle)
+- At the default zoom (~80 px) it reads as the mood-board figure from behind: a dark diamond of poncho with an
+  orange band, a gold collar, black hair streaming downwind.
+- Critique: during the attack a whole cape panel turned cream (the rim light fills a flat panel seen edge-on, not
+  just a silhouette edge); the attack arc sat at 0.5..1.45 m, i.e. on top of the now wider poncho, and read as a
+  filled cream disc; one front lock flicked straight up when the attack snapped the facing.
+- Changed: rim width 0.22 -> 0.15, strength 0.8 -> 0.7; arc a thin tilted crescent (1.2..1.65 m, 22 deg roll)
+  in deeper gold; front lock rise 0.75 -> 0.42 and hair bend limit 80 -> 65 deg.
