@@ -23,7 +23,7 @@ const TENSOR_SIGMA := 2.0
 ## Brush hair strength and LIC half-length (full-res px at 720p; scaled with the height).
 const STROKE := 0.6
 const STROKE_LEN_PX := 9.0
-const GRADE := 0.8
+const GRADE := 0.9
 const GRAIN := 0.045
 ## Unsharp mask on the upsampled paint (0 = soft upscale).
 const SHARPEN := 0.9

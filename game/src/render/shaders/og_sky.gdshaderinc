@@ -14,9 +14,13 @@ vec3 og_horizon(vec3 d, vec3 eye) {
 	vec2 h = normalize(d.xz + vec2(1e-5, 0.0));
 	vec2 e = normalize(eye.xz + vec2(1e-5, 0.0));
 	float toward = dot(h, e) * 0.5 + 0.5;
-	vec3 cool = og_lin(vec3(0.12, 0.27, 0.30));
-	vec3 warm = og_lin(vec3(0.80, 0.60, 0.34));
-	return mix(cool, warm, pow(toward, 6.0));
+	// Mostly a deep blue-teal (the far land of 01 and 02 dissolves into blue), with a gold glow only in a
+	// narrow fan under the eye (02's sun at the vanishing point).
+	vec3 cool = og_lin(vec3(0.07, 0.19, 0.24));
+	vec3 mid = og_lin(vec3(0.16, 0.33, 0.33));
+	vec3 warm = og_lin(vec3(0.86, 0.62, 0.30));
+	vec3 c = mix(cool, mid, pow(toward, 4.0));
+	return mix(c, warm, pow(toward, 40.0) * exp(-abs(d.y) * 10.0));
 }
 
 // The eye: colour (linear HDR) and coverage (0..1) for view direction d.
@@ -160,8 +164,13 @@ vec3 og_sky_base(vec3 d, float t, int detail, vec3 eye, vec2 wind) {
 	float cn = og_fbm(cp + cw * 1.3, detail > 0 ? 5 : 3);
 	float band = 1.0 - smoothstep(0.08, 0.32, ya);
 	float cloud = smoothstep(0.52, 0.66, cn) * band;
-	float lit = smoothstep(0.55, 0.85, cn + toward_eye * 0.25);
-	vec3 cloud_col = mix(og_lin(vec3(0.10, 0.22, 0.24)), og_lin(vec3(0.98, 0.70, 0.34)), lit * (0.35 + 0.65 * pow(toward_eye, 2.0)));
+	// Gold only on the eye's side of the sky (02: the clouds catch the light around the vanishing point),
+	// deep teal elsewhere.
+	vec2 dh = normalize(d.xz + vec2(1e-5, 0.0));
+	vec2 eh = normalize(eye.xz + vec2(1e-5, 0.0));
+	float eye_side = pow(dot(dh, eh) * 0.5 + 0.5, 24.0);
+	float lit = smoothstep(0.55, 0.85, cn + eye_side * 0.25);
+	vec3 cloud_col = mix(og_lin(vec3(0.06, 0.16, 0.19)), og_lin(vec3(0.98, 0.70, 0.34)), lit * (0.15 + 0.85 * eye_side));
 	col = mix(col, cloud_col, cloud * 0.92);
 
 	// Haze: the horizon colour thickens toward the horizon and below it.

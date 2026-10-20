@@ -36,7 +36,7 @@ float vnoise3(vec3 p) {
 
 // Exponential filmic curve per channel: deep darks, a long gold shoulder.
 vec3 tonemap(vec3 c) {
-	return vec3(1.0) - exp(-c * 1.35);
+	return vec3(1.0) - exp(-c * 1.6);
 }
 
 // View-space point under full-res pixel px.

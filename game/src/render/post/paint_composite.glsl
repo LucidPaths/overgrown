@@ -54,7 +54,7 @@ float vnoise3(vec3 p) {
 }
 
 vec3 tonemap(vec3 c) {
-	return vec3(1.0) - exp(-c * 1.35);
+	return vec3(1.0) - exp(-c * 1.6);
 }
 
 // World point under a full-res pixel (sky: far along the view ray). w = 1 for geometry, 0 for sky.
@@ -84,37 +84,45 @@ vec3 sharp_at(ivec2 px) {
 	return tonemap(imageLoad(color_image, px).rgb);
 }
 
-// Palette grade (gamma space in and out). A gradient map keyed by luminance, blended with the local colour:
-// one palette over the whole frame, like the paintings. The ramp runs blue-black, deep teal, teal, olive
-// gold, burnt gold, gold, cream (docs/art/BIBLE.md "Palette"); local chroma survives at CHROMA_KEEP so a
-// red flower stays red, but lime and emerald greens fall into the teal-to-gold ramp.
-const float CHROMA_KEEP = 0.55;
+// Palette grade (gamma space in and out). Two gradient maps keyed by luminance, one for the shade and one for
+// the light, chosen per pixel by how warm the pixel already is: the scene is lit by a gold sun and a teal sky,
+// so lit surfaces arrive warm and shaded ones cool, and the grade pushes that split all the way to the
+// mood board's (01, 02, 10): blue-black darks, deep saturated teal shade, and gold only where the light lands
+// (docs/art/BIBLE.md "Palette"). Yellow-greens count as cool (they are what made the G1 lab's first grades
+// olive). Between the two ramps the brush noise decides, stroke by stroke (broken colour, the impressionist
+// answer to mud): a half-lit field is teal strokes and gold strokes side by side, never olive.
+// Local chroma survives at CHROMA_KEEP so reds and oranges stay themselves; greens fall into the ramps.
+const float CHROMA_KEEP = 0.45;
 
-vec3 grade(vec3 g, float amount) {
+vec3 ramp6(float l, vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5) {
+	vec3 r = mix(c0, c1, smoothstep(0.0, 0.2, l));
+	r = mix(r, c2, smoothstep(0.16, 0.38, l));
+	r = mix(r, c3, smoothstep(0.34, 0.58, l));
+	r = mix(r, c4, smoothstep(0.54, 0.8, l));
+	return mix(r, c5, smoothstep(0.78, 1.0, l));
+}
+
+// stroke: the brush noise at this pixel (0..1, 0.5 = none).
+vec3 grade(vec3 g, float amount, float stroke) {
 	float l = dot(g, vec3(0.299, 0.587, 0.114));
-	vec3 c0 = vec3(0.015, 0.03, 0.05);
-	vec3 c1 = vec3(0.04, 0.13, 0.17);
-	vec3 c2 = vec3(0.10, 0.28, 0.30);
-	vec3 c3 = vec3(0.40, 0.42, 0.24);
-	vec3 c4 = vec3(0.76, 0.54, 0.24);
-	vec3 c5 = vec3(0.95, 0.76, 0.40);
-	vec3 c6 = vec3(1.0, 0.93, 0.76);
-	vec3 ramp = c0;
-	ramp = mix(ramp, c1, smoothstep(0.0, 0.16, l));
-	ramp = mix(ramp, c2, smoothstep(0.14, 0.34, l));
-	ramp = mix(ramp, c3, smoothstep(0.32, 0.52, l));
-	ramp = mix(ramp, c4, smoothstep(0.5, 0.68, l));
-	ramp = mix(ramp, c5, smoothstep(0.66, 0.82, l));
-	ramp = mix(ramp, c6, smoothstep(0.84, 1.0, l));
+	// Tone: a toe that sinks the darks (the paintings' darks are near black), lights kept.
+	float lt = mix(l, l * l * (1.6 - 0.6 * l) * 1.08, 0.45);
+	lt = mix(lt, l, smoothstep(0.55, 0.95, l));
+	vec3 shade = ramp6(lt, vec3(0.006, 0.014, 0.03), vec3(0.015, 0.065, 0.09), vec3(0.03, 0.18, 0.20),
+		vec3(0.11, 0.35, 0.31), vec3(0.40, 0.60, 0.46), vec3(0.86, 0.92, 0.80));
+	vec3 light = ramp6(lt, vec3(0.01, 0.016, 0.03), vec3(0.04, 0.09, 0.09), vec3(0.18, 0.24, 0.14),
+		vec3(0.64, 0.44, 0.17), vec3(0.92, 0.66, 0.30), vec3(1.0, 0.90, 0.68));
+	// Warmth: red over green and blue (gold, orange, burnt earth). Bright pixels go gold unless clearly blue.
+	float hue_w = smoothstep(0.05, 0.25, g.r - 0.85 * g.g - 0.15 * g.b);
+	float blue = smoothstep(0.0, 0.1, g.b - g.r);
+	float w = max(hue_w, smoothstep(0.5, 0.85, l) * (1.0 - blue)) * smoothstep(0.06, 0.25, l);
+	// Broken colour: the stroke noise pushes each stroke to one side.
+	w = smoothstep(0.1, 0.9, w + (stroke - 0.5) * 1.4 * w * (1.0 - w) * 4.0);
+	vec3 ramp = mix(shade, light, w);
 	vec3 chroma = g - vec3(l);
-	// Greens lose more of their own chroma than warm colours (the ramp supplies teal and gold instead).
-	float greenness = clamp((g.g - max(g.r, g.b)) * 4.0, 0.0, 1.0);
-	vec3 mapped = ramp + chroma * CHROMA_KEEP * (1.0 - 0.5 * greenness);
-	vec3 o = mix(g, mapped, amount);
-	// S-curve: deeper darks, glowing lights.
-	o = clamp(o, 0.0, 1.0);
-	o = mix(o, o * o * (3.0 - 2.0 * o), 0.3 * amount);
-	return o;
+	float greenness = clamp((g.g - max(g.r, g.b)) * 5.0, 0.0, 1.0);
+	vec3 mapped = ramp + chroma * CHROMA_KEEP * (1.0 - 0.6 * greenness);
+	return clamp(mix(g, mapped, amount), 0.0, 1.0);
 }
 
 void main() {
@@ -142,6 +150,7 @@ void main() {
 	vec2 v = vec2(lambda1 - g.x, -g.y);
 	vec2 sdir = length(v) > 1e-6 ? normalize(v) : vec2(0.70710678, 0.70710678);
 	// Brush hairs: average the hair noise along the stroke (LIC). Far geometry gets shorter strokes.
+	float lic = 0.5;
 	if (params.stroke > 0.0) {
 		float len = params.stroke_len;
 		float acc = 0.0;
@@ -153,7 +162,7 @@ void main() {
 			acc += hair(world_at(q)) * wt;
 			wsum += wt;
 		}
-		float lic = acc / wsum;
+		lic = acc / wsum;
 		// Impasto: strokes show most in the lights (thick paint) and along strong edges.
 		float lum = dot(col, vec3(0.299, 0.587, 0.114));
 		float k = params.stroke * (0.55 + 0.45 * smoothstep(0.1, 0.6, lum)) * (0.7 + 0.6 * aniso);
@@ -177,7 +186,7 @@ void main() {
 	}
 
 	vec3 g2 = to_gamma(col);
-	g2 = grade(g2, params.grade);
+	g2 = grade(g2, params.grade, lic);
 
 	// Canvas: a fine weave plus paper tooth, fixed to the screen like a real canvas.
 	vec2 fp = vec2(p);

@@ -31,7 +31,7 @@ const KIND_WALL := 0.0
 ## The G1 ground palette (sRGB; docs/art/BIBLE.md "Palette"): olive-gold grass, burnt-sienna earth, cool
 ## violet stone. Tile colour times the biome tint; alpha is the surface kind.
 const TILE_COLORS := {
-	OgTile.GRASS: Color(0.42, 0.50, 0.21, KIND_GRASS),
+	OgTile.GRASS: Color(0.32, 0.47, 0.26, KIND_GRASS),
 	OgTile.DIRT: Color(0.50, 0.32, 0.17, KIND_DIRT),
 	OgTile.SAND: Color(0.80, 0.64, 0.40, KIND_SAND),
 	OgTile.STONE: Color(0.42, 0.42, 0.47, KIND_STONE),
@@ -42,7 +42,7 @@ const TILE_COLORS := {
 }
 ## Biome tints (alpha 1 keeps the kind): Grassland warm gold, Forest deep teal moss, River lush.
 const BIOME_TINTS := {
-	OgBiome.GRASSLAND: Color(1.08, 1.02, 0.82),
+	OgBiome.GRASSLAND: Color(1.04, 1.0, 0.88),
 	OgBiome.FOREST: Color(0.50, 0.78, 0.80),
 	OgBiome.RIVER: Color(0.80, 1.00, 0.86),
 	OgBiome.MOUNTAIN: Color(0.98, 0.97, 1.02),

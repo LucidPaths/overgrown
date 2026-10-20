@@ -38,8 +38,8 @@ static func material(kind: int) -> Material:
 			# 06, 09): [dark, light, flower amount, sway].
 			var specs := {
 				OgFoliage.KIND_PINE: [Color(0.03, 0.09, 0.09), Color(0.13, 0.27, 0.19), 0.0, 0.03],
-				OgFoliage.KIND_TREE: [Color(0.07, 0.15, 0.11), Color(0.36, 0.40, 0.18), 0.0, 0.04],
-				OgFoliage.KIND_BUSH: [Color(0.08, 0.17, 0.11), Color(0.34, 0.38, 0.17), 0.55, 0.06],
+				OgFoliage.KIND_TREE: [Color(0.05, 0.13, 0.12), Color(0.26, 0.38, 0.22), 0.0, 0.04],
+				OgFoliage.KIND_BUSH: [Color(0.06, 0.15, 0.12), Color(0.28, 0.36, 0.20), 0.55, 0.06],
 			}
 			m.shader = preload("res://src/render/shaders/foliage.gdshader")
 			m.set_shader_parameter("leaf_dark", specs[kind][0])

@@ -30,7 +30,7 @@ float og_gust(vec2 xz, float t) {
 float og_cloud_shadow(vec2 xz, float t) {
 	vec2 p = xz * 0.011 - og_wind.xy * t * 0.03;
 	float n = og_fbm(p, 3);
-	return mix(0.38, 1.0, smoothstep(0.38, 0.6, n));
+	return mix(0.32, 1.0, smoothstep(0.44, 0.62, n));
 }
 
 // 4x4 ordered dither threshold in 0..1 for a screen pixel.
