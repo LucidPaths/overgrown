@@ -40,3 +40,7 @@ og_focus={
 "type": "vec3",
 "value": Vector3(0, 0, 0)
 }
+og_landmark={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
+}

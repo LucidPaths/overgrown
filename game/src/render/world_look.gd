@@ -26,7 +26,7 @@ const EYE_AZIMUTH_DEG := 4.0
 const EYE_ELEVATION_DEG := 40.0
 ## Shadow fill: teal, from the sky (sRGB).
 const AMBIENT_COLOR := Color(0.28, 0.52, 0.58)
-const AMBIENT_ENERGY := 1.0
+const AMBIENT_ENERGY := 1.7
 ## Wind: base direction (degrees clockwise from north, the way it blows toward), strength, and how far the
 ## direction wanders over time.
 const WIND_TOWARD_DEG := 62.0
@@ -161,10 +161,11 @@ func _update(delta: float) -> void:
 		var f := _focus.global_position + Vector3(0, 1.0, 0)
 		_shot_cam.global_position = f - fwd * _shot.z
 		_shot_cam.look_at(f, Vector3.UP)
+	var b := _landmarks.nearest(_focus.global_position) if _landmarks != null and _focus != null else {}
+	RenderingServer.global_shader_parameter_set("og_landmark", Vector4.ZERO if b.is_empty() else Vector4(b["glyph"].x, b["glyph"].y, b["glyph"].z, 0.0))
 	if _post_effect != null:
 		_post_effect.time = _time
 		_post_effect.wind = wind
-		var b := _landmarks.nearest_beam(_focus.global_position) if _landmarks != null and _focus != null else {}
 		_post_effect.beam_radius = 0.0 if b.is_empty() else b["radius"]
 		if not b.is_empty():
 			_post_effect.beam_origin = b["origin"]

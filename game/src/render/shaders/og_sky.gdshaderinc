@@ -14,10 +14,11 @@ vec3 og_horizon(vec3 d, vec3 eye) {
 	vec2 h = normalize(d.xz + vec2(1e-5, 0.0));
 	vec2 e = normalize(eye.xz + vec2(1e-5, 0.0));
 	float toward = dot(h, e) * 0.5 + 0.5;
-	// Mostly a deep blue-teal (the far land of 01 and 02 dissolves into blue), with a gold glow only in a
-	// narrow fan under the eye (02's sun at the vanishing point).
-	vec3 cool = og_lin(vec3(0.07, 0.19, 0.24));
-	vec3 mid = og_lin(vec3(0.16, 0.33, 0.33));
+	// Mostly a misty blue-teal, lighter than the land (aerial perspective: the far land of 02 and 03
+	// dissolves into pale blue), with a gold glow only in a narrow fan under the eye (02's sun at the
+	// vanishing point).
+	vec3 cool = og_lin(vec3(0.20, 0.36, 0.43));
+	vec3 mid = og_lin(vec3(0.30, 0.46, 0.47));
 	vec3 warm = og_lin(vec3(0.86, 0.62, 0.30));
 	vec3 c = mix(cool, mid, pow(toward, 4.0));
 	return mix(c, warm, pow(toward, 40.0) * exp(-abs(d.y) * 10.0));

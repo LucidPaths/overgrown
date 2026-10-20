@@ -2,24 +2,32 @@ class_name OgLandmarkView
 extends Node3D
 ## Draws the seeded landmarks (OgLandmark) as their chunks stream in: a floating island of strata rock with
 ## a grass cap, a ring of rune-carved ruins and a few trees on top, vines and a waterfall spilling off the rim
-## into mist, debris orbiting it, a pillar of gold light running from the island toward the cosmic eye, and a
-## rune circle glowing on the ground beneath (a Decal: the ground mesh and the rules stay untouched).
+## into mist, debris orbiting it, a pillar of gold light running from the island toward the cosmic eye; on the
+## ground beneath, the eye's geoglyph (drawn by the terrain shader from the og_landmark global, see
+## og_landmark.gdshaderinc) inside a ring of rune-carved standing stones. Sized for the vista camera: from
+## the geoglyph the whole island sits in the vista frame with the pillar leaving its top edge.
+## The stones have no collision (like trees, G1): the rules never learn the landmark exists.
 ## Mood boards 04 (layered worlds), 05 (the pillar of light), 08 and 10 (floating, overgrown ruins), 12
 ## (glowing glyphs). Reads the store; never writes it.
 
-const ISLAND_R := 10.0
-const ISLAND_DEPTH := 11.0
+const ISLAND_R := 8.5
+const ISLAND_DEPTH := 8.0
+## The geoglyph's radius on the ground and the standing stones around it (metres; tunable).
+const GLYPH_R := 17.0
+const STONES := 11
 const PILLAR_LEN := 420.0
 const BOB_M := 0.5
 const BOB_RATE := 0.35
 const DEBRIS := 9
 
 static var _island_mesh: ArrayMesh
-static var _rune_tex: ImageTexture
+static var _ruin_mat: ShaderMaterial
 
 var _store: OgChunkStore
 var _seed := 0
 var _sites := {} # Vector2i chunk -> Node3D
+## Sites whose chunk is loaded but whose stone ring waits for the chunks under it (Vector2i -> Dictionary).
+var _pending_stones := {}
 var _time := 0.0
 ## With the post stack on, the post draws the pillar as a volume (OgPaintPost); the mesh pillar is for post off.
 var mesh_pillar := true
@@ -37,6 +45,7 @@ func setup(store: OgChunkStore, seed: int) -> void:
 
 
 func _on_chunk_loaded(cx: int, cy: int) -> void:
+	_place_pending_stones()
 	var s := OgLandmark.site_in_chunk(_seed, cx, cy)
 	if s.is_empty():
 		return
@@ -46,27 +55,49 @@ func _on_chunk_loaded(cx: int, cy: int) -> void:
 	node.position = Vector3(p.x, 0.0, p.y)
 	node.name = "Landmark_%d_%d" % [cx, cy]
 	add_child(node)
-	_sites[Vector2i(cx, cy)] = node
+	var key := Vector2i(cx, cy)
+	_sites[key] = node
+	_pending_stones[key] = s
+	_place_pending_stones()
 	print("LANDMARK at (%.1f, %.1f) m, ground %.1f m" % [p.x, p.y, ground])
 
 
 func _on_chunk_unloaded(cx: int, cy: int) -> void:
 	var key := Vector2i(cx, cy)
+	_pending_stones.erase(key)
 	if _sites.has(key):
 		_sites[key].queue_free()
 		_sites.erase(key)
 
 
-## The pillar nearest to `from` (world): {origin, dir, length, radius}, or {} when no landmark is loaded.
-func nearest_beam(from: Vector3) -> Dictionary:
+## Raises the stone ring of every pending site whose ground is all loaded (height_at on a chunk that is not
+## loaded would generate it on the main thread).
+func _place_pending_stones() -> void:
+	for key: Vector2i in _pending_stones.keys():
+		var s: Dictionary = _pending_stones[key]
+		var p: Vector2 = s["pos"]
+		var reach := GLYPH_R + 4.0
+		var ready := true
+		for cy in range(OgChunkStore.chunk_of(p.y - reach), OgChunkStore.chunk_of(p.y + reach) + 1):
+			for cx in range(OgChunkStore.chunk_of(p.x - reach), OgChunkStore.chunk_of(p.x + reach) + 1):
+				ready = ready and _store.is_loaded(cx, cy)
+		if ready:
+			_pending_stones.erase(key)
+			_sites[key].add_child(_stones(s["seed"], p))
+
+
+## The landmark nearest to `from` (world): {origin, dir, length, radius} of its pillar and {glyph: Vector3(x,
+## z, radius)} of its geoglyph, or {} when no landmark is loaded.
+func nearest(from: Vector3) -> Dictionary:
 	var best := {}
 	var best_d := INF
 	for node: Node3D in _sites.values():
 		var beam: Node3D = node.get_node("Beam")
-		var d := beam.global_position.distance_to(from)
+		var d := Vector2(node.global_position.x - from.x, node.global_position.z - from.z).length()
 		if d < best_d:
 			best_d = d
-			best = {"origin": beam.global_position, "dir": beam.global_basis.y.normalized(), "length": PILLAR_LEN, "radius": 1.6}
+			best = {"origin": beam.global_position, "dir": beam.global_basis.y.normalized(), "length": PILLAR_LEN, "radius": 1.6,
+				"glyph": Vector3(node.global_position.x, node.global_position.z, GLYPH_R)}
 	return best
 
 
@@ -119,7 +150,7 @@ func _build(site_seed: int, ground: float) -> Node3D:
 	for i in 6:
 		var a := rng.next_float() * TAU
 		var r := ISLAND_R * (0.62 + rng.next_float() * 0.25)
-		var h := 4.0 + rng.next_float() * 4.0
+		var h := 3.0 + rng.next_float() * 2.5
 		var co := cos(a)
 		var sn := sin(a)
 		var arr := [co * h, 0, sn * h, cos(a) * r, 0, h, 0, _cap_height(r), -sn * h, 0, co * h, sin(a) * r, 0.4, 0.5, 0.2, rng.next_float()]
@@ -131,18 +162,17 @@ func _build(site_seed: int, ground: float) -> Node3D:
 	island.add_child(_multi(OgFoliage.KIND_TREE, trees))
 
 	# The ruin ring: rune-carved pillars, some broken, lintels across the tallest pairs, and a shrine.
-	var ruin_mat := ShaderMaterial.new()
-	ruin_mat.shader = preload("res://src/render/shaders/ruin.gdshader")
+	var ruin_mat := _ruin()
 	const PILLARS := 8
 	var heights: Array[float] = []
 	for i in PILLARS:
-		heights.append(4.0 + rng.next_float() * 3.0 if rng.next_float() < 0.7 else 1.2 + rng.next_float() * 1.6)
+		heights.append(3.0 + rng.next_float() * 2.0 if rng.next_float() < 0.7 else 1.0 + rng.next_float() * 1.2)
 	for i in PILLARS:
 		var a := i / float(PILLARS) * TAU
 		var r := ISLAND_R * 0.45
 		var col := CylinderMesh.new()
-		col.top_radius = 0.42
-		col.bottom_radius = 0.5
+		col.top_radius = 0.34
+		col.bottom_radius = 0.42
 		col.height = heights[i]
 		col.radial_segments = 8
 		col.rings = 1
@@ -165,8 +195,8 @@ func _build(site_seed: int, ground: float) -> Node3D:
 			island.add_child(l)
 	var shrine := CylinderMesh.new()
 	shrine.top_radius = 0.0
-	shrine.bottom_radius = 1.6
-	shrine.height = 3.2
+	shrine.bottom_radius = 1.2
+	shrine.height = 2.6
 	shrine.radial_segments = 4
 	var sh := MeshInstance3D.new()
 	sh.mesh = shrine
@@ -178,14 +208,14 @@ func _build(site_seed: int, ground: float) -> Node3D:
 	island.add_child(_vines(rng))
 	var fall := MeshInstance3D.new()
 	var fall_mesh := QuadMesh.new()
-	fall_mesh.size = Vector2(2.6, 22.0)
+	fall_mesh.size = Vector2(2.2, 17.0)
 	fall.mesh = fall_mesh
 	var fall_mat := ShaderMaterial.new()
 	fall_mat.shader = preload("res://src/render/shaders/waterfall.gdshader")
 	fall.material_override = fall_mat
 	fall.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var fa := rng.next_float() * TAU
-	fall.position = Vector3(cos(fa) * (ISLAND_R + 0.4), 0.3 - 11.0, sin(fa) * (ISLAND_R + 0.4))
+	fall.position = Vector3(cos(fa) * (ISLAND_R + 0.4), 0.3 - 8.5, sin(fa) * (ISLAND_R + 0.4))
 	fall.rotation.y = -fa + PI * 0.5
 	island.add_child(fall)
 
@@ -231,20 +261,23 @@ func _build(site_seed: int, ground: float) -> Node3D:
 	pillar.visible = mesh_pillar
 	root.add_child(beam)
 
-	# The rune circle on the ground below.
-	var decal := Decal.new()
-	decal.size = Vector3(22, 12, 22)
-	decal.position = Vector3(0, ground, 0)
-	decal.texture_albedo = _runes()
-	decal.texture_emission = _runes()
-	decal.emission_energy = 0.9
-	decal.modulate = Color(1.0, 0.78, 0.42)
-	decal.albedo_mix = 0.35
-	# Ground only: props sit on visual layer 2 (OgTerrainView.PROP_LAYER) so the runes don't paint them.
-	decal.cull_mask = 1
-	decal.upper_fade = 0.2
-	decal.lower_fade = 0.2
-	root.add_child(decal)
+	# Gold light from the geoglyph and the pillar's foot: the landmark lights its own island, stones and the
+	# wanderer (mood board 05: the pillar lights the scene around it). No shadows: two clustered lights.
+	var glyph_light := OmniLight3D.new()
+	glyph_light.light_color = Color(1.0, 0.68, 0.32)
+	glyph_light.light_energy = 4.0
+	glyph_light.omni_range = GLYPH_R + 6.0
+	glyph_light.omni_attenuation = 1.4
+	glyph_light.position = Vector3(0, ground + 3.0, 0)
+	root.add_child(glyph_light)
+	var top_light := OmniLight3D.new()
+	top_light.light_color = Color(1.0, 0.74, 0.40)
+	top_light.light_energy = 3.0
+	top_light.omni_range = ISLAND_R * 1.8
+	top_light.omni_attenuation = 1.2
+	top_light.position = Vector3(0, -1.0, 0)
+	beam.add_child(top_light)
+
 	return root
 
 
@@ -272,6 +305,7 @@ static func _terrain_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = preload("res://src/render/shaders/terrain.gdshader")
 	m.set_shader_parameter("fade_occluders", true)
+	m.set_shader_parameter("geoglyph", false)
 	return m
 
 
@@ -297,7 +331,7 @@ static func _island() -> ArrayMesh:
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
-	var grass := Color(0.40, 0.49, 0.21, OgTerrainMesher.KIND_GRASS)
+	var grass := Color(0.52, 0.50, 0.22, OgTerrainMesher.KIND_GRASS)
 	var rock := OgTerrainMesher.ROCK
 	# Cap: fan rings from the centre to the rim (two rings).
 	var centre := Vector3(0, _cap_height(0.0), 0)
@@ -386,44 +420,43 @@ func _vines(rng: OgRng) -> MeshInstance3D:
 	return m
 
 
-## The rune circle texture (white on transparent; the decal tints it gold): rings, ticks and glyph cells,
-## drawn once in code.
-static func _runes() -> ImageTexture:
-	if _rune_tex != null:
-		return _rune_tex
-	const S := 256
-	var img := Image.create(S, S, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var rng := OgRng.new(0x2C0DE)
-	var glyph := PackedFloat32Array()
-	for i in 64 * 3:
-		glyph.append(rng.next_float())
-	for y in S:
-		for x in S:
-			var u := (x + 0.5) / S * 2.0 - 1.0
-			var v := (y + 0.5) / S * 2.0 - 1.0
-			var r := sqrt(u * u + v * v)
-			var a := atan2(v, u)
-			var ink := 0.0
-			for ring: float in [0.93, 0.86, 0.52, 0.47, 0.2]:
-				ink = maxf(ink, 1.0 - smoothstep(0.004, 0.012, absf(r - ring)))
-			# Glyph band between 0.55 and 0.84: 32 cells, each a few strokes.
-			if r > 0.56 and r < 0.83:
-				var cell := floori((a + PI) / TAU * 32.0)
-				var fu := fmod((a + PI) / TAU * 32.0, 1.0)
-				var fv := (r - 0.56) / 0.27
-				var g0 := glyph[cell * 3]
-				var g1 := glyph[cell * 3 + 1]
-				var g2 := glyph[cell * 3 + 2]
-				var stroke := 0.0
-				stroke = maxf(stroke, 1.0 - smoothstep(0.03, 0.07, absf(fu - (0.3 + g0 * 0.4))) if fv > 0.15 and fv < 0.85 else 0.0)
-				stroke = maxf(stroke, 1.0 - smoothstep(0.03, 0.07, absf(fv - (0.25 + g1 * 0.5))) if fu > 0.2 and fu < 0.8 else 0.0)
-				if g2 > 0.5:
-					stroke = maxf(stroke, 1.0 - smoothstep(0.03, 0.07, absf((fu - 0.5) - (fv - 0.5) * (g2 - 0.5) * 2.0)))
-				ink = maxf(ink, stroke)
-			# Ticks around the outer band.
-			if r > 0.87 and r < 0.92 and fmod((a + PI) / TAU * 96.0, 1.0) < 0.18:
-				ink = 1.0
-			img.set_pixel(x, y, Color(ink, ink, ink, ink))
-	_rune_tex = ImageTexture.create_from_image(img)
-	return _rune_tex
+static func _ruin() -> ShaderMaterial:
+	if _ruin_mat == null:
+		_ruin_mat = ShaderMaterial.new()
+		_ruin_mat.shader = preload("res://src/render/shaders/ruin.gdshader")
+	return _ruin_mat
+
+
+## The ring of standing stones around the geoglyph: tapered, rune-carved monoliths, a few broken or leaning,
+## planted on the ground (heights from the store; every chunk under the ring is loaded). Skips water tiles.
+## `p` is the site (world x, z); the returned node sits at the site's origin.
+func _stones(site_seed: int, p: Vector2) -> Node3D:
+	var rng := OgRng.new(OgRng.derive_seed(site_seed, [7]))
+	var ring := Node3D.new()
+	ring.name = "Stones"
+	var mat := _ruin()
+	var turn := rng.next_float() * TAU
+	for i in STONES:
+		var a := turn + i / float(STONES) * TAU + (rng.next_float() - 0.5) * 0.18
+		var r := GLYPH_R + 1.6 + rng.next_float() * 1.2
+		var x := p.x + cos(a) * r
+		var z := p.y + sin(a) * r
+		var tile := _store.tile_at(floori(x / OgWorld.TILE_M), floori(z / OgWorld.TILE_M))
+		if not OgWalkability.TILE_RULES[tile]["walkable"]:
+			continue
+		var broken := rng.next_float() < 0.3
+		var h := 1.2 + rng.next_float() * 1.4 if broken else 3.4 + rng.next_float() * 3.2
+		var m := CylinderMesh.new()
+		m.radial_segments = 4
+		m.rings = 1
+		m.bottom_radius = 0.75 + rng.next_float() * 0.2
+		m.top_radius = m.bottom_radius * (0.75 if broken else 0.45 + rng.next_float() * 0.2)
+		m.height = h
+		var stone := MeshInstance3D.new()
+		stone.mesh = m
+		stone.material_override = mat
+		var lean := (rng.next_float() - 0.5) * (0.5 if rng.next_float() < 0.3 else 0.08)
+		stone.rotation = Vector3(lean, -a + PI * 0.25, (rng.next_float() - 0.5) * 0.08)
+		stone.position = Vector3(cos(a) * r, _store.height_at(x, z) + h * 0.5 - 0.4, sin(a) * r)
+		ring.add_child(stone)
+	return ring

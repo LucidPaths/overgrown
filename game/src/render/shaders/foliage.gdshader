@@ -43,7 +43,7 @@ void vertex() {
 }
 
 void fragment() {
-	if (og_occluder(v_world, CAMERA_POSITION_WORLD) > og_bayer4(FRAGCOORD.xy) * 0.999) {
+	if (og_occluder(VERTEX, VIEW_MATRIX, 2.4) > og_bayer4(FRAGCOORD.xy) * 0.999) {
 		discard;
 	}
 	vec3 leaf = mix(leaf_dark, leaf_light, smoothstep(0.0, 1.0, v_h * 0.7 + v_shade * 0.5));

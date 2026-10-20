@@ -18,6 +18,9 @@ post stack's `.glsl` files only recompile on import), then `tools/godot/capture.
 | `game/src/render/prop_meshes.gd` (`OgPropMeshes`) | procedural grass, reed, pine, broadleaf, bush, rock meshes |
 | `game/src/render/foliage.gd` (`OgFoliage`) | seeded per-chunk placement (worker thread) |
 | `game/src/render/terrain_view.gd`, `terrain_mesher.gd` | materials, palette, multimesh props per chunk |
+| `game/src/render/landmark.gd` (`OgLandmark`), `landmark_view.gd` (`OgLandmarkView`) | seeded landmark sites (one per 6×6 chunks) and their island, pillar, stones, lights |
+| `game/src/render/shaders/og_landmark.gdshaderinc` | the geoglyph (the eye drawn on the ground), drawn by the terrain shader from the `og_landmark` global |
+| `game/src/render/post/paint_exposure.glsl` | metering: geometric-mean luminance of the paint image, eased; the composite gains toward a key |
 
 ## Loop log
 
@@ -65,8 +68,60 @@ Procedural meshes + seeded placement; grass, reeds, pines, broadleaf trees, bush
 - Decision: the play camera looks 25° down and shows ~2° of sky, so the eye moves to 40° elevation: the
   water near the wanderer reflects it (looking down at water you look up at the eye).
 
+### Restart (after loop 5)
+The container restarted mid-change; the orchestrator committed the WIP (1af5afd). It held a first landmark
+(floating island, ruins, waterfall, debris, a Decal rune circle, a post-drawn pillar volume). Merged
+`origin/main` (GOD-008: orbit camera, attack while moving, dodge dash, `--yaw`/`--pitch`): one conflict in
+`main.gd` (arg docs and the `_parse_args` dictionary), both sides kept. Tests 53/53.
+
+### Loop 6: the grade, rebuilt (`loops/l6-teal-gold-river.jpg`)
+Orchestrator's critique of loops 3/5, which I share: yellow-olive everywhere, a flat ochre far haze, no teal
+or blue grounds, no real darks. Measured against the mood board (mean luminance 0.15–0.28, median
+0.12–0.27, p10 ≈ 0.05): the loop-5 frames were olive mids with no darks below 0.1.
+- **Why it was olive:** one gradient map keyed by luminance put every mid-value pixel on an olive stop, and
+  the raw grass was yellow-green. The fix is to grade like the paintings are lit: **two ramps**, a cool one
+  (blue-black → deep teal → teal-green → pale teal) and a warm one (blue-black → umber → burnt gold → gold →
+  cream), chosen per pixel by its warmth (red over green and blue; yellow-greens count as cool) or by being
+  bright. A gold sun and a teal sky already split the scene into warm light and cool shade; the grade pushes
+  that split to the mood board's.
+- **Broken colour instead of mud:** between the ramps the brush-stroke noise decides stroke by stroke, so a
+  half-lit field is teal strokes and gold strokes side by side, never olive (impressionist broken colour).
+- **Tuned offline:** I captured ungraded frames (`GRADE = 0`) and mirrored the GLSL grade in numpy to try
+  ramps in seconds instead of 30 s captures; then ported. Rejected on the way: a pure luminance toe (too dark,
+  muddy), full teal for every green (cyan, artificial), lemon gold (c4 too yellow).
+- **Horizon:** the horizon band is now a misty blue-teal lighter than the land (aerial perspective, 02/03),
+  with gold only in a narrow fan right under the eye; cloud banks are gold only on the eye's side. Grass and
+  tree albedos cooled (grass 0.42,0.50,0.21 → 0.32,0.47,0.26).
+
+### Loop 7: the landmark, redesigned for the vista camera (`loops/l8-landmark-vista.jpg`)
+Critique of the WIP landmark: from the vista (55 m back, 38° down, no look raise) an island floating 15 m up
+sits at the very top of the frame, and the play camera (25° down) never sees above ~7 m: the island was
+invisible from both. The occlusion dither also ate it in the vista (the cone widened with camera distance:
+10–19 m wide at 64 m).
+- **The eye on the ground:** a 17 m geoglyph under the island, laid out like the cosmic eye (pupil, iris
+  fibres, a band of 36 rune cells, a ticked rim), lines burnt dark into the ground and glowing gold from
+  within, worn through by grass, a pulse running inward. Drawn by the terrain shader from one global
+  (`og_landmark`), so it is crisp at any distance and costs one branch per ground fragment; the Decal and its
+  CPU-drawn texture are gone. The eye in the sky looks down at its reflection: the landmark reads from the
+  vista and from the play view.
+- A ring of 11 rune-carved standing stones (some broken, some leaning) around it, placed once every chunk
+  under the ring is loaded (no main-thread chunk generation). They have no collision (like trees in G1).
+- The island is smaller (r 8.5, depth 8), two clustered omni lights (no shadows) light it and the stones
+  gold from the glyph and the pillar's foot.
+- **Occluder dither rewritten in screen space:** a fragment dithers when it is in front of the wanderer
+  and within 2.4 m of the wanderer's chest *as seen from the camera* (view-space comparison). Right for every
+  pose (play, orbit, vista); the island no longer vanishes.
+
+### Loop 8: exposure (`loops/l8-spawn.jpg`)
+Shaded scenes (the forest edge, the spawn under the island's shadow) measured mean 0.08 against the mood
+board's 0.15–0.28; the open river bank was on target. A painter keys every canvas, so the post now meters:
+`paint_exposure.glsl`, one 16×16 workgroup, 1024 centre-weighted taps of the paint image, geometric mean of
+display luminance, eased at 1.5/s; the composite gains toward a key of 0.27 (0.8–2.2×) with a curve that
+keeps white at white. The grade ramps were rebalanced so each stop's luminance stays near its key (they
+change hue, not exposure). Ambient raised 1.0 → 1.7 (teal shade should be mid-teal, not black; the near-black
+darks belong to crevices and silhouettes). Now: spawn 0.12, vista 0.13, river 0.27, landmark play 0.14.
+
 ## Next
-- Landmark + vista framing.
-- Re-judge play views (grassland, forest, river), readability mid-attack, post off/low/high.
-- Brush strokes stronger; nebula ring fluffier; pines more ragged.
-- Tests: deterministic foliage placement. Bible. Final captures and side-by-sides.
+- Readability capture mid-attack (play view, post high): wanderer, cursor, swing, cliffs, water.
+- Brush strokes stronger (the paint is still smooth at a distance); pines more ragged; nebula fluffier.
+- Post off/low/high set; deterministic foliage placement test; the bible; final captures and side-by-sides.

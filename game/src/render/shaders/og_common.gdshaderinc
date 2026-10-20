@@ -12,6 +12,8 @@ global uniform vec3 og_eye_dir;
 global uniform vec3 og_sun_dir;
 // The wanderer's feet point in world metres (foliage between it and the camera thins out).
 global uniform vec3 og_focus;
+// The nearest landmark's geoglyph: (centre x, centre z, radius m, 0); radius 0 = none. Set by OgWorldLook.
+global uniform vec4 og_landmark;
 
 // Wind as a 3D world vector (y = 0) and its strength.
 vec3 og_wind_vec() {
@@ -41,14 +43,18 @@ float og_bayer4(vec2 frag) {
 	return (float(m[i]) + 0.5) / 16.0;
 }
 
-// How much a surface at world point w hides the wanderer from the camera: 1 when it sits on the line from the
-// camera to the wanderer's chest, closer than the wanderer; 0 elsewhere. Foliage dithers itself away by it.
-float og_occluder(vec3 w, vec3 cam) {
-	vec3 f = og_focus + vec3(0.0, 0.9, 0.0);
-	vec3 ab = f - cam;
-	float t = dot(w - cam, ab) / max(dot(ab, ab), 1e-4);
-	float d = length(w - (cam + ab * clamp(t, 0.0, 1.0)));
-	float r0 = 2.0 + 0.12 * length(ab);
-	float near_cam = 1.0 - smoothstep(3.0, 6.0, length(w - cam));
-	return max((1.0 - smoothstep(r0, r0 * 2.0, d)) * (1.0 - smoothstep(0.88, 0.98, t)), near_cam);
+// How much a surface hides the wanderer from the camera, measured on screen: 1 when the fragment (view-space
+// position `frag`) lies within `radius` metres of the wanderer's chest as seen from the camera and in front of
+// it, fading to 0 at 1.6x; also 1 within a few metres of the camera. Works for every camera pose (play,
+// vista, orbit) because it compares the two points in view space. Foliage and the landmark island dither
+// themselves away by it.
+float og_occluder(vec3 frag, mat4 view, float radius) {
+	vec3 f = (view * vec4(og_focus + vec3(0.0, 0.9, 0.0), 1.0)).xyz;
+	float near_cam = 1.0 - smoothstep(3.0, 5.5, length(frag));
+	if (f.z > -0.1 || frag.z > -0.05) {
+		return near_cam;
+	}
+	float closer = smoothstep(0.4, 1.4, frag.z - f.z);
+	float d = length(frag.xy / -frag.z - f.xy / -f.z) * -f.z;
+	return max((1.0 - smoothstep(radius, radius * 1.6, d)) * closer, near_cam);
 }

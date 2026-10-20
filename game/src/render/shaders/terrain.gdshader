@@ -7,9 +7,12 @@ render_mode cull_back;
 
 #include "res://src/render/shaders/og_common.gdshaderinc"
 #include "res://src/render/shaders/og_light.gdshaderinc"
+#include "res://src/render/shaders/og_landmark.gdshaderinc"
 
-// The landmark island uses this shader too; it dithers away where it would hide the wanderer.
+// The landmark island uses this shader too; it dithers away where it would hide the wanderer, and carries
+// no geoglyph.
 uniform bool fade_occluders = false;
+uniform bool geoglyph = true;
 
 varying vec3 v_world;
 varying vec3 v_wnormal;
@@ -30,7 +33,7 @@ float dabs(vec2 p, float angle, float scale, float stretch) {
 }
 
 void fragment() {
-	if (fade_occluders && og_occluder(v_world, CAMERA_POSITION_WORLD) > og_bayer4(FRAGCOORD.xy) * 0.999) {
+	if (fade_occluders && og_occluder(VERTEX, VIEW_MATRIX, 2.4) > og_bayer4(FRAGCOORD.xy) * 0.999) {
 		discard;
 	}
 	vec3 base = og_lin(COLOR.rgb);
@@ -75,6 +78,14 @@ void fragment() {
 		vec3 r = mix(band_b, band_a, smoothstep(0.3, 0.7, strata));
 		r *= 0.75 + 0.5 * fine;
 		col = mix(col, r, wall);
+	}
+	// The nearest landmark's geoglyph: lines burnt dark into the ground that glow gold from within.
+	vec2 rel = p - og_landmark.xy;
+	float aa = max(fwidth(length(rel)), 0.02);
+	if (geoglyph && og_landmark.z > 0.0) {
+		vec2 gl = og_geoglyph(rel, og_landmark.z, TIME, aa);
+		col = mix(col, col * 0.3, gl.x);
+		EMISSION = og_lin(vec3(1.0, 0.70, 0.32)) * gl.x * (0.9 + 1.8 * gl.y);
 	}
 	ALBEDO = col;
 	ROUGHNESS = 1.0;

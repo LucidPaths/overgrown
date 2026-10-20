@@ -3,11 +3,12 @@ extends CompositorEffect
 ## The painterly post stack (ART-027, docs/art/BIBLE.md "Post"). Runs after the transparent pass on the
 ## scene's HDR colour and depth, as compute passes (game/src/render/post/*.glsl):
 ##   1 prep       full res -> paint res: painted depth fog and valley mist, tonemap, downsample
+##   1b exposure  meter the paint image (1024 taps, one workgroup), ease the key toward it
 ##   2 tensor     structure tensor of the paint image
 ##   3 blur x2    Gaussian-smoothed tensor (the stroke field)
 ##   4 kuwahara   anisotropic Kuwahara: flat areas become dabs, edges become strokes
-##   5 composite  full res: upsample, brush hairs along the stroke field, focal clarity, palette grade,
-##                canvas grain, vignette; written back into the colour buffer
+##   5 composite  full res: upsample, brush hairs along the stroke field, focal clarity, exposure gain,
+##                palette grade, canvas grain, vignette; written back into the colour buffer
 ## The paint resolution is capped (PAINT_HEIGHT_*), so the cost of the heavy pass does not grow with the
 ## screen; the composite restores fine texture at full resolution.
 ## Quality: OgWorldLook.Post.LOW (isotropic, smaller paint buffer, no blur) or HIGH.
@@ -25,6 +26,12 @@ const STROKE := 0.6
 const STROKE_LEN_PX := 9.0
 const GRADE := 0.9
 const GRAIN := 0.045
+## Exposure: the metered geometric-mean display luminance is eased toward at EXPOSURE_RATE (1/s) and the
+## composite gains the image toward EXPOSURE_KEY, within EXPOSURE_MIN..MAX (tunable).
+const EXPOSURE_KEY := 0.27
+const EXPOSURE_MIN := 0.8
+const EXPOSURE_MAX := 2.2
+const EXPOSURE_RATE := 1.5
 ## Unsharp mask on the upsampled paint (0 = soft upscale).
 const SHARPEN := 0.9
 ## Valley mist strength.
@@ -58,6 +65,8 @@ var _pipelines := {} # name -> RID
 var _linear: RID
 var _nearest: RID
 var _frame_ubo: RID
+var _exposure_buf: RID
+var _last_usec := 0
 var _ok := false
 
 
@@ -74,7 +83,7 @@ func _notification(what: int) -> void:
 		for rid: RID in _shaders.values():
 			if rid.is_valid():
 				_rd.free_rid(rid)
-		for rid in [_linear, _nearest, _frame_ubo]:
+		for rid in [_linear, _nearest, _frame_ubo, _exposure_buf]:
 			if rid.is_valid():
 				_rd.free_rid(rid)
 
@@ -84,7 +93,7 @@ func _init_rd() -> void:
 	if _rd == null:
 		push_warning("OgPaintPost: no RenderingDevice (compatibility renderer?); post stack disabled")
 		return
-	for n in ["prep", "tensor", "blur", "kuwahara", "composite"]:
+	for n in ["prep", "exposure", "tensor", "blur", "kuwahara", "composite"]:
 		var file := load("res://src/render/post/paint_%s.glsl" % n) as RDShaderFile
 		if file == null:
 			push_error("OgPaintPost: cannot load paint_%s.glsl" % n)
@@ -107,6 +116,7 @@ func _init_rd() -> void:
 	n.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE
 	_nearest = _rd.sampler_create(n)
 	_frame_ubo = _rd.uniform_buffer_create(FRAME_BYTES)
+	_exposure_buf = _rd.storage_buffer_create(16, PackedFloat32Array([0, 0, 0, 0]).to_byte_array())
 	_ok = true
 
 
@@ -157,6 +167,12 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		# 1 prep
 		_dispatch("prep", paint, [
 			_image(0, color), _sampled(1, depth, _nearest), _image(2, tex_src), _ubo(3)], PackedFloat32Array())
+		# 1b exposure (one workgroup)
+		var now := Time.get_ticks_usec()
+		var dt := clampf((now - _last_usec) / 1e6, 0.0, 1.0) if _last_usec > 0 else 0.0
+		_last_usec = now
+		_dispatch_groups("exposure", Vector2i(1, 1), [_sampled(0, tex_src, _linear), _storage(1, _exposure_buf)],
+			PackedFloat32Array([dt, EXPOSURE_RATE, 0, 0]))
 		# 2 tensor, 3 blur
 		_dispatch("tensor", paint, [_sampled(0, tex_src, _nearest), _image(1, tex_tensor)], PackedFloat32Array())
 		if quality == 2:
@@ -170,7 +186,8 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		# 5 composite
 		var stroke := STROKE if quality == 2 else STROKE * 0.6
 		_dispatch("composite", full, [_image(0, color), _sampled(1, depth, _nearest), _sampled(2, tex_paint, _linear),
-			_sampled(3, tex_tensor, _linear), _ubo(4)], PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN, SHARPEN, 0, 0, 0]))
+			_sampled(3, tex_tensor, _linear), _ubo(4), _storage(5, _exposure_buf)],
+			PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN, SHARPEN, EXPOSURE_KEY, EXPOSURE_MIN, EXPOSURE_MAX]))
 
 
 func _ensure_textures(buffers: RenderSceneBuffersRD, paint: Vector2i) -> void:
@@ -186,6 +203,10 @@ func _ensure_textures(buffers: RenderSceneBuffersRD, paint: Vector2i) -> void:
 
 
 func _dispatch(pass_name: String, size: Vector2i, uniforms: Array[RDUniform], push: PackedFloat32Array) -> void:
+	_dispatch_groups(pass_name, Vector2i(ceili(size.x / 8.0), ceili(size.y / 8.0)), uniforms, push)
+
+
+func _dispatch_groups(pass_name: String, groups: Vector2i, uniforms: Array[RDUniform], push: PackedFloat32Array) -> void:
 	var shader: RID = _shaders[pass_name]
 	var set := UniformSetCacheRD.get_cache(shader, 0, uniforms)
 	var list := _rd.compute_list_begin()
@@ -194,7 +215,7 @@ func _dispatch(pass_name: String, size: Vector2i, uniforms: Array[RDUniform], pu
 	if not push.is_empty():
 		var b := push.to_byte_array()
 		_rd.compute_list_set_push_constant(list, b, b.size())
-	_rd.compute_list_dispatch(list, ceili(size.x / 8.0), ceili(size.y / 8.0), 1)
+	_rd.compute_list_dispatch(list, groups.x, groups.y, 1)
 	_rd.compute_list_end()
 
 
@@ -211,6 +232,14 @@ func _sampled(binding: int, rid: RID, sampler: RID) -> RDUniform:
 	u.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
 	u.binding = binding
 	u.add_id(sampler)
+	u.add_id(rid)
+	return u
+
+
+func _storage(binding: int, rid: RID) -> RDUniform:
+	var u := RDUniform.new()
+	u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	u.binding = binding
 	u.add_id(rid)
 	return u
 

@@ -29,10 +29,16 @@ layout(push_constant, std430) uniform Params {
 	float grade; // grading strength 0..1
 	float grain;
 	float sharpen;
+	float key; // exposure: target geometric-mean display luminance
+	float gain_min;
+	float gain_max;
+} params;
+layout(set = 0, binding = 5, std430) restrict readonly buffer Exposure {
+	float adapted; // metered and eased by paint_exposure.glsl
 	float pad0;
 	float pad1;
 	float pad2;
-} params;
+} exposure;
 
 #include "res://src/render/shaders/og_noise.gdshaderinc"
 #include "res://src/render/shaders/og_sky.gdshaderinc"
@@ -106,12 +112,14 @@ vec3 ramp6(float l, vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5) {
 vec3 grade(vec3 g, float amount, float stroke) {
 	float l = dot(g, vec3(0.299, 0.587, 0.114));
 	// Tone: a toe that sinks the darks (the paintings' darks are near black), lights kept.
-	float lt = mix(l, l * l * (1.6 - 0.6 * l) * 1.08, 0.45);
+	float lt = mix(l, l * l * (1.6 - 0.6 * l) * 1.08, 0.3);
 	lt = mix(lt, l, smoothstep(0.55, 0.95, l));
-	vec3 shade = ramp6(lt, vec3(0.006, 0.014, 0.03), vec3(0.015, 0.065, 0.09), vec3(0.03, 0.18, 0.20),
-		vec3(0.11, 0.35, 0.31), vec3(0.40, 0.60, 0.46), vec3(0.86, 0.92, 0.80));
-	vec3 light = ramp6(lt, vec3(0.01, 0.016, 0.03), vec3(0.04, 0.09, 0.09), vec3(0.18, 0.24, 0.14),
-		vec3(0.64, 0.44, 0.17), vec3(0.92, 0.66, 0.30), vec3(1.0, 0.90, 0.68));
+	// Each stop's luminance stays near its key, so the ramps change hue, not exposure (OgPaintPost meters
+	// the image before this).
+	vec3 shade = ramp6(lt, vec3(0.006, 0.014, 0.03), vec3(0.015, 0.085, 0.11), vec3(0.03, 0.24, 0.26),
+		vec3(0.13, 0.44, 0.40), vec3(0.46, 0.67, 0.55), vec3(0.88, 0.93, 0.82));
+	vec3 light = ramp6(lt, vec3(0.01, 0.016, 0.03), vec3(0.06, 0.10, 0.09), vec3(0.24, 0.27, 0.15),
+		vec3(0.70, 0.48, 0.19), vec3(0.95, 0.70, 0.33), vec3(1.0, 0.92, 0.72));
 	// Warmth: red over green and blue (gold, orange, burnt earth). Bright pixels go gold unless clearly blue.
 	float hue_w = smoothstep(0.05, 0.25, g.r - 0.85 * g.g - 0.15 * g.b);
 	float blue = smoothstep(0.0, 0.1, g.b - g.r);
@@ -186,6 +194,10 @@ void main() {
 	}
 
 	vec3 g2 = to_gamma(col);
+	// Exposure: a gain toward the key that keeps white at white (g k / (1 + (k - 1) g)): a dim forest lifts
+	// its mids, an open meadow stays as it is.
+	float gain = clamp(params.key / max(exposure.adapted, 1e-3), params.gain_min, params.gain_max);
+	g2 = g2 * gain / (1.0 + (gain - 1.0) * clamp(g2, 0.0, 1.0));
 	g2 = grade(g2, params.grade, lic);
 
 	// Canvas: a fine weave plus paper tooth, fixed to the screen like a real canvas.
