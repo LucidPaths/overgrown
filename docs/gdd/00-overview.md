@@ -6,7 +6,7 @@ A real-time hack-and-slash sandbox RPG in a saturated, cozy, painted 3D world, s
 
 It looks lovely, but it isn't safe. A level 2 horned bunny grazes ten meters from a level 40 bear asleep in its den. Leave an area alone long enough and the monsters there grow older, stronger and more numerous until even the villages give up and leave.
 
-The play loop runs between the **frontier** and the dungeons: the overworld is a real-time horde slayer that gets wilder the further you walk from the origin (calm near it, "monster horde nonsense" far out), and every level-up offers a draft of three choices that builds your character (OQ-040, OQ-041, OQ-043). Dying in the overworld is always permadeath and leaves your grave behind, while dungeons are the safer side of the loop: no permadeath, only an XP-loss penalty (OQ-042). The world remembers what your characters did, and the next one benefits. The frontier is a tug of war: graves, lit beacons and settlements push back against the monsters spreading, and the monsters push back where nobody holds the line (OQ-044).
+The play loop runs between the **frontier** and the dungeons: the overworld is a real-time horde slayer that gets wilder the further you walk from the origin (calm near it, "monster horde nonsense" far out), and every level-up offers a draft of three choices that builds your character (OQ-040, OQ-041, OQ-043). Dying in the overworld is always permadeath and leaves your grave behind, while dungeons are the safer side of the loop: no permadeath, but a death there seals one of your abilities and raises the world's difficulty for good (OQ-042, OQ-045). The world remembers what your characters did, and the next one benefits. The frontier is a tug of war: graves, lit beacons and settlements push back against the monsters spreading, and the monsters push back where nobody holds the line (OQ-044).
 
 ## Pillars
 
@@ -26,7 +26,7 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 | Game | Take | Avoid |
 |------|------|-------|
 | Valheim | Seeded worlds, characters that travel between worlds, host-run sessions, corpse runs, stamina combat, zone-split simulation | Rigid biome rings where difficulty equals biome |
-| Metin2 | Real-time hack-and-slash feel, XP loss on death, player shops, karma | Grind for its own sake, pay-to-win |
+| Metin2 | Real-time hack-and-slash feel, player shops, karma | Grind for its own sake, pay-to-win |
 | Minecraft | Infinite chunk worlds, day/night with sleep skipping, share-and-join simplicity | Empty procedural sameness |
 | Risk of Rain | Time as the difficulty clock | Run-only structure |
 | Cube World | Infinite world with RPG loot | Progression that doesn't mean anything (it lost the point of exploring) |
@@ -66,4 +66,5 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 - [x] **OVR-008** Retarget to a desktop game for a few friends and redefine 'everything is ours' as 'authored by us' (OQ-029, OQ-030; OQ-030 is superseded by OQ-038). — #33
 - [x] **OVR-009** Record the Godot overhaul (decisions D1 to D8, OQ-031 to OQ-038): rewrite the GDD sections it touches, `CLAUDE.md`, the milestones and the root README, and add `game/assets/third_party/CREDITS.md` with its CI check `tools/check-credits.sh`. (`docs/overhaul/PLAN.md`) — #40
 - [x] **OVR-010** Retire the TypeScript sim, the Pixi client, the Python art pipeline and the browser scripts (`sim/`, `client/`, `tools/art/`, `scripts/`) and `deploy.yml`, once the GDScript ports (GOD-003, GOD-004) are proven against the shared fixtures. They stay in git history. (OQ-031) — #42
-- [ ] **OVR-011** Record the frontier design (OQ-040, OQ-041, OQ-042, OQ-043, OQ-044): the horde-slayer combat shape, the level-up draft, always-permadeath, horde density by distance, and the world-remembers meta progression with the tug of war. Rewrites the GDD sections it touches, strikes or rewrites the tasks it makes wrong, adds the new tasks, and replans G2 in `docs/agents/MILESTONES.md`. (`docs/specs/OVR-011.md`)
+- [x] **OVR-011** Record the frontier design (OQ-040, OQ-041, OQ-042, OQ-043, OQ-044): the horde-slayer combat shape, the level-up draft, always-permadeath, horde density by distance, and the world-remembers meta progression with the tug of war. Rewrites the GDD sections it touches, strikes or rewrites the tasks it makes wrong, adds the new tasks, and replans G2 in `docs/agents/MILESTONES.md`. (`docs/specs/OVR-011.md`) — #47
+- [ ] **OVR-012** Record the new dungeon-death rule (OQ-045): a death in a dungeon seals one ability until a church or healer NPC unseals it, and raises the world's difficulty for good; no XP loss or de-leveling. (`docs/specs/OVR-012.md`)

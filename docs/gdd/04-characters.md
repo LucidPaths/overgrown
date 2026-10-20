@@ -13,7 +13,7 @@
 - **The level-up draft (OQ-041).** Each level-up offers **3 choices** and you pick one. The choices come from a pool fed by what the character has: **Ability Books read, gear carried and teachings learned** (learn or rank up an ability or technique), plus **generic boons**. This replaces level points.
 - **Base power.** Every level-up also raises base power passively, whatever you pick.
 - **Not decided yet:** draft size per rarity, rerolls, the generic boon list and how much base power one level adds are decided in CHR-020, and so is whether and how NPCs draft (one rule set, pillar 1: NPCs level too, → 06-npcs-society). How each source feeds the pool is decided in CHR-021.
-- **De-leveling** (dungeon deaths can cause it): what happens to the draft picks above your new level is decided in CHR-020.
+- **No de-leveling.** A dungeon death costs no XP and no levels (OQ-045).
 
 ## The three ways to grow
 
@@ -34,6 +34,7 @@ Traits use diminishing returns: each rank needs more use than the last. **NPCs g
 - **Ability Books** drop in dungeons and rifts and are sold in special shops. Reading one **adds its ability to the draft pool** (OQ-041). Whether a book read is guaranteed to show up in the next draft is decided in CHR-021.
 - **Ranking up** an ability is also a draft choice. Using an ability fills its ability XP; how a full bar makes a rank-up appear in the draft is decided in CHR-021.
 - Each level-up is one pick among three, so the draft is the build system: which abilities, how far each one is ranked, and which other picks you take instead.
+- A dungeon death **seals** one of your abilities (or draft picks) until a church or healer NPC unseals it (OQ-045). Which one, what unsealing costs and whether more deaths seal more are decided in CHR-024.
 - Abilities cost **mana** (→ CMB). Some can be **toggled to auto-fire** while they pay mana (OQ-040, → CMB). Spam an ability back to back and it starts costing stamina too (ability fatigue).
 
 ### 3. Teachings — techniques taken from others
@@ -54,7 +55,7 @@ Head, chest, legs, feet, hands, back (cape or quiver), main hand, off hand (shie
 
 - At 0 HP you're **downed** for ~10 s and an ally can revive you.
 - **Overworld: always permadeath** (OQ-042). The character is dead and you make a new one in the same world. Its items stay in its **grave** for anyone to loot. **Hardcore** (solo only, an optional host setting) also deletes the world.
-- **Dungeon/rift:** you're teleported to the entrance and lose XP, scaled by depth; you can de-level. The dungeon gets harder for everyone (→ DNG).
+- **Dungeon/rift** (OQ-045): you're teleported to the entrance with no XP loss and no de-leveling. One ability is sealed until a church or healer NPC unseals it, the world's difficulty rises for good, and the dungeon gets harder for everyone (→ DNG).
 - Reputation is tied to the character, so a new character starts fresh. What carries over is the world's memory, below.
 
 ## What outlives a character (OQ-044)
@@ -69,7 +70,7 @@ The meta progression is the world, not an account: no account or currency unlock
 
 - [x] **CHR-001** `[proto]` Character entity shared by players and NPCs (same component set). Movement and collider defaults in OQ-025. — #16
 - [ ] **CHR-002** `[proto]` XP and level-up with a soft-cap curve (tunable table).
-- [ ] ~~**CHR-003** Level point pool: earned 1 per level; spent on learning and ranking abilities; on de-level, the most recent spend goes dormant until the level is regained.~~ (dropped: level points are replaced by the level-up draft, OQ-041; de-level handling moves to CHR-020)
+- [ ] ~~**CHR-003** Level point pool: earned 1 per level; spent on learning and ranking abilities; on de-level, the most recent spend goes dormant until the level is regained.~~ (dropped: level points are replaced by the level-up draft, OQ-041; there is no de-leveling any more, OQ-045)
 - [ ] **CHR-004** `[proto]` Trait system core: use events → trait XP → rank, with diminishing returns.
 - [ ] **CHR-005** `[proto]` Weapon mastery traits feeding the damage roll skew (→ CMB-008).
 - [ ] **CHR-006** Movement traits: dodge, sprint, swim, climb, jump.
@@ -86,7 +87,8 @@ The meta progression is the world, not an account: no account or currency unlock
 - [ ] **CHR-017** Appearance editor: body, colors, hair/fur, face, starting clothes.
 - [ ] **CHR-018** Equip slots and paper-doll layering (→ ART-010).
 - [ ] **CHR-019** Character sheet UI: traits, abilities, teachings, level (rewritten: OQ-041).
-- [ ] **CHR-020** Level-up draft core: the pool, 3 choices per level-up, the pick UI, and base power per level; also decides draft size per rarity, rerolls, the generic boon list and de-level handling of picks, and whether and how NPCs draft (one rule set, pillar 1) (OQ-041) (→ CHR-002).
+- [ ] **CHR-020** Level-up draft core: the pool, 3 choices per level-up, the pick UI, and base power per level; also decides draft size per rarity, rerolls, the generic boon list, and whether and how NPCs draft (one rule set, pillar 1) (OQ-041) (rewritten: OQ-045 removed de-leveling, so there is no de-level handling of picks) (→ CHR-002).
 - [ ] **CHR-021** Draft pool sources: Ability Books read, gear carried, teachings learned (learn or rank up) and generic boons feed the pool (OQ-041) (→ CHR-020, CHR-009, CHR-012, ITM-001).
 - [ ] **CHR-022** Knowledge codex: record the Ability Books and teachings a character learned, so new characters relearn them cheaper or start with some; per world save by default; whether NPCs keep a codex is decided here (OQ-044) (→ CHR-009, CHR-012).
 - [ ] **CHR-023** Character creation after death: a new character in the same world, starting near the origin or at a lit beacon (OQ-042, OQ-044) (→ CHR-017, CMB-019, WLD-024).
+- [ ] **CHR-024** Sealed abilities: a dungeon death seals one of the character's abilities (or draft picks) so it can't be used, and a church or healer NPC unseals it; decides which ability is sealed, what unsealing costs (gold, an offering, a small quest) and whether more deaths seal more; NPCs are sealed and unsealed the same way (pillar 1) (OQ-045) (→ CHR-020, NPC-022).

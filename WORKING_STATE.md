@@ -3,34 +3,36 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-19
+Last updated: 2026-10-20 (≈01:45 UTC)
 
 ## Current phase
 
-**G0 of the Godot overhaul** (`docs/overhaul/PLAN.md`, merged #35). Lucid (2026-10-19): a proper game in Godot 4, a standalone `overgrown.exe` from GitHub Releases, everything built in the cloud, art from their painted mood board (`docs/art/moodboard/`), the D8 asset rule. **Durable authorization:** "just build, merge etc"; no sign-off needed per PR (the critic and Fable gates stay).
+**G0 done except polish; G1 (the look) in progress; G2 replanned around "the frontier".** Godot overhaul: `docs/overhaul/PLAN.md` (#35). **Durable authorization from Lucid:** "just build, merge etc": no per-PR sign-off (critic + Fable gates stay). **Art exception:** nothing art-related merges until Lucid has seen pictures (my promise, 2026-10-19). Lucid dislikes emojis in replies.
 
-G0 waves:
-1. ✅ GOD-001 #36 (scaffold, setup.sh + SessionStart hook, test runner, CI) · GOD-002 #37 (release pipeline; "latest (main)" pre-release verified with both builds at 1694ea7) · GOD-003 #38 (OgRng)
-2. ✅ GOD-004 #39 (worldgen port + `contracts/worldgen-vectors.json`, bit-for-bit with TS)
-3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ✅ GOD-005 #41 (chunk store on WorkerThreadPool, 3D terrain, tilted camera + vista, crisp placeholder palette)
-4. ✅ OVR-010 #42 (TS/Pixi/Python retired; reference commit e6eaee3) · ✅ GOD-006 #43 (character rules, keyboard/mouse/gamepad, placeholder wanderer)
-5. ✅ G0 E2E #44 (docs/e2e/G0.md): 6/6 testable items PASS incl. injected keyboard/mouse/gamepad (43 checks); new GOD-007.
-6. ✅ Lucid's playtest round 1 (2026-10-19): running works; wants right-click camera orbit, attacks that don't stop movement, a dodge that doesn't shrink; "graphics look absolute dogshit still" (expected: G1). ✅ GOD-008 #46 (+ GOD-007). G1 labs running: ART-027 world look (g1-world-lab), ART-028 wanderer (g1-wanderer-lab); both resumed after a container restart 2026-10-20.
-7. Lucid, 2026-10-20: "the frontier" design (horde slayer, level-up draft, always permadeath, the world remembers, graves as civilization anchors) → OVR-011 records it as OQ-040..044 and replans G2. Playtest round 2: camera should look up more → GOD-009.
+Merged so far (newest last): GOD-001 #36, GOD-002 #37, GOD-003 #38, GOD-004 #39, OVR-009 #40, GOD-005 #41, OVR-010 #42, GOD-006 #43, G0 E2E #44 (docs/e2e/G0.md), ops delete-branches workflow #45, GOD-008 #46 (+GOD-007: camera orbit, attack while moving OQ-039, dodge dash), OVR-011 #47 (frontier design OQ-040..044, G2 replanned).
 
-Pre-overhaul history: M0 and M1 complete (docs/e2e/M0.md, M1.md); the TS/Pixi game is reference only until OVR-010.
+Lucid's playtests:
+- Round 1 (2026-10-19, exe at 6112b6a): wanted right-drag camera orbit, attacks that don't stop movement, a non-shrinking dodge → GOD-008 #46.
+- Round 2 (2026-10-20): wants the camera to look up more → GOD-009 (#48, in review). After seeing the G1 floating island: "need to be able to look up more LOL" → extend GOD-009's look-up beyond the current 20° above the horizon (the wanderer may leave the frame at the extreme).
+- Preview of the G1 world lab (draft PR #49 CI artifact, 2026-10-20): "thats so cool compared to what was there before". **180 fps** on Lucid's Strix Halo with the post stack on high.
 
-Mechanics: main checkout /home/user/overgrown (claude.ai/code cloud container, ephemeral); worktrees in /home/user/wt/<id>; Godot 4.7.2 + Blender 4.5.14 installed by the SessionStart hook (`tools/godot/setup.sh`, log /tmp/godot-setup.log); specs drafted in the scratchpad, committed as `docs/specs/<ID>.md`; PRs, comments and merges via the GitHub connector tools.
+Design decisions (Lucid, 2026-10-20; all in `docs/gdd/13-open-questions.md`):
+- OQ-040..044 (merged #47): horde-slayer combat with mana-paid auto-fire toggles and OP builds with pay-offs; level-up pick-1-of-3 draft fed by books/gear/teachings + passive base power (replaces level points); overworld always permadeath (Respawn mode gone, Hardcore optional); horde density grows with distance; meta progression = the world remembers (beacons), knowledge codex, heirloom + grave; graves are civilization anchors in a tug of war against monster takeover. No account unlocks.
+- OQ-045 (PR #50, in review): dungeon death = teleport out, one ability sealed until a church/healer NPC unseals it, world difficulty rises permanently (never decreases), that dungeon's tier rises; no XP loss, no de-level, no per-character death limit.
 
-Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` and `/x` created by subagents in an old container (harmless; gone with the container); whether to commit the spike REPORT.md (branch `spike-godot`); catalog review (OQ-017), OQ-002 name; the stray `probe-workflow` branch.
+Mechanics: main checkout /home/user/overgrown; worktrees in /home/user/wt/<id>; Godot 4.7.2 + Blender 4.5.14 via the SessionStart hook; specs drafted in the scratchpad, committed as `docs/specs/<ID>.md`; PRs/comments/merges via the GitHub connector (it cannot dispatch workflows or change settings; Lucid runs Actions → Delete branches when needed). `main` is protected (PR + green `godot`). Containers restart: agents must push often; after a restart, save uncommitted lab work as a WIP commit and relaunch agents from their PROGRESS.md.
 
-## In flight
+## In flight (2026-10-20)
 
-- OVR-011 (docs) in /home/user/wt/ovr-011; GOD-009 (camera) in /home/user/wt/god-009. Observed in E2E: spawn search 1.8 s (seed 1) to 7.1 s (seed 12345) blocks `_ready`, window shows nothing meanwhile.
-- Repo housekeeping done 2026-10-19: `main` protected by Lucid (PR + required `godot`, 0 approvals), auto-delete head branches on, 44 stale branches deleted via the Delete branches workflow (#45); 3 remain: main, art-lab, spike-godot.
-- Follow-ups noted (not yet tasks): `main.gd`'s `--at` check re-derives the foot-box tile span instead of calling `OgCollision` (Fable, #43); the device path in `local_input.gd` has no automated test (playtest); `find_spawn` keeps its own chunk cache (1.8–2.6 s at start; could share the store's); river banks show sawtooth where the water plane cuts faceted slopes; curved mesa walls follow the tile staircase (G1 polish); the moisture field shows a near-straight N–S forest border near seed 1's spawn (value-noise lattice alignment).
-- Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
-- Notes for later specs: `generate_chunk` costs ~120 ms in GDScript (GOD-005 streams on WorkerThreadPool); GOD-006 rules should port movement/actions/collision semantics from `sim/src/{movement,actions}.ts` and `world/collision.ts` in metres.
+- **#50 OVR-012** (dungeon death, OQ-045), worktree /home/user/wt/ovr-012: critic running → Fable → merge. This WORKING_STATE update rides along.
+- **#48 GOD-009** (camera sinks to pitch 5° and looks up to 20° above the horizon; clearance 0.6 m via `OgChunkStore.height_at`), worktree /home/user/wt/god-009: critic running. Then add Lucid's "look up more" (raise the max upward view, ~40°+), re-gate, merge.
+- **ART-027 world-look lab** (opus), branch `g1-world-lab`, worktree /home/user/wt/g1-world-lab, log `docs/art/g1-lab/PROGRESS.md`: loop 6+ (teal/gold grade, landmark = floating island with light pillar, waterfall, stone ring; `--post off|low|high`; `--shot`). Draft PR **#49** exists only so CI builds a preview exe (artifact) for Lucid; don't merge until the lab reports done, then critic → Fable.
+- **ART-028 wanderer lab: DONE** (branch `g1-wanderer-lab`, HEAD a71d9a5, 10 loops; Blender build `art/blender/build.sh` → `game/assets/wanderer/wanderer.glb`, deterministic; `OgWandererRig`/`OgWandererView`, `--wanderer old|new`, 56 tests pass). Pictures sent to Lucid 2026-10-20; **waiting for Lucid's OK or change requests before opening its PR.** Lab's own known weak spots: poncho reads as a bell from the front, mitten hands, no cloth-cloth collision, wind is a constant until ART-027 exposes it.
+- GDD lines for ART-027/ART-028 don't exist yet in `docs/gdd/10-art-audio.md` (next free ART-025/026 are reserved on the parked art-lab branch): add them with whichever lab PR merges first.
+- Next after these: G1 E2E (MILESTONES § G1) + Lucid playtest; then G2 specs (frontier: WLD-007/WLD-023 hordes, CHR-020/021 draft, CMB-019/020 permadeath + grave, CHR-023 new character, CMB-006/027 mana + toggles).
+- Repo housekeeping done: `main` protected, auto-delete head branches on, 3 branches left besides PR branches (main, art-lab, spike-godot).
+- Follow-ups noted (not yet tasks): `main.gd`'s `--at` check re-derives the foot-box span instead of calling `OgCollision`; the device path in `local_input.gd` has no automated test; `find_spawn` keeps its own chunk cache (1.8–7.1 s blocking spawn search, window shows nothing); river-bank sawtooth; mesa walls follow the tile staircase; seed 1's straight N–S forest border (value-noise lattice); sky/fog horizon band at low pitch (ART-027's post fog should fix); `01-tech.md:63` says "Corpses" (= graves).
+- Parked: `art-lab` (draft PR #32); `spike-godot` (reference only).
 
 ## Decisions (accumulate)
 
