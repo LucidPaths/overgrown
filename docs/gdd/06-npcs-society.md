@@ -33,6 +33,7 @@ Settlements are one of the **civilization anchors**, along with graves and lit b
 - It is a back and forth decided by skill and preparation. Balancing comes later.
 - **Open point (pillar 1):** by one rule set, notable NPC deaths could leave graves that anchor civilization too. Whether they do, and which NPCs count as notable, is decided in NPC-023.
 - How an anchor resists, and how a settlement counts as one, is decided in NPC-023.
+- **Dungeon breaks (OQ-046, → 07-dungeons):** a dungeon that eats too many deaths floods its surroundings with monsters. City guards defend against it. The characters whose deaths fed it lose reputation with the settlement's faction. If nobody holds the line, the monsters take over.
 
 ## Factions and diplomacy
 

@@ -3,7 +3,7 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-20 (≈04:35 UTC)
+Last updated: 2026-10-20 (≈05:00 UTC)
 
 ## Current phase
 
@@ -19,6 +19,7 @@ Lucid's playtests:
 Design decisions (Lucid, 2026-10-20; all in `docs/gdd/13-open-questions.md`):
 - OQ-040..044 (merged #47): horde-slayer combat with mana-paid auto-fire toggles and OP builds with pay-offs; level-up pick-1-of-3 draft fed by books/gear/teachings + passive base power (replaces level points); overworld always permadeath (Respawn mode gone, Hardcore optional); horde density grows with distance; meta progression = the world remembers (beacons), knowledge codex, heirloom + grave; graves are civilization anchors in a tug of war against monster takeover. No account unlocks.
 - OQ-045 (merged #50): dungeon death = teleport out, one ability sealed until a church/healer NPC unseals it, world difficulty rises permanently (never decreases), that dungeon's tier rises; no XP loss, no de-level, no per-character death limit.
+- OQ-046 (PR for OVR-013): the dungeon break: every death in a dungeon (anyone's) feeds a break counter; at X it floods its surroundings with monsters; city guards defend it; the characters who fed it lose reputation with that settlement; a defended break resets the dungeon tier + counter (world difficulty untouched); undefended = monsters take over (tug of war). Numbers and details in DNG-016 (planned with the dungeons, after G3).
 
 Mechanics: main checkout /home/user/overgrown; worktrees in /home/user/wt/<id>; Godot 4.7.2 + Blender 4.5.14 via the SessionStart hook; specs drafted in the scratchpad, committed as `docs/specs/<ID>.md`; PRs/comments/merges via the GitHub connector (it cannot dispatch workflows or change settings; Lucid runs Actions → Delete branches when needed). `main` is protected (PR + green `godot`). Containers restart: agents must push often; after a restart, save uncommitted lab work as a WIP commit and relaunch agents from their PROGRESS.md.
 
@@ -26,7 +27,7 @@ Mechanics: main checkout /home/user/overgrown; worktrees in /home/user/wt/<id>; 
 
 Lucid paused the pipeline at ≈02:20 UTC to save usage and asked to resume at 5:31 German time (03:31 UTC, a one-shot scheduled self-message); resumed then. Lesson: on a pause, stop agents, commit + push every worktree's uncommitted work as a marked WIP commit, record per-PR resume points here; on resume, SendMessage the stopped agents (they keep their transcripts).
 
-- **G1 merged** (2026-10-20): ART-027 #49 (Fable PASS; its two docs findings, the missing CLAUDE.md rows for shader globals / prop buffers / vertex colours / the post Frame UBO and BIBLE §3.1's water exception, are fixed in the follow-up docs PR on branch `g1-docs-followup`). **Next:** G1 E2E (`docs/agents/E2E.md`, MILESTONES § G1) on the merged main + Lucid playtest of the `latest` exe; then fold the follow-ups below into G1 polish tasks or G2 specs.
+- **G1 merged** (2026-10-20): ART-027 #49 (Fable PASS; its two docs findings, the missing CLAUDE.md rows for shader globals / prop buffers / vertex colours / the post Frame UBO and BIBLE §3.1's water exception, are fixed in the follow-up docs PR on branch `g1-docs-followup`). **Next (proposed to Lucid 2026-10-20, awaiting go):** a small G1 polish task (attack-arc readability, which the G1 E2E needs; landmarks on land; the GL fallback) + G1 E2E + Lucid playtest of the `latest` exe; G2 split into playable slices (1 monsters + damage, 2 HUD, 3 XP + draft, 4 death + grave + new-character menu, 5 hordes by distance, 6 mana + auto-fire toggle, 7 equipment + sound); then fold the follow-ups below into G1 polish tasks or G2 specs.
 - **G1 follow-ups found by the gates (not yet tasks):**
   - **Compatibility (OpenGL) renderer renders garbage on the art branch** (main renders fine): one of the new world shaders breaks under GL, even with `--post off`. Matters only on machines without Vulkan/D3D12 (Godot falls back to GL); Lucid's machine is fine. Bisect the shaders (terrain/foliage/sky) with `capture.sh <png> gl_compatibility`.
   - **Landmark sites ignore terrain**: ~40% of sites (seeds 1–8) land on water, cliff or stone (geoglyph under water, island over the ocean). Needs a render-side site search over loaded chunks; seed 1's is on land.
