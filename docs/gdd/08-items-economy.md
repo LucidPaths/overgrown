@@ -34,7 +34,7 @@ They feed each other. Crafters can **reforge** (reroll an affix) and **upgrade**
 
 ## Graves
 
-- Every overworld death leaves a **grave** (a dungeon death only teleports the character out, OQ-045): the corpse container of the earlier drafts, with the full inventory. The corpse rules are otherwise unchanged, and "corpse" and "grave" name the same container.
+- Every overworld death leaves a **grave** (a dungeon death teleports the character out instead and leaves no grave, OQ-045): the corpse container of the earlier drafts, with the full inventory. The corpse rules are otherwise unchanged, and "corpse" and "grave" name the same container.
 - **Anyone** can loot it: any character (including the dead character's next one), other players, NPCs (scavengers, bandits) and some monsters (shiny-hoarding species).
 - Graves decay after a long time (tunable), and whatever is left becomes a loot cache at the site.
 - A character's grave also becomes a **landmark that acts as a civilization anchor** (whether NPC graves anchor too is decided in NPC-023), and one heirloom (or a bit of power) from the dead character passes to the next (OQ-044, → 04-characters, 06-npcs-society). Whether the landmark outlasts the decay of the container, what the heirloom is, and whether NPCs leave heirlooms are decided in ITM-019.
