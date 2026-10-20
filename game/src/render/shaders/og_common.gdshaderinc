@@ -58,3 +58,17 @@ float og_occluder(vec3 frag, mat4 view, float radius) {
 	float d = length(frag.xy / -frag.z - f.xy / -f.z) * -f.z;
 	return max((1.0 - smoothstep(radius, radius * 1.6, d)) * closer, near_cam);
 }
+
+// Canopy cut-away for trees: crowns (world height `y` above the wanderer's head) in front of the wanderer
+// and within `radius` metres of it on screen dither away, so the wanderer and the ground around it stay
+// visible under a forest roof while the trunks stay.
+float og_canopy_cut(vec3 frag, float y, mat4 view, float radius) {
+	vec3 f = (view * vec4(og_focus + vec3(0.0, 0.9, 0.0), 1.0)).xyz;
+	if (f.z > -0.1 || frag.z > -0.05) {
+		return 0.0;
+	}
+	float closer = smoothstep(0.5, 2.0, frag.z - f.z);
+	float above = smoothstep(og_focus.y + 1.6, og_focus.y + 2.6, y);
+	float d = length(frag.xy / -frag.z - f.xy / -f.z) * -f.z;
+	return (1.0 - smoothstep(radius, radius * 1.5, d)) * closer * above;
+}

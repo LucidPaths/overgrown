@@ -46,6 +46,7 @@ static func material(kind: int) -> Material:
 			m.set_shader_parameter("leaf_light", specs[kind][1])
 			m.set_shader_parameter("flower_amount", specs[kind][2])
 			m.set_shader_parameter("sway", specs[kind][3])
+			m.set_shader_parameter("leafy", 0.45 if kind == OgFoliage.KIND_PINE else 1.0)
 	_materials[kind] = m
 	return m
 

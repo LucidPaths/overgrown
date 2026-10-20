@@ -16,6 +16,8 @@ uniform float flower_amount = 0.0;
 // Metres the top moves per unit of wind, per metre of height.
 uniform float sway = 0.035;
 uniform float rim = 1.0;
+// How much the canopy silhouette breaks into leaf clumps (0 = solid shell).
+uniform float leafy = 1.0;
 
 varying vec3 v_world;
 varying float v_h;
@@ -43,8 +45,18 @@ void vertex() {
 }
 
 void fragment() {
-	if (og_occluder(VERTEX, VIEW_MATRIX, 2.4) > og_bayer4(FRAGCOORD.xy) * 0.999) {
+	float hide = max(og_occluder(VERTEX, VIEW_MATRIX, 2.4), og_canopy_cut(VERTEX, v_world.y, VIEW_MATRIX, 5.0) * (1.0 - v_trunk));
+	if (hide > og_bayer4(FRAGCOORD.xy) * 0.999) {
 		discard;
+	}
+	// Leafy silhouettes: canopy edges (normals turning away from the view) break up in world-anchored clumps,
+	// so crowns read as masses of leaves, not low-poly shells (the post smooths the holes into dabs).
+	if (v_trunk < 0.5) {
+		float side = 1.0 - abs(dot(NORMAL, VIEW));
+		float leaf = og_vnoise(v_world.xz * 2.3 + v_world.y * 1.7) * 0.65 + og_vnoise(v_world.xy * 5.1 + v_world.z * 3.3) * 0.35;
+		if (side > mix(1.01, 0.55 + leaf * 0.45, leafy)) {
+			discard;
+		}
 	}
 	vec3 leaf = mix(leaf_dark, leaf_light, smoothstep(0.0, 1.0, v_h * 0.7 + v_shade * 0.5));
 	leaf *= 0.85 + 0.3 * v_rand;
