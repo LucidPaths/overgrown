@@ -15,8 +15,11 @@ const SPRINT_MULTIPLIER := 1.6
 const DODGE_DISTANCE_M := 3.0
 const DODGE_TICKS := roundi(0.35 * TICK_HZ) # 21
 const DODGE_SPEED_M_S := DODGE_DISTANCE_M * TICK_HZ / DODGE_TICKS
-## An attack lasts this long, rooted (OQ-021; tunable).
+## An attack lasts this long (OQ-021; tunable).
 const ATTACK_TICKS := roundi(0.4 * TICK_HZ) # 24
+## During an attack the character walks at walk speed * this, sprint ignored, facing held to the aim (OQ-039;
+## tunable).
+const ATTACK_MOVE_FACTOR := 0.85
 ## A press made in the last BUFFER_TICKS of an attack or dodge starts the next action when it ends (tunable).
 const BUFFER_TICKS := roundi(0.2 * TICK_HZ) # 12
 ## Foot box: a square of this half-size centred on the feet point (tunable). Keep it a dyadic fraction

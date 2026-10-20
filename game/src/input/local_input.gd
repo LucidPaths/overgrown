@@ -6,10 +6,12 @@ extends Node
 ## Device in use: the most recently used one (any key, mouse motion or click, versus any gamepad button or a
 ## stick or trigger beyond STICK_DEADZONE). It decides which moves count and where the aim comes from:
 ##   keyboard and mouse: the move keys; aim = the point on the horizontal plane at the feet height under the
-##                       cursor, minus the feet point;
+##                       cursor, minus the feet point (held at its last value while camera_orbit is held, so
+##                       turning the camera doesn't swing the aim);
 ##   gamepad:            the left stick; aim = the right stick direction * GAMEPAD_AIM_M (zero with the stick
 ##                       at rest, so facing follows movement).
-## Presses are counted per input event (echoes ignored), so a tap shorter than a tick is never lost.
+## Moves and the stick aim are screen directions mapped through the camera yaw (screen_to_world): up is always away
+## from the camera. Presses are counted per input event (echoes ignored), so a tap shorter than a tick is never lost.
 
 enum Device { KEYBOARD_MOUSE, GAMEPAD }
 
@@ -29,6 +31,7 @@ var _pad := 0
 var _attack_presses := 0
 var _dodge_presses := 0
 var _axis_down := {} # action -> bool, for presses bound to a trigger axis
+var _mouse_aim_held := Vector2.ZERO
 
 
 func _input(event: InputEvent) -> void:
@@ -66,15 +69,17 @@ func device_name() -> String:
 ## The frame for character c, whose feet are at height feet_y.
 func frame(c: OgCharacter, feet_y: float) -> OgInputLatch.InputFrame:
 	var f := OgInputLatch.InputFrame.new()
+	var basis := camera.global_basis
 	var screen_move: Vector2
 	if device == Device.GAMEPAD:
 		screen_move = _stick(JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y)
-		var aim_dir := _to_world(_stick(JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y))
-		f.aim = aim_dir * GAMEPAD_AIM_M
+		f.aim = screen_to_world(_stick(JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y), basis) * GAMEPAD_AIM_M
 	else:
 		screen_move = _keys_move()
-		f.aim = _mouse_aim(c, feet_y)
-	var m := _to_world(screen_move).limit_length(1.0)
+		if not Input.is_action_pressed(&"camera_orbit"):
+			_mouse_aim_held = _mouse_aim(c, feet_y)
+		f.aim = _mouse_aim_held
+	var m := screen_to_world(screen_move, basis).limit_length(1.0)
 	f.move = Vector2(clampf(m.x, -1.0, 1.0), clampf(m.y, -1.0, 1.0))
 	f.sprint = Input.is_action_pressed(&"sprint")
 	f.attack_presses = _attack_presses
@@ -82,12 +87,11 @@ func frame(c: OgCharacter, feet_y: float) -> OgInputLatch.InputFrame:
 	return f
 
 
-## Screen direction (x right, y down) to world (x, z) through the camera yaw. Fixed north-up in G0; a rotating
-## camera only changes the basis read here.
-func _to_world(screen: Vector2) -> Vector2:
-	var b := camera.global_basis
-	var right := Vector2(b.x.x, b.x.z).normalized()
-	var back := Vector2(b.z.x, b.z.z).normalized()
+## Screen direction (x right, y down) to world (x, z) through the yaw of `camera_basis` (a camera's global basis;
+## its pitch doesn't matter while it looks below the horizon and not straight down).
+static func screen_to_world(screen: Vector2, camera_basis: Basis) -> Vector2:
+	var right := Vector2(camera_basis.x.x, camera_basis.x.z).normalized()
+	var back := Vector2(camera_basis.z.x, camera_basis.z.z).normalized()
 	return right * screen.x + back * screen.y
 
 
