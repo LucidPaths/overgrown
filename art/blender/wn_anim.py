@@ -26,12 +26,12 @@ BODY_ANIMATED = [
 # name: frames per cycle, metres per cycle (two steps), stance fraction, lift, hip drop, bob, lean, arm swing,
 # elbow, pelvis yaw, twist, step width, stance offset (fwd), heel kick
 LOCO = {
-    "walk": dict(frames=66, dist=1.65, stance=0.6, lift=0.1, drop=0.035, bob=0.022, lean=4.0, arm=22.0, elbow=18.0,
+    "walk": dict(frames=66, dist=1.4, stance=0.6, lift=0.1, drop=0.035, bob=0.022, lean=4.0, arm=22.0, elbow=18.0,
                  yaw=7.0, twist=6.0, width=0.105, off=0.04, kick=0.0, run=False),
-    "run": dict(frames=40, dist=3.333, stance=0.36, lift=0.2, drop=0.1, bob=0.04, lean=11.0, arm=38.0, elbow=78.0,
-                yaw=11.0, twist=9.0, width=0.085, off=0.08, kick=0.22, run=True),
-    "sprint": dict(frames=36, dist=4.8, stance=0.3, lift=0.26, drop=0.13, bob=0.05, lean=19.0, arm=52.0, elbow=88.0,
-                   yaw=12.0, twist=10.0, width=0.08, off=0.0, kick=0.34, run=True),
+    "run": dict(frames=34, dist=2.833, stance=0.3, lift=0.17, drop=0.09, bob=0.035, lean=12.0, arm=36.0, elbow=80.0,
+                yaw=10.0, twist=9.0, width=0.085, off=0.03, kick=0.2, run=True),
+    "sprint": dict(frames=30, dist=4.0, stance=0.24, lift=0.22, drop=0.12, bob=0.045, lean=20.0, arm=50.0, elbow=88.0,
+                   yaw=11.0, twist=10.0, width=0.08, off=-0.02, kick=0.3, run=True),
 }
 
 
@@ -133,9 +133,9 @@ def idle(rig):
         set_pose(rig, "head", qz(9.0 * look) @ qx(-5.0 + 2.0 * math.sin(2 * w + 1.0)))
         for sfx, s in SIDES:
             set_pose(rig, f"shoulder_{sfx}", qx(-1.0 * br) @ qy(1.0 * br * s))
-            set_pose(rig, f"upper_arm_{sfx}", qx(3.0 + 1.5 * br) @ qy((9.0 + 1.5 * br) * s))
-            set_pose(rig, f"forearm_{sfx}", qx(-16.0 - 2.0 * br))
-            set_pose(rig, f"hand_{sfx}", qx(-10.0) @ qz(6.0 * s))
+            set_pose(rig, f"upper_arm_{sfx}", qx(4.0 + 1.5 * br) @ qy((13.0 + 1.5 * br) * s))
+            set_pose(rig, f"forearm_{sfx}", qx(-20.0 - 2.0 * br) @ qy(6.0 * s))
+            set_pose(rig, f"hand_{sfx}", qx(-12.0) @ qz(-14.0 * s))
 
     return make_action(rig, "idle", range(0, n + 1), pose, BODY_ANIMATED)
 

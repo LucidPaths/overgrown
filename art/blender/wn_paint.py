@@ -37,9 +37,9 @@ CAPE_BAND_PX = 40  # cape hem band height
 CAPE_GEM_B = 44  # gem centre row in the cape region
 
 # sRGB palette
-NAVY = (0.085, 0.165, 0.195)
+NAVY = (0.1, 0.19, 0.22)
 NAVY_DARK = (0.035, 0.07, 0.095)
-NAVY_HI = (0.2, 0.31, 0.33)
+NAVY_HI = (0.24, 0.35, 0.37)
 ORANGE = (0.85, 0.37, 0.11)
 RUST = (0.52, 0.17, 0.06)
 GOLD = (0.93, 0.68, 0.26)
@@ -248,16 +248,16 @@ def paint() -> np.ndarray:
     sub = img[y0 : y0 + h, x0 : x0 + w]
     # scattered diamonds (muted rust), on a jittered grid
     ys, xs = np.mgrid[0:h, 0:w].astype(float)
-    for gy in range(36, h - ROBE_BAND_PX - 20, 74):
-        for gx in range(0, w, 86):
-            cxp = gx + 43 * ((gy // 74) % 2) + rng.uniform(-10, 10)
+    for gy in range(40, h - ROBE_BAND_PX - 20, 96):
+        for gx in range(0, w, 112):
+            cxp = gx + 56 * ((gy // 96) % 2) + rng.uniform(-10, 10)
             cyp = gy + rng.uniform(-8, 8)
             if abs(((cxp % w) - w / 2)) < 40:  # keep clear of the back stripe
                 continue
-            s = rng.uniform(4.5, 7.0)
+            s = rng.uniform(3.5, 5.0)
             dxp = np.abs(((xs - cxp + w / 2) % w) - w / 2)
             m = (dxp / s + np.abs(ys - cyp) / (s * 1.4)) < 1.0
-            sub[m] = mix(sub[m], RUST, 0.85)
+            sub[m] = mix(sub[m], RUST, 0.6)
     # the back zigzag: a rust-edged orange line from the top to the band, with a diamond every 120 px
     xc = w / 2 + tri(ys / 38.0) * 9.0
     dist = np.abs(xs - xc)
@@ -275,7 +275,7 @@ def paint() -> np.ndarray:
     # brushwork: vertical drape strokes, then shorter cross-hatching
     strokes(img, "robe", 5200, rng, length=(16, 46), width=(2.5, 6.5), angle=0.0, angle_jit=0.25, jitter=0.07)
     strokes(img, "robe", 1600, rng, length=(8, 18), width=(2.0, 4.0), angle=1.2, angle_jit=0.5, jitter=0.1, lift=0.012)
-    specks(img, "robe", 700, rng, ORANGE, size=(0.5, 1.2), alpha=(0.15, 0.45), mask_fn=lambda x, y: y < 512 - ROBE_BAND_PX)
+    specks(img, "robe", 500, rng, ORANGE, size=(0.5, 1.1), alpha=(0.1, 0.3), mask_fn=lambda x, y: y < 512 - ROBE_BAND_PX)
 
     # ---- cape (poncho top). u: 0 = front, 0.5 = back.
     x0, y0, w, h = REGIONS["cape"]
@@ -292,9 +292,9 @@ def paint() -> np.ndarray:
             cyp = gy + rng.uniform(-6, 6)
             if abs(cxp - w / 2) < 40:
                 continue
-            s = rng.uniform(4.0, 6.0)
+            s = rng.uniform(3.2, 4.5)
             m = (np.abs(xs - cxp) / s + np.abs(ys - cyp) / (s * 1.4)) < 1.0
-            sub[m] = mix(sub[m], RUST, 0.85)
+            sub[m] = mix(sub[m], RUST, 0.6)
     # back: gem, then the zigzag down to the band
     xc = w / 2 + tri((ys - CAPE_GEM_B) / 30.0) * 7.0
     dist = np.abs(xs - xc)
@@ -334,15 +334,15 @@ def paint() -> np.ndarray:
     base = mix(SCARF_DARK, SCARF, np.clip(t * 1.3, 0, 1))
     base = mix(base, SCARF_HI, np.clip((t - 0.62) * 2.2, 0, 1))
     # a darker rust weave line every 64 px (a wrapped, hand-made look)
-    stripe = np.abs(((xs % 64.0) - 32.0)) < 2.5
-    base[stripe] = mix(base[stripe], RUST, 0.55)
+    stripe = np.abs(((xs % 128.0) - 64.0)) < 2.0
+    base[stripe] = mix(base[stripe], RUST, 0.3)
     img[y0 : y0 + h, x0 : x0 + w] = base
     strokes(img, "scarf", 900, rng, length=(6, 14), width=(2.0, 3.5), angle=1.5708, angle_jit=0.35, jitter=0.08)
 
     # ---- hair: blue-black strands, y along the lock (root at the top)
     x0, y0, w, h = REGIONS["hair"]
     field = value_noise(h, w, 2, 12, rng)
-    img[y0 : y0 + h, x0 : x0 + w] = mix((0.02, 0.03, 0.04), (0.06, 0.08, 0.1), field)
+    img[y0 : y0 + h, x0 : x0 + w] = mix((0.035, 0.05, 0.065), (0.09, 0.12, 0.14), field)
     strokes(img, "hair", 900, rng, length=(30, 80), width=(1.2, 2.6), angle=0.0, angle_jit=0.08, jitter=0.3, lift=0.0)
     x0, y0, w, h = REGIONS["hair"]
     sub = img[y0 : y0 + h, x0 : x0 + w]
@@ -353,14 +353,14 @@ def paint() -> np.ndarray:
         ys = np.arange(int(top), int(min(h, top + ln)))
         xs = (cx + np.sin(ys / rng.uniform(18, 40)) * 3.0).astype(int) % w
         a = np.sin(np.linspace(0, np.pi, ys.size)) * rng.uniform(0.25, 0.6)
-        sub[ys, xs] = sub[ys, xs] * (1 - a[:, None]) + np.asarray((0.16, 0.27, 0.3)) * a[:, None]
+        sub[ys, xs] = sub[ys, xs] * (1 - a[:, None]) + np.asarray((0.2, 0.34, 0.37)) * a[:, None]
 
     # ---- face: the void, with a few cold stars
     x0, y0, w, h = REGIONS["face"]
     ys, xs = np.mgrid[0:h, 0:w].astype(float)
     field = value_noise(h, w, 3, 3, rng, wrap_x=False)
     vign = np.hypot((xs - w / 2) / w, (ys - h * 0.45) / h)
-    img[y0 : y0 + h, x0 : x0 + w] = mix((0.03, 0.045, 0.085), (0.01, 0.012, 0.025), np.clip(vign * 1.6 + 0.2 * field, 0, 1))
+    img[y0 : y0 + h, x0 : x0 + w] = mix((0.075, 0.1, 0.16), (0.025, 0.03, 0.055), np.clip(vign * 1.5 + 0.25 * field, 0, 1))
     mid = lambda x, y: abs(x - w / 2) < w * 0.26 and h * 0.18 < y < h * 0.8  # noqa: E731 - front of the head only
     specks(img, "face", 70, rng, (0.55, 0.75, 1.0), size=(0.45, 0.9), alpha=(0.35, 0.9), mask_fn=mid)
     specks(img, "face", 6, rng, (0.95, 0.85, 0.6), size=(0.9, 1.4), alpha=(0.8, 1.0), mask_fn=mid)

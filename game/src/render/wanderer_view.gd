@@ -158,11 +158,12 @@ func _build_arc() -> void:
 		var a := deg_to_rad(ARC_SPAN_DEG) * u
 		var dir := Vector3(-sin(a), 0.0, -cos(a))
 		var alpha := pow(1.0 - u, 1.4)
-		var inner := lerpf(ARC_INNER_M, ARC_OUTER_M - 0.1, u * 0.7) + 0.05 * sin(u * 37.0)
+		var outer := ARC_OUTER_M * (1.0 - 0.05 * u)
+		var inner := outer - lerpf(ARC_OUTER_M - ARC_INNER_M, 0.04, pow(u, 0.7)) * (0.85 + 0.15 * sin(u * 41.0))
 		verts.append(dir * inner)
-		verts.append(dir * ARC_OUTER_M * (1.0 - 0.06 * u))
-		colors.append(Color(1.0, 0.62, 0.22, alpha * 0.0))
-		colors.append(Color(1.0, 0.9, 0.62, alpha))
+		verts.append(dir * outer)
+		colors.append(Color(0.9, 0.42, 0.1, 0.0))
+		colors.append(Color(1.0, 0.8, 0.42, alpha * 0.9))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
@@ -172,6 +173,7 @@ func _build_arc() -> void:
 	_arc_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_arc_mat.vertex_color_use_as_albedo = true
 	_arc_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_arc_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	_arc_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_arc.mesh = m
 	_arc.material_override = _arc_mat

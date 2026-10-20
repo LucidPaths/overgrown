@@ -45,7 +45,8 @@ void light() {
 	DIFFUSE_LIGHT += LIGHT_COLOR * lit / PI;
 	// Rim: the grazing edges, stronger where they face the light. Not multiplied by albedo, so it shows on the
 	// dark cloth.
-	float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-	float rim = smoothstep(1.0 - rim_width, 1.0 - rim_width * 0.35, edge) * clamp(ndl * 0.8 + 0.35, 0.0, 1.0);
+	float ndv = dot(NORMAL, VIEW);
+	// Only true silhouette edges: an inner lining seen through an opening faces away (ndv < 0) and gets none.
+	float rim = (1.0 - smoothstep(0.02, rim_width, ndv)) * smoothstep(-0.05, 0.05, ndv) * clamp(ndl * 0.8 + 0.35, 0.0, 1.0);
 	SPECULAR_LIGHT += rim_color * LIGHT_COLOR * rim * rim_strength * mix(0.3, 1.0, ATTENUATION) / PI;
 }

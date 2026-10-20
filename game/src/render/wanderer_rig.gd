@@ -22,9 +22,9 @@ enum Act { NONE, ATTACK, DODGE }
 
 ## Locomotion clips: metres travelled per cycle (art/blender/wn_anim.py LOCO); their natural speed is that over
 ## the clip length.
-const CYCLE_M := {"walk": 1.65, "run": 3.3333, "sprint": 4.8}
+const CYCLE_M := {"walk": 1.4, "run": 2.8333, "sprint": 4.0}
 ## Ground speed at which each clip plays alone (m/s); between two, both blend.
-const WALK_SPEED := 1.5
+const WALK_SPEED := 1.27
 const RUN_SPEED := 5.0
 const SPRINT_SPEED := 8.0
 ## Below this ground speed the idle pose fades in.

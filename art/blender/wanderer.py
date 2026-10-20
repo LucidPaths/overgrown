@@ -178,8 +178,8 @@ def build_body(geo):
         b = len(nodes)
         nodes += [
             (side(R.THIGH, s), (0.086, 0.086)),
-            (side(R.KNEE, s), (0.058, 0.06)),
-            (side(R.ANKLE, s) + Vector((0, 0, 0.03)), (0.046, 0.046)),
+            (side(R.KNEE, s), (0.066, 0.068)),
+            (side(R.ANKLE, s) + Vector((0, 0, 0.03)), (0.052, 0.052)),
             (side(R.CLAV, s) + Vector((0.03 * s, 0, 0)), (0.07, 0.07)),
             (side(R.SHOULDER, s), (0.06, 0.06)),
             (side(R.ELBOW, s), (0.05, 0.05)),
@@ -188,7 +188,8 @@ def build_body(geo):
         edges += [(0, b), (b, b + 1), (b + 1, b + 2), (2, b + 3), (b + 3, b + 4), (b + 4, b + 5), (b + 5, b + 6)]
     body = M.skin_object("Body", nodes, edges, root=0, subdiv_edges=1, levels=2)
     for _, s in SIDES:  # calves and a little thigh mass
-        M.grab(body, side(Vector((0.105, 0.03, 0.36)), s), 0.1, (0, 0.016, 0), scale=(1, 1, 1.6))
+        M.grab(body, side(Vector((0.105, 0.03, 0.36)), s), 0.1, (0, 0.02, 0), scale=(1, 1, 1.6))
+        M.grab(body, side(Vector((0.13, -0.01, 0.62)), s), 0.12, (0.012 * s, -0.008, 0), scale=(1, 1, 1.5))
 
     def uv(co, c):
         ax = abs(c.x)
@@ -208,7 +209,7 @@ def build_body(geo):
 def build_boot(geo, s):
     a = side(R.ANKLE, s)
     nodes = [
-        (a + Vector((0, 0.0, 0.14)), (0.064, 0.066)),
+        (a + Vector((0, 0.0, 0.2)), (0.066, 0.068)),
         (a + Vector((0, 0.006, 0.0)), (0.06, 0.066)),
         (Vector((a.x, 0.065, 0.042)), (0.053, 0.05)),
         (Vector((a.x * 1.02, -0.06, 0.044)), (0.062, 0.047)),
@@ -223,6 +224,8 @@ def build_boot(geo, s):
     def uv(co, c):
         if c.z < 0.016:
             return swatch_cyl("sole", a.x, 0.0, 0.03, co)
+        if c.z > 0.17:
+            return swatch_cyl("wrap", a.x, 0.17, 0.32, co)
         return swatch_cyl("leather", a.x, 0.0, 0.26, co)
 
     def w(co):
@@ -327,8 +330,10 @@ def build_hair_cap(geo):
     cap = M.quad_sphere("HairCap", 0.106, R.HEAD_C + Vector((0, 0.008, 0.004)), levels=3, scale=HAIR_SCALE)
     bm = bmesh.new()
     bm.from_mesh(cap.data)
-    bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=Vector((0, 0, 0.035)),
-                           plane_no=Vector((0, 0.62, 1.0)).normalized(), clear_inner=True)
+    # hairline: high over the brow, down the sides past the temples, low at the nape
+    drop = [f for f in bm.faces if not (f.calc_center_median().z > 0.065 - 0.75 * f.calc_center_median().y
+                                        - 0.6 * abs(f.calc_center_median().x))]
+    bmesh.ops.delete(bm, geom=drop, context="FACES")
     bm.to_mesh(cap.data)
     bm.free()
     tex = bpy.data.textures.new("HairClouds", "CLOUDS")
@@ -360,6 +365,8 @@ HAIR_CHAINS = [
     (118.0, 8.0, 0.34, 0.056, -0.04),
     (-118.0, 8.0, 0.32, 0.056, -0.04),
     (180.0, -4.0, 0.3, 0.06, -0.08),
+    (96.0, -6.0, 0.24, 0.05, -0.2),
+    (-96.0, -6.0, 0.23, 0.05, -0.2),
 ]
 WIND_DRIFT = Vector((0.22, 0.0, 0.0))  # the rest pose already leans the hair a little to the left (+X)
 
@@ -368,14 +375,14 @@ def lock_path(az, el, length, rise, wiggle, n=8):
     root, nrm = head_surface(az, el, -0.012)
     back = Vector((0, 1.0, 0))
     up = Vector((0, 0, 1.0))
-    d0 = (nrm * 0.75 + back * 0.8 + up * rise).normalized()
-    d1 = (back * 1.0 + WIND_DRIFT + up * (rise * 0.5) + nrm * 0.12).normalized()
+    d0 = (nrm * 0.5 + back * 1.0 + up * rise).normalized()
+    d1 = (back * 1.0 + WIND_DRIFT + up * (rise * 0.35) + nrm * 0.08).normalized()
     pts = [root]
     step = length / (n - 1)
     for k in range(1, n):
         t = k / (n - 1)
         d = d0.lerp(d1, sstep(0.0, 0.75, t)).normalized()
-        jig = Vector((math.sin(wiggle + 2.3 * k) * 0.22, 0, math.cos(wiggle * 1.7 + 1.9 * k) * 0.18))
+        jig = Vector((math.sin(wiggle + 2.3 * k) * 0.14, 0, math.cos(wiggle * 1.7 + 1.9 * k) * 0.12))
         pts.append(pts[-1] + (d + jig * t).normalized() * step)
     return pts, nrm
 
@@ -509,12 +516,12 @@ def cape_point(P, th, s, out):
 ROBE_NI = 84
 ROBE_NJ = 18
 ROBE_TOP = 1.38
-ROBE_HEM = 0.36
+ROBE_HEM = 0.33
 ROBE_TH0 = -0.25
 ROBE_TH1 = 2 * math.pi + 0.25
 ROBE_RADII = [(1.38, 0.196, 0.13), (1.2, 0.206, 0.15), (1.05, 0.222, 0.165), (0.95, 0.252, 0.19),
-              (0.75, 0.295, 0.24), (0.55, 0.322, 0.272), (0.36, 0.345, 0.298)]
-ROBE_CHAIN_ROWS = [7, 11, 14, 17]  # z 0.96, 0.72, 0.54, 0.36
+              (0.75, 0.295, 0.24), (0.55, 0.322, 0.272), (0.33, 0.348, 0.3)]
+ROBE_CHAIN_ROWS = [7, 11, 14, 17]  # z 0.95, 0.70, 0.51, 0.33
 
 
 def robe_z(j):
@@ -613,12 +620,14 @@ def build_scarf(geo, chains, cape_P):
             p = Vector((rx * math.sin(a), -ry * math.cos(a), 0.0))
             p = rot @ p + Vector((0, 0.012, z))
             path.append(p)
-            radii.append(r0 * (1.0 + 0.2 * math.sin(3 * a + ph) + 0.08 * math.sin(7 * a + 2 * ph)))
+            p.z += 0.012 * math.sin(2 * a + ph)
+            path[-1] = p
+            radii.append(r0 * (1.0 + 0.24 * math.sin(3 * a + ph) + 0.12 * math.sin(5 * a + 2 * ph) + 0.05 * math.sin(11 * a)))
         wd = blend(({"chest": 1}, shares[0]), ({"neck": 1}, shares[1]), ({"head": 1}, shares[2]))
         M.add_tube(geo, path, radii, 10, "scarf", lambda k, t, co, wd=wd: wd, "scarf", closed_loop=True,
                    u_scale=1.0, u0=0.0)
     # two tails from the knot at the back-left, hanging over the cape
-    tails = [("scarf_0", 158.0, 0.06, 0.62, 0.058), ("scarf_1", 176.0, 0.05, 0.47, 0.05)]
+    tails = [("scarf_0", 150.0, 0.06, 0.62, 0.046), ("scarf_1", 172.0, 0.05, 0.46, 0.04)]
     for name, az, s0, s1, wd0 in tails:
         th = math.radians(az)
         pts = [cape_point(cape_P, th, lerp(s0, s1, t), 0.03 + 0.012 * t) for t in [k / 8 for k in range(9)]]
