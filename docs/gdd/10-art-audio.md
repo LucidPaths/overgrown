@@ -76,6 +76,10 @@ Audio follows the same D8 rule (OQ-038): we make it, or take CC0 or other allowe
 - [ ] **ART-022** Contact-sheet preview output for PR review.
 - [ ] ~~**ART-023** Harden `draw.py` validation and tests: validate `shade_sphere` light via `_finite`; test np.bool_ rejection, np.float64 in `ellipse_mask`, and the uint8-overflow guard (`int(v)` conversion) found by the ART-003 critic and Fable gate.~~ (dropped: Godot overhaul, OQ-031; `draw.py` is retired)
 - [x] **ART-024** Art direction pass: research open-source game-art practice and design skills, write the art bible (`docs/art/`), and redraw actors, ground tiles and palettes to it (Lucid, 2026-10-12). — #30
+- [ ] ~~**ART-025** Art lab: unconstrained art-direction exploration with a browser prototype, art bible and integration plan.~~ (dropped: Godot overhaul, OQ-031; superseded by ART-027; the parked work stays on branch `art-lab`, draft PR #32)
+- [ ] ~~**ART-026** Character lab: redesign characters from scratch for the desktop target.~~ (dropped: Godot overhaul, OQ-031; superseded by ART-028; the parked work stays on branch `art-lab`, draft PR #32)
+- [ ] **ART-027** G1 world look: painterly post stack, palette grade, cosmic sky, terrain materials, foliage and props, water, wind, one landmark vista, and the new art bible `docs/art/BIBLE.md`, with full creative freedom inside the mood board (OQ-035). (`docs/specs/ART-027.md`)
+- [x] **ART-028** G1 wanderer v1: Blender-scripted model, rig and animations (idle, walk, run, sprint, dodge, attack), cloth and hair secondary motion, the in-game view (OQ-036, OQ-037). (`docs/specs/ART-028.md`) — #51
 - [ ] ~~**AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.~~ (dropped: Godot overhaul, OQ-031; the Python atlas build is retired)
 - [ ] **AUD-002** SFX set: hits per material, footsteps per terrain, UI, creature calls, spells.
 - [ ] **AUD-003** Runtime audio mixer with spatial panning and volume buses.
