@@ -12,7 +12,7 @@
 - **Soft cap:** the XP curve steepens so levels slow down without a hard ceiling. This mirrors monsters soft-capping with age.
 - **The level-up draft (OQ-041).** Each level-up offers **3 choices** and you pick one. The choices come from a pool fed by what the character has: **Ability Books read, gear carried and teachings learned** (learn or rank up an ability or technique), plus **generic boons**. This replaces level points.
 - **Base power.** Every level-up also raises base power passively, whatever you pick.
-- **Not decided yet:** draft size per rarity, rerolls, the generic boon list and how much base power one level adds are decided in CHR-020. How each source feeds the pool is decided in CHR-021.
+- **Not decided yet:** draft size per rarity, rerolls, the generic boon list and how much base power one level adds are decided in CHR-020, and so is whether and how NPCs draft (one rule set, pillar 1: NPCs level too, → 06-npcs-society). How each source feeds the pool is decided in CHR-021.
 - **De-leveling** (dungeon deaths can cause it): what happens to the draft picks above your new level is decided in CHR-020.
 
 ## The three ways to grow
@@ -86,7 +86,7 @@ The meta progression is the world, not an account: no account or currency unlock
 - [ ] **CHR-017** Appearance editor: body, colors, hair/fur, face, starting clothes.
 - [ ] **CHR-018** Equip slots and paper-doll layering (→ ART-010).
 - [ ] **CHR-019** Character sheet UI: traits, abilities, teachings, level (rewritten: OQ-041).
-- [ ] **CHR-020** Level-up draft core: the pool, 3 choices per level-up, the pick UI, and base power per level; also decides draft size per rarity, rerolls, the generic boon list and de-level handling of picks (OQ-041) (→ CHR-002).
+- [ ] **CHR-020** Level-up draft core: the pool, 3 choices per level-up, the pick UI, and base power per level; also decides draft size per rarity, rerolls, the generic boon list and de-level handling of picks, and whether and how NPCs draft (one rule set, pillar 1) (OQ-041) (→ CHR-002).
 - [ ] **CHR-021** Draft pool sources: Ability Books read, gear carried, teachings learned (learn or rank up) and generic boons feed the pool (OQ-041) (→ CHR-020, CHR-009, CHR-012, ITM-001).
-- [ ] **CHR-022** Knowledge codex: record the Ability Books and teachings a character learned, so new characters relearn them cheaper or start with some; per world save by default (OQ-044) (→ CHR-009, CHR-012).
+- [ ] **CHR-022** Knowledge codex: record the Ability Books and teachings a character learned, so new characters relearn them cheaper or start with some; per world save by default; whether NPCs keep a codex is decided here (OQ-044) (→ CHR-009, CHR-012).
 - [ ] **CHR-023** Character creation after death: a new character in the same world, starting near the origin or at a lit beacon (OQ-042, OQ-044) (→ CHR-017, CMB-019, WLD-024).

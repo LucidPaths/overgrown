@@ -7,7 +7,7 @@ Real-time hack-and-slash with physical weight, closer to Valheim and Metin2 than
 The shape of the game is a **hack-and-slash horde slayer**. The player aims, swings and dodges by hand (the controls below), and hordes are the normal encounter far from the origin (OQ-043, → 02-world). The level-up draft and the sheer scale of builds are borrowed from "bullet heaven" games, but the fighting is not automatic.
 
 - **Auto-fire toggles.** Some skills can be toggled on to fire by themselves while they **pay mana** for as long as they are on. Passives can make toggles cheaper or easier, for example through mana regeneration or cost reduction. Which skills can toggle, the mana rates, the key binding and the passives are decided in CMB-027.
-- **Real buildable OP, with pay-offs.** Builds can scale to absurd strength, and strong builds carry trade-offs. This is a design rule for everything that adds power: draft picks (→ CHR-021) and toggles (→ CMB-027) each name their trade-off in their own task, and the concrete trade-offs are decided there.
+- **Real buildable OP, with pay-offs.** Builds can scale to absurd strength, and strong builds carry trade-offs. The concrete trade-offs are decided in CHR-021 (draft picks) and CMB-027 (toggles).
 
 ## Controls
 

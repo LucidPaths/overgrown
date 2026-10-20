@@ -38,12 +38,12 @@ Goal: one biome and one vista that look like the mood board, with the wanderer i
 
 The old M2 content, replanned on Godot. **G2 is replanned around OQ-040 to OQ-044 (the frontier design, OVR-011):** a horde-slayer fight that grows with distance, a level-up draft, and always-permadeath with a grave. The first-fight tasks stay, and the new ones sit next to the combat tasks.
 
-ECO-001 · ECO-002 · CHR-002 · CHR-004 · CHR-005 · CMB-003 · CMB-004 · CMB-005 · CMB-006 · CMB-007 · CMB-008 · CMB-009 · ITM-001 · ITM-002 · UIX-001 · the first sound effects (a subset of AUD-002)
+ECO-001 · ECO-002 · WLD-007 · CHR-002 · CHR-004 · CHR-005 · CMB-003 · CMB-004 · CMB-005 · CMB-006 · CMB-007 · CMB-008 · CMB-009 · ITM-001 · ITM-002 · UIX-001 · the first sound effects (a subset of AUD-002)
 
 New in G2 (OQ-040 to OQ-044):
-- Horde spawning and density by distance: WLD-023 (→ WLD-007)
-- The level-up draft: CHR-020 · CHR-021 (the pool needs some source to offer three choices, so CHR-021 is in G2; which sources exist by then is decided in its spec)
-- Permadeath and the grave: CMB-019 · CMB-020 · CHR-023 (a new character starts near the origin; the lit-beacon start joins when WLD-024 does)
+- Horde spawning and density by distance: WLD-023 (→ WLD-007, in G2 above; its prerequisite ECO-005 is not in G2, minimal or deferred, decided in its spec)
+- The level-up draft: CHR-020 · CHR-021 (the pool needs some source to offer three choices, so CHR-021 is in G2; which sources exist by then is decided in its spec; its prerequisites CHR-009 and CHR-012 are not in G2, minimal or deferred, decided in its spec)
+- Permadeath and the grave: CMB-019 · CMB-020 · CHR-023 (a new character starts near the origin; the lit-beacon start joins when WLD-024 does; the appearance editor CHR-017 is not in G2, so character creation is minimal or reuses the G0 character, decided in its spec)
 - Auto-fire toggles: CMB-027 (needs CMB-006 for mana; which skill toggles first, since Ability Books (CHR-009) are not in G2, is decided in its spec)
 
 **E2E checklist**
