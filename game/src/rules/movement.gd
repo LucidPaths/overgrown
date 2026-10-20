@@ -23,6 +23,10 @@ static func step_movement(chars: Array[OgCharacter], tick: int, ground: Object) 
 			_move(c, ground)
 			continue
 		var attacking := c.action == OgCharacter.Action.ATTACK
+		if not attacking and c.action != OgCharacter.Action.IDLE and c.action != OgCharacter.Action.WALK:
+			# Later HURT, DEATH: rooted, facing held.
+			c.vel = Vector2.ZERO
+			continue
 
 		var mx := c.intent.move.x
 		var mz := c.intent.move.y
