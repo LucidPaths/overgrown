@@ -1,6 +1,6 @@
 # overgrown art bible: "Plum Shadow, Gold Light"
 
-> History: this art bible was written for the retired pixel-art pipeline (`tools/art/`, deleted in OVR-010). The Godot art direction is in `docs/gdd/10-art-audio.md`.
+> History: this art bible was written for the retired pixel-art pipeline (`tools/art/`, deleted in OVR-010). It is superseded by the G1 art bible, `docs/art/BIBLE.md` (ART-027), the source of truth from G1 on.
 
 Written for ART-024 (Lucid's art direction pass, 2026-10-12). Grounded in `docs/art/RESEARCH.md` ("What we take", rule numbers in brackets such as `[R6]`). Every future art task (props, monsters, weapons, buildings, VFX, UI icons, paper-doll layers) inherits this file. Where this file and a generator disagree, fix whichever is wrong in the same change.
 
