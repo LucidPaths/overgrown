@@ -38,6 +38,7 @@ Monster spread (density pressure and overrun areas above, settlement death in 06
 
 - **Civilization anchors** are graves, lit beacons and waystones (→ 02-world), villages and cities (→ 06-npcs-society). They push back against monsters spreading and taking over settlements.
 - Where nobody holds the line, the monsters push civilization back: spread continues, settlements are overrun and become ruins.
+- A **dungeon break** (OQ-046, → 07-dungeons) is a sudden push from the monster side: a flood around a dungeon that ate too many deaths.
 - Which side wins is decided by skill and preparation. Lucid: "a proper back and forth … like a tug of war".
 - How an anchor resists (its reach, its strength, and its effect on density pressure and territory-boss emergence) is decided in NPC-023. Balancing comes later.
 

@@ -62,7 +62,7 @@ New in G2:
 
 The meta progression (OQ-044) comes after G2, planned when G2 is done: ITM-019 (grave landmark plus heirloom) · CHR-022 (knowledge codex) · WLD-024 (beacons and waystones that stay lit) · NPC-023 (civilization anchors versus monster takeover, the tug of war). CHR-023 gains the lit-beacon start with WLD-024. Balancing the tug of war comes later still.
 
-Dungeon death (OQ-045) comes later too, because dungeons are not in G2: CMB-021 · DNG-008 · CHR-024 · WLD-025 are planned with the dungeons, when G3 is done.
+Dungeon death (OQ-045) comes later too, because dungeons are not in G2: CMB-021 · DNG-008 · CHR-024 · WLD-025 are planned with the dungeons, when G3 is done, and so is the dungeon break (OQ-046): DNG-016.
 
 ## G3 — Co-op
 

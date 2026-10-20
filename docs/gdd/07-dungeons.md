@@ -32,6 +32,21 @@ A death in a dungeon or rift follows OQ-045. It costs **no XP and no levels**.
 - Difficulty tiers decay slowly over time, and clearing deep floors pushes them back down faster. This is also unchanged, and it applies to the dungeon's tier only: the world difficulty never decreases.
 - There is no death limit per character.
 - NPCs that adventure in dungeons follow the same rule (pillar 1); whether their deaths raise the world difficulty is decided in WLD-025.
+- Every death also feeds the dungeon's break counter (below).
+
+## Dungeon break (OQ-046)
+
+A dungeon that eats too many deaths **breaks**. Lucid: "the dungeons feeds on you".
+
+- **It feeds on everyone:** every death in the dungeon, by any player or NPC (pillar 1), feeds its break counter. After X deaths it breaks.
+- **The flood:** a flood of monsters pours out into the area around the entrance.
+- **Where it hits:** dungeons sit inside or beside cities (table above), and a village can host one through a settled rift (DNG-014).
+  - A village has few defenders. Lucid: "lol lmao hood luck have fun".
+  - In a city, the guards defend it, by the same combat rules as everyone (pillar 1).
+- **Blame:** the characters whose deaths fed the break lose reputation with that settlement's faction (→ 06-npcs-society).
+- **Defended:** once the break is defended successfully, the dungeon's difficulty tier and its break counter reset. The world difficulty (OQ-045) stays where it is.
+- **Not defended:** the monsters take over the area, as in the tug of war (→ 03-ecology, 06-npcs-society).
+- Decided in DNG-016: X and whether the counter decays; the flood's size, monster levels and reach; what counts as defended; how much reputation is lost and whether defending earns some back; whether rifts break too.
 
 ## Rift lifecycle
 
@@ -58,3 +73,4 @@ A death in a dungeon or rift follows OQ-045. It costs **no XP and no levels**.
 - [ ] **DNG-013** Rift sealing on clearing the deepest floor; reward cache.
 - [ ] **DNG-014** Rift settlement → becomes a city dungeon (→ NPC-008).
 - [ ] **DNG-015** Multiplayer in dungeons: party members enter the same instance.
+- [ ] **DNG-016** Dungeon break (OQ-046): every death feeds a break counter; at X the dungeon floods its surroundings with monsters; the feeders lose reputation with the settlement; a defended break resets the tier and the counter; an undefended one lets the monsters take over (→ DNG-009, CMB-021, NPC-015, NPC-023).
