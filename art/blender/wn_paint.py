@@ -360,10 +360,10 @@ def paint() -> np.ndarray:
     ys, xs = np.mgrid[0:h, 0:w].astype(float)
     field = value_noise(h, w, 3, 3, rng, wrap_x=False)
     vign = np.hypot((xs - w / 2) / w, (ys - h * 0.45) / h)
-    img[y0 : y0 + h, x0 : x0 + w] = mix((0.075, 0.1, 0.16), (0.025, 0.03, 0.055), np.clip(vign * 1.5 + 0.25 * field, 0, 1))
+    img[y0 : y0 + h, x0 : x0 + w] = mix((0.13, 0.16, 0.25), (0.035, 0.045, 0.08), np.clip(vign * 1.4 + 0.25 * field, 0, 1))
     mid = lambda x, y: abs(x - w / 2) < w * 0.26 and h * 0.18 < y < h * 0.8  # noqa: E731 - front of the head only
-    specks(img, "face", 70, rng, (0.55, 0.75, 1.0), size=(0.45, 0.9), alpha=(0.35, 0.9), mask_fn=mid)
-    specks(img, "face", 6, rng, (0.95, 0.85, 0.6), size=(0.9, 1.4), alpha=(0.8, 1.0), mask_fn=mid)
+    specks(img, "face", 60, rng, (0.6, 0.8, 1.0), size=(0.7, 1.3), alpha=(0.5, 0.95), mask_fn=mid)
+    specks(img, "face", 7, rng, (1.0, 0.88, 0.62), size=(1.3, 2.1), alpha=(0.9, 1.0), mask_fn=mid)
 
     # ---- swatches
     sw = {

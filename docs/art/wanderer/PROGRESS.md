@@ -50,3 +50,19 @@ Resume here after a restart. Spec: `docs/specs/ART-028.md`. Branch `g1-wanderer-
   scarf tails hung as one flat yellow bib.
 - Changed: lighter blue-black void face (still faceless), hairline down past the temples plus two side chains
   (11 hair chains), irregular scarf rolls with one faint stripe per 128 px, idle arms in by 13°, narrower tails.
+
+### Loop 5: foot plant and the rim
+- Logged the worst unreachable ankle distance per clip (a floating foot): walk 6.1 cm, run 4.7 cm. Walk and run
+  stances moved back a little and the heel now stays raised from toe-off into the early swing: walk 1.2 cm,
+  run 0.3 cm, sprint 1.8 cm.
+- Critique (in-game close-up via `WANDERER_GAME_ZOOM`): a tan band ran down the robe's and cape's lit edges. It
+  was the rim light, 0.42 wide, painting a material instead of a light edge (and it also lit linings).
+- Changed: rim width 0.22, warmer and stronger, masked off by baked occlusion (linings, the robe under the cape).
+- Added `game/tests/test_wanderer.gd`: clip and chain names, clip lengths against the rig's cycle metres and the
+  rules speeds, finite poses through every action.
+
+### Loop 6: the face
+- Critique: from the front the head was still a flat black disc; image 02 shows a dark face with a few stars and
+  image 03 a dark face that still reads brow and nose.
+- Changed: the void is a deep navy (still faceless), bigger stars (emissive), one more front lock (12 hair chains).
+- Determinism: two clean builds give identical sha256 for the .glb and the .png.

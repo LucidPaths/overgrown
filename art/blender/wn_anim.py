@@ -26,10 +26,10 @@ BODY_ANIMATED = [
 # name: frames per cycle, metres per cycle (two steps), stance fraction, lift, hip drop, bob, lean, arm swing,
 # elbow, pelvis yaw, twist, step width, stance offset (fwd), heel kick
 LOCO = {
-    "walk": dict(frames=66, dist=1.4, stance=0.6, lift=0.1, drop=0.035, bob=0.022, lean=4.0, arm=22.0, elbow=18.0,
-                 yaw=7.0, twist=6.0, width=0.105, off=0.04, kick=0.0, run=False),
-    "run": dict(frames=34, dist=2.833, stance=0.3, lift=0.17, drop=0.09, bob=0.035, lean=12.0, arm=36.0, elbow=80.0,
-                yaw=10.0, twist=9.0, width=0.085, off=0.03, kick=0.2, run=True),
+    "walk": dict(frames=66, dist=1.4, stance=0.58, lift=0.1, drop=0.05, bob=0.018, lean=4.0, arm=22.0, elbow=18.0,
+                 yaw=7.0, twist=6.0, width=0.105, off=-0.04, kick=0.0, run=False),
+    "run": dict(frames=34, dist=2.833, stance=0.28, lift=0.17, drop=0.1, bob=0.035, lean=12.0, arm=36.0, elbow=80.0,
+                yaw=10.0, twist=9.0, width=0.085, off=-0.01, kick=0.2, run=True),
     "sprint": dict(frames=30, dist=4.0, stance=0.24, lift=0.22, drop=0.12, bob=0.045, lean=20.0, arm=50.0, elbow=88.0,
                    yaw=11.0, twist=10.0, width=0.08, off=-0.02, kick=0.3, run=True),
 }
@@ -66,7 +66,8 @@ def foot_track(phi, p):
     lift = p["lift"] * math.sin(math.pi * min(1.0, s * 1.05)) ** 0.9
     # heel kick: the foot rises behind early in the swing (runs)
     kick = p["kick"] * math.sin(math.pi * min(1.0, s / 0.55)) if s < 0.55 else 0.0
-    h = max(lift, kick)
+    # the heel stays up from the toe-off into the early swing
+    h = max(lift, kick, 0.12 * math.sin(math.radians(38.0)) * (1.0 - smooth(s / 0.35)))
     fwd -= kick * 0.35
     pitch = lerp(38.0, -12.0, smooth((s - 0.15) / 0.85)) if s > 0.15 else 38.0
     return fwd, h, pitch

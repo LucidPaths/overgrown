@@ -11,15 +11,16 @@ uniform float band_lo = 0.22;
 uniform float band_hi = 0.62;
 uniform float band_soft = 0.1;
 uniform float lit_floor = 0.18;
-uniform vec3 rim_color : source_color = vec3(1.0, 0.78, 0.46);
-uniform float rim_strength = 0.75;
-uniform float rim_width = 0.42;
+uniform vec3 rim_color : source_color = vec3(1.0, 0.72, 0.36);
+uniform float rim_strength = 0.8;
+uniform float rim_width = 0.22;
 uniform float face_glow = 2.5;
 
-varying vec2 v_uv;
+// Linings and the robe under the cape carry baked occlusion <= 0.6: no rim there (it lit the inner lining).
+varying float v_rim_mask;
 
 void vertex() {
-	v_uv = UV;
+	v_rim_mask = smoothstep(0.62, 0.8, COLOR.r);
 }
 
 void fragment() {
@@ -48,5 +49,5 @@ void light() {
 	float ndv = dot(NORMAL, VIEW);
 	// Only true silhouette edges: an inner lining seen through an opening faces away (ndv < 0) and gets none.
 	float rim = (1.0 - smoothstep(0.02, rim_width, ndv)) * smoothstep(-0.05, 0.05, ndv) * clamp(ndl * 0.8 + 0.35, 0.0, 1.0);
-	SPECULAR_LIGHT += rim_color * LIGHT_COLOR * rim * rim_strength * mix(0.3, 1.0, ATTENUATION) / PI;
+	SPECULAR_LIGHT += rim_color * LIGHT_COLOR * rim * v_rim_mask * rim_strength * mix(0.3, 1.0, ATTENUATION) / PI;
 }

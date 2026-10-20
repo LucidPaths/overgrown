@@ -5,6 +5,9 @@ extends SceneTree
 ##   -- sheet OUT.png         a row per clip (idle, walk, run, sprint, dodge, attack over a run), 6 frames each
 ##   -- closeup OUT.png       a portrait three-quarter view, standing in the wind
 ##   -- frame OUT.png CLIP P [AZ]   one frame: CLIP in idle|walk|run|sprint|dodge|attack|attackrun, progress P
+## With WANDERER_GAME_ZOOM=M in the environment it instead runs the real main scene with the main scene's own
+## arguments (e.g. -- --capture OUT.png --autopilot --capture-tick 60) and only pulls the play camera in to M
+## metres: an in-game close-up (the rig's zoom has no flag).
 ## The rig is stepped at 60 Hz between renders, so cloth and hair carry their motion from frame to frame.
 
 const DT := 1.0 / 60.0
@@ -19,6 +22,12 @@ var _sun := DirectionalLight3D.new()
 
 
 func _initialize() -> void:
+	var zoom := OS.get_environment("WANDERER_GAME_ZOOM")
+	if zoom != "":
+		var main: Node = (load("res://scenes/main.tscn") as PackedScene).instantiate()
+		root.add_child(main)
+		_zoom_game.call_deferred(main, float(zoom))
+		return
 	var args := OS.get_cmdline_user_args()
 	if args.size() < 2:
 		printerr("usage: -- turnaround|sheet|closeup|frame OUT.png ...")
@@ -26,6 +35,12 @@ func _initialize() -> void:
 		return
 	_build_stage()
 	_run.call_deferred(args)
+
+
+func _zoom_game(main: Node, metres: float) -> void:
+	var cam_rig := main.get_node("CameraRig")
+	cam_rig.set("_zoom", metres)
+	cam_rig.set("_zoom_goal", metres)
 
 
 func _build_stage() -> void:
@@ -153,9 +168,12 @@ func _closeup() -> Image:
 	_set_state("idle", 0.0)
 	_settle(2.5)
 	_cam.fov = 22.0
-	_look(150.0, 4.6, 0.55, 1.35)
-	_rig.advance(DT)
-	return _crop(await _snap(), 0.62)
+	var tiles: Array[Image] = []
+	for az in [150.0, -28.0]:
+		_look(az, 4.6, 0.55, 1.3)
+		_rig.advance(DT)
+		tiles.append(_crop(await _snap(), 0.5))
+	return _grid(tiles, 2)
 
 
 func _frame(clip: String, p: float, az: float) -> Image:

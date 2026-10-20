@@ -145,6 +145,7 @@ def rest_angle(a: Vector, b: Vector) -> float:
     return math.atan2(d.y, -d.z)
 
 
+IK_MAX_ERR = 0.0  # the largest unreachable ankle distance in the clip being keyed (a foot that floats)
 THIGH_A0 = rest_angle(THIGH, KNEE)
 SHIN_A0 = rest_angle(KNEE, ANKLE)
 
@@ -153,12 +154,14 @@ def leg_ik(rig, sfx, s, hip_offset: Vector, ankle_target: Vector, foot_pitch_deg
     """Analytic two-bone IK in the sagittal plane. hip_offset moves the hip joint (the hips bone's translation);
     ankle_target is the ankle in armature space; foot_pitch_deg is the foot's world pitch (+ = toes down).
     splay_deg turns the whole leg about Y (positive = outward). Returns the reach error in metres."""
+    global IK_MAX_ERR
     hj = side(THIGH, s) + hip_offset
     dy = ankle_target.y - hj.y
     dz = ankle_target.z - hj.z
     L = math.hypot(dy, dz)
     reach = (THIGH_LEN + SHIN_LEN) * 0.9995
     err = max(0.0, L - reach)
+    IK_MAX_ERR = max(IK_MAX_ERR, err)
     L = min(max(L, 0.25), reach)
     a_d = math.atan2(dy, -dz)
     l1, l2 = THIGH_LEN, SHIN_LEN
@@ -183,6 +186,8 @@ def key_all(rig, frame, bones):
 
 
 def make_action(rig, name, frames, fn, bones):
+    global IK_MAX_ERR
+    IK_MAX_ERR = 0.0
     act = bpy.data.actions.new(name)
     act.use_fake_user = True
     rig.animation_data_create()
@@ -191,4 +196,5 @@ def make_action(rig, name, frames, fn, bones):
         clear_pose(rig)
         fn(f)
         key_all(rig, f, bones)
+    print(f"[wanderer] clip {name}: {len(frames)} keys, worst foot reach miss {IK_MAX_ERR * 100:.1f} cm", flush=True)
     return act
