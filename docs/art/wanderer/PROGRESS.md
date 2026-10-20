@@ -104,3 +104,43 @@ Resume here after a restart. Spec: `docs/specs/ART-028.md`. Branch `g1-wanderer-
   rim stays off its bumps, the tips still catch light); locks a little thinner and flatter (ribbons); downwind
   drift 0.34 -> 0.62; locks from the back of the head hang and stream sideways instead of straight back.
 - Rejected: masking the rim off the hair entirely. The paintings light the hair's edge; only the roots go dark.
+
+### Loop 10: horns
+- Critique (in-game close-up, attack while walking): one or two thin locks stood straight up from the crown like
+  horns. A probe that runs the real main scene with `--autopilot` and prints every hair segment pointing up
+  (`d.y > 0.6`) showed segments pinned at the 65 deg bend limit, 0.8 to 0.93 up, while their rest direction was
+  0.1 up. Turning the hair's head collision off made them go away: the head capsules (radius 0.13 and 0.125, the
+  top one reaching 2.5 cm above the crown) stuck out of the narrow skull and pushed the crown and side locks
+  out, i.e. up. The crown locks also left the scalp at a steep angle in the rest mesh.
+- Changed: head capsules 0.085 m, ending at the head centre (inside the skull everywhere); a `max_rise` cloth rule
+  for hair (a segment may lift at most 0.3 above its rest direction's y: wind can still lift the hair, a snap
+  turn can't flip it up); crown locks leave the scalp flat; hair gravity 0.35 -> 0.7 g, air 3.2 -> 2.6.
+  Probe after: no segment above its rest + 0.3 through ticks 195..230; the capture shows no horns.
+
+## State at the end of the lab (2026-10-20)
+- **Counts:** 28,842 triangles, 15,279 vertices, one mesh, one material, one 1024x1024 atlas. 124 bones: 20 body
+  (root, hips, spine, chest, neck, head, and per side shoulder, upper arm, forearm, hand, thigh, shin, foot) and
+  104 cloth bones in 34 chains (robe 12 x 3, poncho 8 x 3, hair 12 x 3, scarf tails 2 x 4). Clips: idle, walk,
+  run, sprint, dodge, attack.
+- **Determinism:** `bash art/blender/build.sh` run twice gives `wanderer.glb` sha256 13aaeb01...a6482 and
+  `wanderer_albedo.png` 64949b29...4ece65 both times, the same as the committed files (`git status` clean).
+- **Checks:** `tools/godot/test.sh` 56 passed; `tools/check-credits.sh` ok (no third-party files);
+  `tools/godot/export.sh` both builds; the CI smoke capture on the exported Linux build writes its PNG.
+- **Images** (all in this folder): `turnaround.jpg`, `contact-sheet.jpg` (idle, walk, run, sprint, dodge, attack
+  over a run), `closeup.jpg`, `ingame-default.jpg` and `ingame-default-walk-full.jpg` (default play zoom),
+  `ingame-closeup.jpg`, `ingame-closeup-dodge.jpg`, `ingame-closeup-attack-walking.jpg` (camera at 4 m),
+  `vs-moodboard-01.jpg`, `vs-moodboard-02.jpg`, `vs-moodboard-09.jpg` (studio `portrait` mode, the game shader).
+- **How to re-render:** `tools/godot/test.sh` once (import), then `tools/godot/wanderer_studio.sh turnaround|sheet|
+  closeup|portrait AZ OUT.png`; in-game close-ups with `WANDERER_GAME_ZOOM=4 tools/godot/wanderer_studio.sh
+  --capture OUT.png --autopilot --capture-tick N` (60 walk, 150 sprint, 190 dodge, 212 attack while walking,
+  400 idle).
+
+## Next (not done)
+- The poncho's front still reads as a bell from straight ahead; a real cloth bake (Blender cloth sim baked to
+  the rest shape, then frozen) would give it the paintings' heavy vertical folds.
+- Hands are mittens; at 80 px nobody sees them, in the vista they are the weakest part.
+- The attack is one palm sweep; a combo needs 2-3 variants and a weapon decision (the GDD has none yet).
+- Wind is a constant in `OgWandererView.WIND`; when ART-027 exposes the world's wind, read it there (one line).
+- Cloth chains don't collide with each other: the scarf tails can pass into the poncho in a hard turn.
+- A painterly outline (inverted hull) was left out to keep the silhouette soft; worth a try against ART-027's
+  final post stack.
