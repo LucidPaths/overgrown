@@ -10,10 +10,12 @@ extends Node3D
 ## camera settles smoothly toward CAMERA_FLOOR_PITCH_DEG and rises by up to LOW_LIFT_M (camera_pitch_deg,
 ## camera_lift_m), while the view keeps tilting up: the target sinks to the bottom of the frame (in frame down to
 ## about -10, a view 15 degrees up) and then below it; the sky fills the view.
-## Terrain: the camera never sits within CLEAR_GROUND_M of the ground under it (read through `ground`, never
-## written) or CLEAR_TARGET_M of the target; it snaps in only as far as that needs. Its goal is the spring arm from a
-## pivot ARM_PIVOT_M above the target: the first point out along the arm that would be that close to the ground
-## (so terrain between the camera and the wanderer pulls it in too), approached at ARM_IN_RATE and ARM_OUT_RATE.
+## Terrain (read through `ground`, never written): the camera is lifted straight up wherever it would come within
+## CLEAR_GROUND_M of the ground under it or CLEAR_TARGET_M of the target (camera_point; continuous, so no pops).
+## The arm itself is a spring arm from a pivot ARM_PIVOT_M above the target: its goal reaches out to the first point
+## less than ARM_LOS_M above the ground (terrain between the camera and the wanderer) and back in to a camera point
+## with a GOAL_GROUND_M cushion (arm_goal). The arm pulls in toward it at ARM_IN_RATE and eases out at ARM_OUT_RATE,
+## never onto a point inside the hard margin (step_arm).
 ## When pulled in, the view tilts to keep the target where the posed camera had it. Holding camera_vista eases out
 ## to a wide, high view at the current yaw; the mouse wheel zooms the play view. The rig also moves the depth fog
 ## with the pose so the streaming edge stays hidden. Moves in _physics_process (physics interpolation smooths it);
@@ -39,9 +41,10 @@ const PLAY_PITCH_MAX_DEG := 65.0
 const LOOK_UP_FROM_DEG := 23.0
 const CAMERA_FLOOR_PITCH_DEG := 4.0
 const LOW_LIFT_M := 1.5
-## Terrain clearance (tunable): the hard margins above the ground under the camera and above the target; the pivot
-## (the wanderer's neck, clear above its own ground); ARM_SAMPLES steps plus ARM_REFINE halvings along the arm; and
-## the arm's approach rates toward its goal, in (faster) and out (1 - exp(-rate * delta) of the gap per tick).
+## Terrain clearance (tunable): the hard margins above the ground under the camera and above the target; the
+## goal's cushion at the camera and its line-of-sight margin along the arm; the pivot (the wanderer's neck, clear
+## above its own ground); ARM_SAMPLES steps plus ARM_REFINE halvings along the arm; and the arm's approach rates,
+## in (faster) and out (1 - exp(-rate * delta) of the gap per tick).
 const CLEAR_GROUND_M := 0.6
 const CLEAR_TARGET_M := 0.3
 const GOAL_GROUND_M := 0.8
