@@ -85,7 +85,7 @@ void fragment() {
 	if (geoglyph && og_landmark.z > 0.0) {
 		vec2 gl = og_geoglyph(rel, og_landmark.z, TIME, aa);
 		col = mix(col, col * 0.3, gl.x);
-		EMISSION = og_lin(vec3(1.0, 0.70, 0.32)) * gl.x * (0.9 + 1.8 * gl.y);
+		EMISSION = og_lin(vec3(1.0, 0.70, 0.32)) * gl.x * (0.5 + 1.1 * gl.y);
 	}
 	ALBEDO = col;
 	ROUGHNESS = 1.0;

@@ -50,7 +50,7 @@ float og_bayer4(vec2 frag) {
 // themselves away by it.
 float og_occluder(vec3 frag, mat4 view, float radius) {
 	vec3 f = (view * vec4(og_focus + vec3(0.0, 0.9, 0.0), 1.0)).xyz;
-	float near_cam = 1.0 - smoothstep(3.0, 5.5, length(frag));
+	float near_cam = 1.0 - smoothstep(4.0, 8.0, length(frag));
 	if (f.z > -0.1 || frag.z > -0.05) {
 		return near_cam;
 	}

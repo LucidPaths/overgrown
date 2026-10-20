@@ -179,3 +179,4 @@ func _update(delta: float) -> void:
 				_post_effect.focus_uv = Vector2(-10, -10)
 			else:
 				_post_effect.focus_uv = cam.unproject_position(at) / get_viewport().get_visible_rect().size
+				_post_effect.focus_dist = cam.global_position.distance_to(at)

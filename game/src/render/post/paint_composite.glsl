@@ -16,7 +16,7 @@ layout(set = 0, binding = 4, std140) uniform Frame {
 	mat4 inv_proj;
 	mat4 cam_to_world;
 	vec4 fog; // begin m, end m, time s, mist strength
-	vec4 eye_dir;
+	vec4 eye_dir; // xyz toward the eye, w camera-to-focus distance (m)
 	vec4 focus; // u, v, radius (fraction of height), strength
 	vec4 sizes; // full w, h, paint w, h
 	vec4 wind; // xy unit wind direction (world xz), z strength
@@ -32,6 +32,10 @@ layout(push_constant, std430) uniform Params {
 	float key; // exposure: target geometric-mean display luminance
 	float gain_min;
 	float gain_max;
+	float outline; // focal outline strength
+	float px_scale; // full-res height / 720
+	float pad0;
+	float pad1;
 } params;
 layout(set = 0, binding = 5, std430) restrict readonly buffer Exposure {
 	float adapted; // metered and eased by paint_exposure.glsl
@@ -79,9 +83,11 @@ vec4 world_at(vec2 px) {
 
 // The brush noise: broad strokes (one value per stroke, ~30 cm wide) plus fine hairs, in world space so the
 // strokes stay on the world when the camera moves (sky: in direction space).
-float hair(vec4 w) {
+// `fine` (0..1) fades the finest octave out with distance, where it would alias.
+float hair(vec4 w, float fine) {
 	vec3 p = w.xyz * (w.w > 0.0 ? 1.0 : 0.02);
-	return vnoise3(p * 3.2) * 0.55 + vnoise3(p * 9.0 + 5.0) * 0.3 + vnoise3(p * 21.0 + 11.0) * 0.15;
+	float n = vnoise3(p * 3.2) * 0.45 + vnoise3(p * 9.0 + 5.0) * 0.3;
+	return n + mix(0.125, vnoise3(p * 24.0 + 11.0), fine) * 0.25;
 }
 
 // The sharp scene colour at a pixel, tonemapped like the paint (for the focal point, which sits well inside
@@ -116,10 +122,10 @@ vec3 grade(vec3 g, float amount, float stroke) {
 	lt = mix(lt, l, smoothstep(0.55, 0.95, l));
 	// Each stop's luminance stays near its key, so the ramps change hue, not exposure (OgPaintPost meters
 	// the image before this).
-	vec3 shade = ramp6(lt, vec3(0.006, 0.014, 0.03), vec3(0.015, 0.085, 0.11), vec3(0.03, 0.24, 0.26),
-		vec3(0.13, 0.44, 0.40), vec3(0.46, 0.67, 0.55), vec3(0.88, 0.93, 0.82));
-	vec3 light = ramp6(lt, vec3(0.01, 0.016, 0.03), vec3(0.06, 0.10, 0.09), vec3(0.24, 0.27, 0.15),
-		vec3(0.70, 0.48, 0.19), vec3(0.95, 0.70, 0.33), vec3(1.0, 0.92, 0.72));
+	vec3 shade = ramp6(lt, vec3(0.006, 0.014, 0.03), vec3(0.016, 0.08, 0.11), vec3(0.05, 0.22, 0.25),
+		vec3(0.17, 0.39, 0.38), vec3(0.48, 0.64, 0.57), vec3(0.88, 0.92, 0.84));
+	vec3 light = ramp6(lt, vec3(0.01, 0.016, 0.03), vec3(0.07, 0.10, 0.08), vec3(0.27, 0.25, 0.13),
+		vec3(0.72, 0.46, 0.17), vec3(0.95, 0.68, 0.30), vec3(1.0, 0.91, 0.70));
 	// Warmth: red over green and blue (gold, orange, burnt earth). Bright pixels go gold unless clearly blue.
 	float hue_w = smoothstep(0.05, 0.25, g.r - 0.85 * g.g - 0.15 * g.b);
 	float blue = smoothstep(0.0, 0.1, g.b - g.r);
@@ -129,7 +135,11 @@ vec3 grade(vec3 g, float amount, float stroke) {
 	vec3 ramp = mix(shade, light, w);
 	vec3 chroma = g - vec3(l);
 	float greenness = clamp((g.g - max(g.r, g.b)) * 5.0, 0.0, 1.0);
-	vec3 mapped = ramp + chroma * CHROMA_KEEP * (1.0 - 0.6 * greenness);
+	// Warm pixels take their colour from the ramp (ochre gold, never lemon), except true reds and oranges
+	// (flowers, the wanderer's borders), which keep theirs.
+	float redness = clamp((g.r - g.g) * 3.0, 0.0, 1.0);
+	float keep = CHROMA_KEEP * (1.0 - 0.8 * greenness) * mix(1.0, 0.3 + 0.7 * redness, w);
+	vec3 mapped = ramp + chroma * keep;
 	return clamp(mix(g, mapped, amount), 0.0, 1.0);
 }
 
@@ -159,6 +169,7 @@ void main() {
 	vec2 sdir = length(v) > 1e-6 ? normalize(v) : vec2(0.70710678, 0.70710678);
 	// Brush hairs: average the hair noise along the stroke (LIC). Far geometry gets shorter strokes.
 	float lic = 0.5;
+	float fine = 1.0 - smoothstep(18.0, 45.0, dist);
 	if (params.stroke > 0.0) {
 		float len = params.stroke_len;
 		float acc = 0.0;
@@ -167,7 +178,7 @@ void main() {
 		for (int i = -TAPS; i <= TAPS; i++) {
 			vec2 q = vec2(p) + 0.5 + sdir * (float(i) / float(TAPS)) * len;
 			float wt = 1.0 - abs(float(i)) / float(TAPS + 1);
-			acc += hair(world_at(q)) * wt;
+			acc += hair(world_at(q), fine) * wt;
 			wsum += wt;
 		}
 		lic = acc / wsum;
@@ -185,6 +196,21 @@ void main() {
 	float focal = (1.0 - smoothstep(frame.focus.z * 0.5, frame.focus.z, length(fd))) * frame.focus.w;
 	if (focal > 0.0) {
 		col = mix(col, sharp_at(p), focal);
+		// Outline: this pixel is near the focus depth and something behind it lies well beyond it (the
+		// wanderer's silhouette, not the grass at its feet).
+		float near_focus = 1.0 - smoothstep(1.0, 2.0, abs(dist - frame.eye_dir.w));
+		if (near_focus > 0.0 && params.outline > 0.0) {
+			float step_px = 1.5 * params.px_scale;
+			float behind = 0.0;
+			for (int k = 0; k < 4; k++) {
+				vec2 o = vec2(k == 0 ? step_px : (k == 1 ? -step_px : 0.0), k == 2 ? step_px : (k == 3 ? -step_px : 0.0));
+				vec4 wn = world_at(vec2(p) + 0.5 + o);
+				float dn = wn.w > 0.0 ? length(wn.xyz - cam) : 1e4;
+				behind = max(behind, dn - dist);
+			}
+			float edge = smoothstep(0.6, 1.6, behind) * near_focus;
+			col = mix(col, vec3(0.006, 0.01, 0.02), edge * params.outline * smoothstep(0.0, 0.5, focal / max(frame.focus.w, 1e-3)));
+		}
 	}
 
 	// Stars over the painted sky, at full resolution (the Kuwahara pass would wipe points this small).

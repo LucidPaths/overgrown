@@ -22,8 +22,8 @@ const RADIUS_HIGH := 5.0
 ## Structure tensor smoothing (paint px).
 const TENSOR_SIGMA := 2.0
 ## Brush hair strength and LIC half-length (full-res px at 720p; scaled with the height).
-const STROKE := 0.6
-const STROKE_LEN_PX := 9.0
+const STROKE := 0.85
+const STROKE_LEN_PX := 13.0
 const GRADE := 0.9
 const GRAIN := 0.045
 ## Exposure: the metered geometric-mean display luminance is eased toward at EXPOSURE_RATE (1/s) and the
@@ -38,7 +38,10 @@ const SHARPEN := 0.9
 const MIST := 0.85
 ## Focal clarity: radius as a fraction of the screen height, and how much of the sharp render it keeps.
 const FOCUS_RADIUS := 0.11
-const FOCUS_STRENGTH := 0.45
+const FOCUS_STRENGTH := 0.6
+## Focal outline: a thin blue-black line on the near side of depth edges within OUTLINE_DEPTH_M of the focus
+## (the wanderer reads as a silhouette against gold and teal alike; mood boards 01-03 draw the figure dark).
+const OUTLINE := 0.85
 
 const CONTEXT := &"og_paint"
 
@@ -58,6 +61,8 @@ var beam_radius := 0.0
 var beam_length := 0.0
 ## Focus point in screen uv (0..1), or negative to disable.
 var focus_uv := Vector2(-10, -10)
+## Camera to focus distance (m).
+var focus_dist := 14.0
 
 var _rd: RenderingDevice
 var _shaders := {} # name -> RID
@@ -151,7 +156,7 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 	_push_transform(data, cam)
 	var focus_r := FOCUS_RADIUS if focus_uv.x > -1.0 else 0.0
 	data.append_array([fog_begin, fog_end, time, MIST,
-		eye_dir.x, eye_dir.y, eye_dir.z, 0.0,
+		eye_dir.x, eye_dir.y, eye_dir.z, focus_dist,
 		focus_uv.x, focus_uv.y, focus_r, FOCUS_STRENGTH,
 		full.x, full.y, paint.x, paint.y,
 		wind.x, wind.y, wind.z, 0.0,
@@ -187,7 +192,8 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		var stroke := STROKE if quality == 2 else STROKE * 0.6
 		_dispatch("composite", full, [_image(0, color), _sampled(1, depth, _nearest), _sampled(2, tex_paint, _linear),
 			_sampled(3, tex_tensor, _linear), _ubo(4), _storage(5, _exposure_buf)],
-			PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN, SHARPEN, EXPOSURE_KEY, EXPOSURE_MIN, EXPOSURE_MAX]))
+			PackedFloat32Array([stroke, STROKE_LEN_PX * height_scale, GRADE, GRAIN, SHARPEN, EXPOSURE_KEY, EXPOSURE_MIN, EXPOSURE_MAX,
+				OUTLINE, height_scale, 0, 0]))
 
 
 func _ensure_textures(buffers: RenderSceneBuffersRD, paint: Vector2i) -> void:
