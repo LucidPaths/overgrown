@@ -356,8 +356,8 @@ def build_hair_cap(geo):
 
 # (az, el, length, root width, rise) per chain; az 0 = front, +90 = the character's left
 HAIR_CHAINS = [
-    (22.0, 62.0, 0.27, 0.05, 0.3),
-    (-26.0, 56.0, 0.26, 0.05, 0.3),
+    (22.0, 62.0, 0.27, 0.05, 0.1),
+    (-26.0, 56.0, 0.26, 0.05, 0.1),
     (72.0, 34.0, 0.32, 0.055, 0.12),
     (-72.0, 34.0, 0.3, 0.055, 0.12),
     (150.0, 46.0, 0.37, 0.06, -0.05),
@@ -365,7 +365,7 @@ HAIR_CHAINS = [
     (118.0, 8.0, 0.34, 0.056, -0.25),
     (-118.0, 8.0, 0.32, 0.056, -0.25),
     (180.0, -4.0, 0.3, 0.06, -0.4),
-    (4.0, 40.0, 0.2, 0.046, 0.42),
+    (4.0, 40.0, 0.2, 0.046, -0.15),
     (96.0, -6.0, 0.24, 0.05, -0.2),
     (-96.0, -6.0, 0.23, 0.05, -0.2),
 ]
@@ -379,7 +379,9 @@ def lock_path(az, el, length, rise, wiggle, n=8):
     # straight-back locks are end-on stubs; the mood board's backs show a dark mass with strands blowing aside)
     back = Vector((0, 1.0 - 0.55 * sstep(100.0, 160.0, abs(az)), 0))
     up = Vector((0, 0, 1.0))
-    d0 = (nrm * 0.5 + back * 1.0 + up * rise).normalized()
+    # crown locks leave the scalp flat (along it, not out of it): rising out of the crown they read as horns
+    crown = sstep(30.0, 70.0, el)
+    d0 = (nrm * 0.5 * (1.0 - 0.7 * crown) + back * 1.0 + up * (rise - 0.3 * crown)).normalized()
     d1 = (back * 1.0 + WIND_DRIFT + up * (rise * 0.35) + nrm * 0.08).normalized()
     pts = [root]
     step = length / (n - 1)

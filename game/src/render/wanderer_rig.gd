@@ -39,11 +39,12 @@ const ATTACK_MASK := {"hips": 0.25, "spine": 0.65, "chest": 1.0, "neck": 1.0, "h
 const STRAFE_MAX_DEG := 65.0
 
 ## Cloth (per chain kind): gravity scale, air drag (1/s), damping per step, pull to the rest shape per step
-## (root to tip), max bend from the rest direction (degrees), collision groups.
+## (root to tip), max bend from the rest direction (degrees), collision groups and (hair) how far a segment may
+## lift above its rest direction (in the unit direction's y).
 const CLOTH := {
 	"robe": {"g": 1.0, "air": 1.6, "damp": 0.06, "stiff": [0.02, 0.012, 0.008], "limit": 70.0, "groups": ["legs", "pelvis"]},
 	"cape": {"g": 1.0, "air": 1.0, "damp": 0.08, "stiff": [0.03, 0.018, 0.012], "limit": 62.0, "groups": ["arms", "torso", "skirt"]},
-	"hair": {"g": 0.35, "air": 3.2, "damp": 0.1, "stiff": [0.04, 0.025, 0.015], "limit": 65.0, "groups": ["head"]},
+	"hair": {"g": 0.7, "air": 2.6, "damp": 0.1, "stiff": [0.04, 0.025, 0.015], "limit": 65.0, "groups": ["head"], "max_rise": 0.3},
 	"scarf": {"g": 1.0, "air": 3.4, "damp": 0.05, "stiff": [0.008, 0.006, 0.005, 0.004], "limit": 130.0, "groups": ["back"]},
 }
 const STEP_S := 1.0 / 60.0
@@ -312,7 +313,7 @@ func _define_capsules() -> void:
 		["upper_arm_L", "forearm_L", 0.075, "arms"], ["upper_arm_R", "forearm_R", 0.075, "arms"],
 		["forearm_L", "hand_L", 0.085, "arms"], ["forearm_R", "hand_R", 0.085, "arms"],
 		["spine", "neck", 0.15, "torso"],
-		["neck", "head", 0.13, "head"], ["head", "", 0.125, "head"],
+		["neck", "head", 0.085, "head"], ["head", "", 0.085, "head"],
 		["spine", "neck", 0.25, "back"],
 	]
 	for d in defs:
@@ -335,7 +336,9 @@ func _capsule_points(xf: Transform3D, origin: Vector3) -> Array:
 		else:
 			var parent := skeleton.get_bone_parent(c[0])
 			var dir := (a - skeleton.get_bone_global_pose(parent).origin).normalized()
-			b = a + dir * 0.13
+			# to the head centre; with radius 0.085 the head capsules stay inside the narrow skull: wider, they poked
+			# out of it and pushed the crown and side locks up into horns
+			b = a + dir * 0.1
 		out.append([xf * a - origin, xf * b - origin, c[2], c[3]])
 	return out
 
@@ -416,6 +419,7 @@ func _step_chain(ch: Dictionary, prev_target: Array, alpha: float, accel: Vector
 		cur = cur.lerp(target_k, stiff[mini(k - 1, stiff.size() - 1)])
 		p[k] = cur
 	var limit := deg_to_rad(cfg["limit"])
+	var max_rise: float = cfg.get("max_rise", -1.0)
 	var groups: Array = cfg["groups"]
 	for it in 2:
 		for k in range(1, n):
@@ -430,6 +434,14 @@ func _step_chain(ch: Dictionary, prev_target: Array, alpha: float, accel: Vector
 			var ang := dn.angle_to(tdn)
 			if ang > limit:
 				dn = tdn.slerp(dn, limit / ang).normalized()
+			# Hair may lift above its rest direction only a little: thin locks flipped up past it read as horns
+			# (a snap turn or a sudden stop throws the tips up).
+			if max_rise >= 0.0 and dn.y > maxf(tdn.y, 0.0) + max_rise:
+				var flat := Vector2(dn.x, dn.z)
+				var y := maxf(tdn.y, 0.0) + max_rise
+				var hz := sqrt(maxf(0.0, 1.0 - y * y))
+				flat = flat.normalized() * hz if flat.length_squared() > 1e-12 else Vector2(tdn.x, tdn.z).normalized() * hz
+				dn = Vector3(flat.x, y, flat.y)
 			var q: Vector3 = base + dn * len
 			for c in caps:
 				if not groups.has(c[3]):
