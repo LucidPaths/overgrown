@@ -34,11 +34,11 @@ const YAW_KEYS_DEG_S := 100.0
 const PLAY_PITCH_MIN_DEG := 5.0
 const PLAY_PITCH_MAX_DEG := 65.0
 ## Terrain clearance (tunable): the camera stays CLEAR_GROUND_M above the ground under it and CLEAR_TARGET_M above
-## the target. The arm pulls in toward the pivot ARM_PIVOT_M above the target (clear above its own ground), found
-## by ARM_SAMPLES steps from the far end and ARM_REFINE halvings, and eases back out at ZOOM_RATE.
+## the target. The arm pulls in toward the pivot ARM_PIVOT_M above the target (the wanderer's neck, clear above its
+## own ground), found by ARM_SAMPLES steps from the far end and ARM_REFINE halvings, and eases back out at ZOOM_RATE.
 const CLEAR_GROUND_M := 0.6
 const CLEAR_TARGET_M := 0.3
-const ARM_PIVOT_M := 1.0
+const ARM_PIVOT_M := 1.5
 const ARM_SAMPLES := 16
 const ARM_REFINE := 6
 ## Vista (tunable).
@@ -85,6 +85,11 @@ func _ready() -> void:
 func set_orbit(yaw_deg: float, pitch_deg: float) -> void:
 	_yaw = deg_to_rad(yaw_deg)
 	_pitch = clampf(pitch_deg, PLAY_PITCH_MIN_DEG, PLAY_PITCH_MAX_DEG)
+
+
+## Sets the play zoom distance in metres (clamped to ZOOM_MIN_M..ZOOM_MAX_M). Call snap() after to jump there.
+func set_zoom(dist_m: float) -> void:
+	_zoom_goal = clampf(dist_m, ZOOM_MIN_M, ZOOM_MAX_M)
 
 
 ## The orbit yaw (0..360) and play pitch in degrees, for the HUD.
@@ -182,9 +187,10 @@ func _apply(arm_ease: float) -> void:
 	var pitch := deg_to_rad(lerpf(_pitch, VISTA_PITCH_DEG, t))
 	var raise := deg_to_rad(lerpf(look_raise_deg(_pitch), VISTA_LOOK_RAISE_DEG, t))
 	var offset := camera_offset(_yaw, pitch, dist)
-	# Pull in at once where terrain blocks; ease back out like a zoom.
+	# Pull in at once where terrain blocks; ease back out like a zoom, jumping out if the eased point is blocked.
 	var clear := clear_arm(global_position, offset, ground)
-	_arm = minf(lerpf(_arm, clear, arm_ease), clear)
+	var eased := minf(lerpf(_arm, clear, arm_ease), clear)
+	_arm = eased if _is_clear(arm_point(global_position, offset, eased), global_position, ground) else clear
 	_camera.position = arm_point(Vector3.ZERO, offset, _arm)
 	# Aim at the target from where the camera is; on the posed arm this is the pitch itself.
 	var p := _camera.position
