@@ -15,7 +15,8 @@ G0 waves:
 3. ✅ OVR-009 #40 (OQ-031..038 = D1–D8, GDD/CLAUDE.md rewrite, credits check) · ✅ GOD-005 #41 (chunk store on WorkerThreadPool, 3D terrain, tilted camera + vista, crisp placeholder palette)
 4. ✅ OVR-010 #42 (TS/Pixi/Python retired; reference commit e6eaee3) · ✅ GOD-006 #43 (character rules, keyboard/mouse/gamepad, placeholder wanderer)
 5. ✅ G0 E2E #44 (docs/e2e/G0.md): 6/6 testable items PASS incl. injected keyboard/mouse/gamepad (43 checks); new GOD-007.
-6. ✅ Lucid's playtest round 1 (2026-10-19): running works; wants right-click camera orbit, attacks that don't stop movement, a dodge that doesn't shrink; "graphics look absolute dogshit still" (expected: G1). ⏳ GOD-008 (those three + GOD-007), then G1 (the look) in parallel
+6. ✅ Lucid's playtest round 1 (2026-10-19): running works; wants right-click camera orbit, attacks that don't stop movement, a dodge that doesn't shrink; "graphics look absolute dogshit still" (expected: G1). ✅ GOD-008 #46 (+ GOD-007). G1 labs running: ART-027 world look (g1-world-lab), ART-028 wanderer (g1-wanderer-lab); both resumed after a container restart 2026-10-20.
+7. Lucid, 2026-10-20: "the frontier" design (horde slayer, level-up draft, always permadeath, the world remembers, graves as civilization anchors) → OVR-011 records it as OQ-040..044 and replans G2. Playtest round 2: camera should look up more → GOD-009.
 
 Pre-overhaul history: M0 and M1 complete (docs/e2e/M0.md, M1.md); the TS/Pixi game is reference only until OVR-010.
 
@@ -25,7 +26,7 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 
 ## In flight
 
-- GOD-008 worker in /home/user/wt/god-008. Observed in E2E: spawn search 1.8 s (seed 1) to 7.1 s (seed 12345) blocks `_ready`, window shows nothing meanwhile.
+- OVR-011 (docs) in /home/user/wt/ovr-011; GOD-009 (camera) in /home/user/wt/god-009. Observed in E2E: spawn search 1.8 s (seed 1) to 7.1 s (seed 12345) blocks `_ready`, window shows nothing meanwhile.
 - Repo housekeeping done 2026-10-19: `main` protected by Lucid (PR + required `godot`, 0 approvals), auto-delete head branches on, 44 stale branches deleted via the Delete branches workflow (#45); 3 remain: main, art-lab, spike-godot.
 - Follow-ups noted (not yet tasks): `main.gd`'s `--at` check re-derives the foot-box tile span instead of calling `OgCollision` (Fable, #43); the device path in `local_input.gd` has no automated test (playtest); `find_spawn` keeps its own chunk cache (1.8–2.6 s at start; could share the store's); river banks show sawtooth where the water plane cuts faceted slopes; curved mesa walls follow the tile staircase (G1 polish); the moisture field shows a near-straight N–S forest border near seed 1's spawn (value-noise lattice alignment).
 - Parked: `art-lab` (draft PR #32, ART-025/026 labs, superseded by G1 but kept for reference); `spike-godot` branch (reference only, never merge).
@@ -52,6 +53,7 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 - 2026-10-19 Lucid: Godot overhaul (D1–D8 in docs/overhaul/PLAN.md, #35): Godot 4 desktop, exe from Releases, cloud-only development, mood-board art, tilted ARPG camera + vistas, agent-built Blender characters, loosened asset rule D8 (open licences + CREDITS). "Just build, merge": no per-PR sign-off.
 - 2026-10-19 GDScript cross-language fixtures carry floats as IEEE-754 hex bits (Godot's JSON float parsing isn't correctly rounded).
 - 2026-10-19 OVR-009 #40: 3 Fable loops, each finding new small doc-accuracy items (no failed fix); the last one-clause fix (OQ-032 asset names) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (same call as #30).
+- 2026-10-20 OVR-011 #47: 3 Fable loops, each finding new small bookkeeping items (no failed fix); the last one-clause fix (OQ-040 trade-off deferral wording) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (as #40, #30).
 - 2026-10-19 Third-party assets live in `game/assets/third_party/` (inside the Godot project so res:// can load them), credited in its CREDITS.md (OVR-009).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 

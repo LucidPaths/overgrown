@@ -25,6 +25,14 @@ In warm zones, NPCs collapse into **settlement statistics** (headcount by job, f
 - **Settlements can die.** Overrun by monsters, starved or abandoned, they become ruins that monsters move into.
 - **Migration:** when a settlement thins out, its NPCs pack up and travel to the nearest larger settlement. Migration caravans are slow, valuable and easy prey for monsters and rogues, so escort quests pay well.
 
+## The tug of war (OQ-044)
+
+Settlements are one of the **civilization anchors**, along with graves and lit beacons (→ 02-world, 08-items-economy). Anchors push back against monsters spreading and taking over settlements (→ 03-ecology). Where nobody holds the line, the monsters push civilization back, and settlements die and become ruins (see Settlements above).
+
+- It is a back and forth decided by skill and preparation. Balancing comes later.
+- **Open point (pillar 1):** by one rule set, notable NPC deaths could leave graves that anchor civilization too. Whether they do, and which NPCs count as notable, is decided in NPC-023.
+- How an anchor resists, and how a settlement counts as one, is decided in NPC-023.
+
 ## Factions and diplomacy
 
 - Factions come per settlement, per species, and as cross-cutting groups (guilds, bandits, cults).
@@ -70,3 +78,4 @@ In warm zones, NPCs collapse into **settlement statistics** (headcount by job, f
 - [ ] **NPC-020** Quest resolution via actual sim change (kill counts against real population).
 - [ ] **NPC-021** Authored quest support for special NPCs and bosses.
 - [ ] **NPC-022** Dialogue system: talk, trade, learn, quest, bribe.
+- [ ] **NPC-023** Civilization anchors versus monster takeover (the tug of war): graves, lit beacons and settlements resist monster spread and settlement takeover, and monsters push civilization back where nobody holds the line; includes the open point on graves from notable NPC deaths (OQ-044) (→ ECO-005, ECO-009, NPC-008, NPC-009, ITM-019, WLD-024).

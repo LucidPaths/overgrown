@@ -36,17 +36,31 @@ Goal: one biome and one vista that look like the mood board, with the wanderer i
 
 ## G2 — First fight
 
-The old M2 content, replanned on Godot.
+The old M2 content, replanned on Godot. **G2 is replanned around the frontier design (OVR-011; OQ-040, OQ-041, OQ-042, OQ-043, OQ-044):** a horde-slayer fight that grows with distance, a level-up draft, and always-permadeath with a grave. The first-fight tasks stay, and the new ones sit next to the combat tasks.
 
-ECO-001 · ECO-002 · CHR-002 · CHR-004 · CHR-005 · CMB-003 · CMB-004 · CMB-005 · CMB-007 · CMB-008 · CMB-009 · ITM-001 · ITM-002 · UIX-001 · the first sound effects (a subset of AUD-002)
+ECO-001 · ECO-002 · WLD-007 · CHR-002 · CHR-004 · CHR-005 · CMB-003 · CMB-004 · CMB-005 · CMB-006 · CMB-007 · CMB-008 · CMB-009 · ITM-001 · ITM-002 · UIX-001 · the first sound effects (a subset of AUD-002)
+
+New in G2:
+- Horde spawning and density by distance (OQ-043): WLD-023 (→ WLD-007, in G2 above; its prerequisite ECO-005 is not in G2, minimal or deferred, decided in its spec)
+- The level-up draft (OQ-041): CHR-020 · CHR-021 (the pool needs some source to offer three choices, so CHR-021 is in G2; which sources exist by then is decided in its spec; its prerequisites CHR-009 and CHR-012 are not in G2, minimal or deferred, decided in its spec)
+- Permadeath and the grave (OQ-042): CMB-019 · CMB-020 · CHR-023 (a new character starts near the origin; the lit-beacon start joins when WLD-024 does; the appearance editor CHR-017 is not in G2, so character creation is minimal or reuses the G0 character, decided in its spec)
+- Auto-fire toggles (OQ-040): CMB-027 (needs CMB-006 for mana; which skill toggles first, since Ability Books (CHR-009) are not in G2, is decided in its spec)
 
 **E2E checklist**
 - Find and fight monsters with a sword; monsters spawn and age.
 - Stamina drains and regens; dodge gives i-frames; hits have flash, hitstop and knockback.
 - Over many hits, the damage distribution shifts upward as mastery rises.
 - Kills grant XP and level-ups; monster stats follow their age.
+- A horde that grows with distance: monster density and horde size are visibly higher far from the origin than near it (a capture or a count at two distances).
+- A level-up draft with 3 choices: a level-up offers three choices, one pick applies, and base power rises.
+- Death leaves a grave with the full inventory and a new character starts in the same world.
+- An auto-fire toggle fires by itself and pays mana while it is on, and stops when toggled off.
 - Equip a different weapon from the inventory; the HUD shows HP, stamina and mana; attack sounds play.
 - **Lucid's playtest of the exe.**
+
+## G2.5 / later — The world remembers (not scheduled)
+
+The meta progression (OQ-044) comes after G2, planned when G2 is done: ITM-019 (grave landmark plus heirloom) · CHR-022 (knowledge codex) · WLD-024 (beacons and waystones that stay lit) · NPC-023 (civilization anchors versus monster takeover, the tug of war). CHR-023 gains the lit-beacon start with WLD-024. Balancing the tug of war comes later still.
 
 ## G3 — Co-op
 
