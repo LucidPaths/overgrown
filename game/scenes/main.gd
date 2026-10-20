@@ -8,7 +8,9 @@ extends Node3D
 ##                      walkable tiles)
 ##   --vista            hold the vista pose
 ##   --yaw DEG          start the camera orbit at this yaw (0: looking north; 90: looking west; default 0)
-##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range (default 30)
+##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range
+##                      (OgCameraRig.PLAY_PITCH_MIN_DEG..PLAY_PITCH_MAX_DEG, -40..65; default 30)
+##   --zoom M           start the play zoom at M metres, clamped to OgCameraRig.ZOOM_MIN_M..ZOOM_MAX_M (default 14)
 ##   --wanderer old|new the wanderer's look: new = the Blender-built model (OgWandererView, default), old = the G0
 ##                      placeholder (OgCharacterView)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
@@ -100,8 +102,10 @@ func _ready() -> void:
 	_local.camera = _rig.get_node("Camera3D")
 	_rig.target = _view
 	_rig.environment = _env.environment
+	_rig.ground = _sim.store.height_at
 	_rig.force_vista = opts["vista"]
 	_rig.set_orbit(opts["yaw"], opts["pitch"])
+	_rig.set_zoom(opts["zoom"])
 	_rig.snap()
 	if opts["autopilot"]:
 		_driver = Driver.AUTOPILOT
@@ -120,12 +124,12 @@ func _blocked_tile_under_box(p: Vector2) -> String:
 	return ""
 
 
-## {seed, at, has_at, vista, yaw, pitch, autopilot, capture, capture_tick, frames, walk, wanderer}, or {} after
+## {seed, at, has_at, vista, yaw, pitch, zoom, autopilot, capture, capture_tick, frames, walk, wanderer}, or {} after
 ## printing what is wrong.
 func _parse_args(args: PackedStringArray) -> Dictionary:
 	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "yaw": 0.0,
-		"pitch": OgCameraRig.PLAY_PITCH_DEG, "autopilot": false, "capture": "", "capture_tick": -1,
-		"frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "wanderer": "new"}
+		"pitch": OgCameraRig.PLAY_PITCH_DEG, "zoom": OgCameraRig.PLAY_DISTANCE_M, "autopilot": false, "capture": "",
+		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "wanderer": "new"}
 	var i := 0
 	while i < args.size():
 		var a := args[i]
@@ -147,9 +151,9 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 					return {}
 				o["at"] = Vector2(parts[0].to_float(), parts[1].to_float())
 				o["has_at"] = true
-			"--yaw", "--pitch":
+			"--yaw", "--pitch", "--zoom":
 				if not v.is_valid_float():
-					printerr("%s needs an angle in degrees, got '%s'" % [a, v])
+					printerr("%s needs a number (degrees or metres), got '%s'" % [a, v])
 					return {}
 				o[a.substr(2)] = v.to_float()
 			"--capture":
