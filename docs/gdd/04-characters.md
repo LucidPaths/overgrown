@@ -44,7 +44,7 @@ A teaching is a transferable technique, usually an attack pattern or movement tr
 
 **Magic teachings** work the same way: spell techniques learned from NPC mages or from magical monsters (e.g. fire spit from a salamander). They need a magic focus and cost mana. Together with the focus-bound ability of the equipped focus (→ CMB magic), they mean a mage never depends on Ability Books alone.
 
-Each teaching has a **requirement** (weapon type or trait rank) to use it, plus its own proficiency that grows by use. Teachings are not bought with anything. The cost is exposure: you have to seek out the right teacher or enemy. A learned teaching also feeds the draft pool (OQ-041).
+Each teaching has a **requirement** (weapon type or trait rank) to use it, plus its own proficiency that grows by use. The cost is exposure: you have to seek out the right teacher or enemy. A learned teaching also feeds the draft pool (OQ-041).
 
 ## Equip slots (paper doll)
 
@@ -75,7 +75,7 @@ The meta progression is the world, not an account: no account or currency unlock
 - [ ] **CHR-006** Movement traits: dodge, sprint, swim, climb, jump.
 - [ ] **CHR-007** Magic traits: mana regen, channel speed, focus masteries.
 - [ ] **CHR-008** Life traits: gathering, crafting, haggling, taming, perception, tracking, sneaking.
-- [ ] **CHR-009** Ability Book item: read → its ability joins the level-up draft pool (rewritten: OQ-041; → CHR-021).
+- [ ] **CHR-009** Ability Book item: read → its ability joins the level-up draft pool (rewritten: OQ-041; feeds CHR-021).
 - [ ] **CHR-010** Ability XP by use; a full bar makes a rank-up available through the level-up draft (rewritten: OQ-041; → CHR-021).
 - [ ] **CHR-011** Ability fatigue: rapid repeated casts add a stamina cost.
 - [ ] **CHR-012** Teaching system core: exposure counter per teaching per character, learn threshold, usage requirements.
