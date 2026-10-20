@@ -37,7 +37,7 @@ They feed each other. Crafters can **reforge** (reroll an affix) and **upgrade**
 - Every death leaves a **grave**: the corpse container of the earlier drafts, with the full inventory. The corpse rules are otherwise unchanged, and "corpse" and "grave" name the same container.
 - **Anyone** can loot it: any character (including the dead character's next one), other players, NPCs (scavengers, bandits) and some monsters (shiny-hoarding species).
 - Graves decay after a long time (tunable), and whatever is left becomes a loot cache at the site.
-- A grave also becomes a **landmark that acts as a civilization anchor** (whether NPC graves anchor too is decided in NPC-023), and one heirloom (or a bit of power) from the dead character passes to the next (OQ-044, → 04-characters, 06-npcs-society). Whether the landmark outlasts the decay of the container, what the heirloom is, and whether NPCs leave heirlooms are decided in ITM-019.
+- A character's grave also becomes a **landmark that acts as a civilization anchor** (whether NPC graves anchor too is decided in NPC-023), and one heirloom (or a bit of power) from the dead character passes to the next (OQ-044, → 04-characters, 06-npcs-society). Whether the landmark outlasts the decay of the container, what the heirloom is, and whether NPCs leave heirlooms are decided in ITM-019.
 
 ## Tasks
 
@@ -59,4 +59,4 @@ They feed each other. Crafters can **reforge** (reroll an affix) and **upgrade**
 - [ ] **ITM-016** Corpse decay into loot caches (→ CMB-020).
 - [ ] **ITM-017** Scavenger NPCs and hoarding monsters loot corpses.
 - [ ] **ITM-018** Hired NPC stall clerks: wages, selling while the owner is away, payouts on return; clerk is a full NPC (→ NPC-001).
-- [ ] **ITM-019** Grave landmark plus heirloom: the grave becomes a landmark that acts as a civilization anchor, and one heirloom (or a bit of power) passes to the next character (OQ-044); whether NPCs leave heirlooms is decided here (→ CMB-020, NPC-023, CHR-023).
+- [ ] **ITM-019** Grave landmark plus heirloom: the grave becomes a landmark that acts as a civilization anchor, and one heirloom (or a bit of power) passes to the next character (OQ-044); whether NPCs leave heirlooms is decided here (→ CMB-020, CHR-023).

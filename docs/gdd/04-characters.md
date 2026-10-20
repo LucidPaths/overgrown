@@ -4,7 +4,7 @@
 
 - **Species** (→ CAT species): the only mechanical choice at creation. Each species has **one innate**: a way of interacting with the world (senses, traversal, trust) that the species starts with and anyone else can unlock later through a trait. Innates are never stat buffs or immunities, are roughly equal in value, and don't steer playstyle.
 - **Appearance:** body, colors, hair or fur, face, starting clothes. Everything else is learned in play.
-- **No attributes.** There is no STR/DEX/INT. Power comes from traits, abilities, teachings and gear. Attributes that grow by use would be redundant with traits, and attributes bought with points would compete with abilities.
+- **No attributes.** There is no STR/DEX/INT. Power comes from traits, abilities, teachings, gear and the base power each level adds (OQ-041). Attributes that grow by use would be redundant with traits, and attributes bought with points would compete with abilities.
 
 ## Levels and experience
 
