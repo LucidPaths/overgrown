@@ -46,4 +46,11 @@ func test_rig_poses_stay_finite(t: TestContext) -> void:
 		if not (is_finite(q.x) and is_finite(q.y) and is_finite(q.z) and is_finite(q.w)):
 			bad += 1
 	t.check(bad == 0, "%d bones have non-finite rotations" % bad)
+	# The bones can come out finite from a NaN cloth state, so check the particles too.
+	var bad_p := 0
+	for ch in rig._chains:
+		for v in ch["p"] + ch["prev"]:
+			if not (is_finite(v.x) and is_finite(v.y) and is_finite(v.z)):
+				bad_p += 1
+	t.check(bad_p == 0, "%d cloth particles are non-finite" % bad_p)
 	rig.free()

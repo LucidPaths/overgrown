@@ -6,7 +6,17 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/game/assets/wanderer"
-PYTHONDONTWRITEBYTECODE=1 blender --background --factory-startup --python "$ROOT/art/blender/wanderer.py" -- \
-  --glb "$OUT/wanderer.glb" --png "$OUT/wanderer_albedo.png" "$@" 2>&1 | grep -E '^\[wanderer|Error|Traceback|^  File|Exception' || true
+# Removes the outputs first and fails on a Blender error, so a failed build can't pass off the committed files.
+rm -f "$OUT/wanderer.glb" "$OUT/wanderer_albedo.png"
+LOG="$(mktemp)"
+trap 'rm -f "$LOG"' EXIT
+status=0
+PYTHONDONTWRITEBYTECODE=1 blender --background --factory-startup --python-exit-code 1 --python "$ROOT/art/blender/wanderer.py" -- \
+  --glb "$OUT/wanderer.glb" --png "$OUT/wanderer_albedo.png" "$@" >"$LOG" 2>&1 || status=$?
+grep -E '^\[wanderer|Error|Traceback|^  File|Exception' "$LOG" || true
+if [ "$status" -ne 0 ] || grep -q 'Traceback' "$LOG"; then
+  echo "build.sh: Blender failed (exit $status); see the lines above" >&2
+  exit 1
+fi
 test -s "$OUT/wanderer.glb" && test -s "$OUT/wanderer_albedo.png"
 sha256sum "$OUT/wanderer.glb" "$OUT/wanderer_albedo.png"
