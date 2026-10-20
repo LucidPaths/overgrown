@@ -5,6 +5,7 @@ extends SceneTree
 ##   -- sheet OUT.png         a row per clip (idle, walk, run, sprint, dodge, attack over a run), 6 frames each
 ##   -- closeup OUT.png       a portrait three-quarter view, standing in the wind
 ##   -- frame OUT.png CLIP P [AZ]   one frame: CLIP in idle|walk|run|sprint|dodge|attack|attackrun, progress P
+##   -- portrait OUT.png AZ         a low-angle dusk portrait, backlit like the mood-board paintings (side-by-sides)
 ## With WANDERER_GAME_ZOOM=M in the environment it instead runs the real main scene with the main scene's own
 ## arguments (e.g. -- --capture OUT.png --autopilot --capture-tick 60) and only pulls the play camera in to M
 ## metres: an in-game close-up (the rig's zoom has no flag).
@@ -19,6 +20,9 @@ var _rig: OgWandererRig
 var _cam := Camera3D.new()
 var _vp: Viewport
 var _sun := DirectionalLight3D.new()
+var _env: Environment
+var _sky_mat: ProceduralSkyMaterial
+var _ground_mat: StandardMaterial3D
 
 
 func _initialize() -> void:
@@ -46,7 +50,9 @@ func _zoom_game(main: Node, metres: float) -> void:
 func _build_stage() -> void:
 	root.add_child(_root)
 	var env := Environment.new()
+	_env = env
 	var sky_mat := ProceduralSkyMaterial.new()
+	_sky_mat = sky_mat
 	sky_mat.sky_top_color = SKY_TOP
 	sky_mat.sky_horizon_color = HORIZON
 	sky_mat.ground_bottom_color = HORIZON
@@ -72,6 +78,7 @@ func _build_stage() -> void:
 	plane.size = Vector2(60, 60)
 	ground.mesh = plane
 	var gm := StandardMaterial3D.new()
+	_ground_mat = gm
 	gm.albedo_color = Color(0.42, 0.5, 0.2)
 	gm.roughness = 1.0
 	ground.material_override = gm
@@ -144,6 +151,8 @@ func _run(args: PackedStringArray) -> void:
 			img = await _closeup()
 		"frame":
 			img = await _frame(args[2], float(args[3]), float(args[4]) if args.size() > 4 else 35.0)
+		"portrait":
+			img = await _portrait(float(args[2]) if args.size() > 2 else 160.0)
 		_:
 			printerr("unknown mode " + mode)
 			quit(2)
@@ -191,6 +200,31 @@ func _frame(clip: String, p: float, az: float) -> Image:
 	_look(az, 5.4, 0.9, 0.95)
 	_rig.advance(DT)
 	return _crop(await _snap(), 0.3)
+
+
+## Low camera, looking a little up at the figure against a dusk sky; the sun low behind it on the far side, so
+## the near side sits in the cool ambient and the rim draws the silhouette, as in mood-board 01, 02 and 09.
+func _portrait(az_deg: float) -> Image:
+	_sky_mat.sky_top_color = Color(0.04, 0.13, 0.17)
+	_sky_mat.sky_horizon_color = Color(0.86, 0.55, 0.24)
+	_sky_mat.ground_bottom_color = Color(0.86, 0.55, 0.24)
+	_sky_mat.ground_horizon_color = Color(0.86, 0.55, 0.24)
+	_sky_mat.sky_curve = 0.05
+	_env.ambient_light_color = Color(0.3, 0.46, 0.52)
+	_env.ambient_light_energy = 0.8
+	_ground_mat.albedo_color = Color(0.2, 0.19, 0.1)
+	_set_state("idle", 0.0)
+	_settle(2.5)
+	_cam.fov = 30.0
+	var az := deg_to_rad(az_deg)
+	var target := Vector3(0, 1.15, 0)
+	_cam.position = Vector3(sin(az) * 3.4, 0.75, -cos(az) * 3.4)
+	_cam.look_at(target, Vector3.UP)
+	_sun.light_color = Color(1.0, 0.78, 0.5)
+	_sun.light_energy = 1.3
+	_sun.rotation = Vector3(deg_to_rad(-18.0), _cam.rotation.y + deg_to_rad(180.0 - 55.0), 0.0)
+	_rig.advance(DT)
+	return _crop(await _snap(), 0.45)
 
 
 ## Rows: idle, walk, run, sprint, dodge, attack over a run; 6 frames each across the cycle or the action.

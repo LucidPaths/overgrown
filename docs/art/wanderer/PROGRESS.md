@@ -92,3 +92,15 @@ Resume here after a restart. Spec: `docs/specs/ART-028.md`. Branch `g1-wanderer-
   filled cream disc; one front lock flicked straight up when the attack snapped the facing.
 - Changed: rim width 0.22 -> 0.15, strength 0.8 -> 0.7; arc a thin tilted crescent (1.2..1.65 m, 22 deg roll)
   in deeper gold; front lock rise 0.75 -> 0.42 and hair bend limit 80 -> 65 deg.
+
+### Loop 9: wool, folds and hair from behind
+- Critique (studio turnaround and a new low-angle dusk `portrait` mode, backlit like the paintings): the scarf's
+  stitch pattern was a regular high-contrast braid that read as rope coils; the long poncho hung as a smooth
+  lampshade; from behind the hair was a cluster of end-on stubs (the locks swept straight back at the camera)
+  that the warm rim turned into brown knobs. The game camera sits behind the wanderer most of the time, so the
+  back view matters most.
+- Changed: soft knit (stitch contrast halved, large tonal variation, long fibre strokes along the scarf); deeper
+  cape folds and an uneven hem; hair roots darkened in the baked occlusion (the mass reads as one shape and the
+  rim stays off its bumps, the tips still catch light); locks a little thinner and flatter (ribbons); downwind
+  drift 0.34 -> 0.62; locks from the back of the head hang and stream sideways instead of straight back.
+- Rejected: masking the rim off the hair entirely. The paintings light the hair's edge; only the roots go dark.

@@ -360,22 +360,24 @@ HAIR_CHAINS = [
     (-26.0, 56.0, 0.26, 0.05, 0.3),
     (72.0, 34.0, 0.32, 0.055, 0.12),
     (-72.0, 34.0, 0.3, 0.055, 0.12),
-    (150.0, 46.0, 0.37, 0.06, 0.18),
-    (-150.0, 46.0, 0.35, 0.06, 0.18),
-    (118.0, 8.0, 0.34, 0.056, -0.04),
-    (-118.0, 8.0, 0.32, 0.056, -0.04),
-    (180.0, -4.0, 0.3, 0.06, -0.08),
+    (150.0, 46.0, 0.37, 0.06, -0.05),
+    (-150.0, 46.0, 0.35, 0.06, -0.05),
+    (118.0, 8.0, 0.34, 0.056, -0.25),
+    (-118.0, 8.0, 0.32, 0.056, -0.25),
+    (180.0, -4.0, 0.3, 0.06, -0.4),
     (4.0, 40.0, 0.2, 0.046, 0.42),
     (96.0, -6.0, 0.24, 0.05, -0.2),
     (-96.0, -6.0, 0.23, 0.05, -0.2),
 ]
-WIND_DRIFT = Vector((0.34, 0.0, 0.0))  # the rest pose already leans the hair to the left (+X), downwind
+WIND_DRIFT = Vector((0.62, 0.0, 0.0))  # the rest pose already leans the hair to the left (+X), downwind
 HAIR_LEN = 1.3  # every lock is this much longer than its table length: the mood board's hair streams
 
 
 def lock_path(az, el, length, rise, wiggle, n=8):
     root, nrm = head_surface(az, el, -0.012)
-    back = Vector((0, 1.0, 0))
+    # locks from the back of the head hang and stream sideways rather than straight back (seen from behind,
+    # straight-back locks are end-on stubs; the mood board's backs show a dark mass with strands blowing aside)
+    back = Vector((0, 1.0 - 0.55 * sstep(100.0, 160.0, abs(az)), 0))
     up = Vector((0, 0, 1.0))
     d0 = (nrm * 0.5 + back * 1.0 + up * rise).normalized()
     d1 = (back * 1.0 + WIND_DRIFT + up * (rise * 0.35) + nrm * 0.08).normalized()
@@ -417,8 +419,8 @@ def build_hair_locks(geo, chains):
             locks.append((p, nn, wd * (0.85 - 0.1 * k)))
         for path, nn, w0 in locks:
             n = len(path)
-            radii = [w0 * (1.0 - 0.9 * (k / (n - 1)) ** 1.2) for k in range(n)]
-            flat = [(1.0, 0.4 + 0.25 * (k / (n - 1))) for k in range(n)]
+            radii = [0.9 * w0 * (1.0 - 0.9 * (k / (n - 1)) ** 1.2) for k in range(n)]
+            flat = [(1.0, 0.32 + 0.2 * (k / (n - 1))) for k in range(n)]
 
             def wf(k, t, co, prefix=prefix):
                 return tent_weights(3.0 * t, 3, prefix, "head", 1.0)
@@ -441,11 +443,12 @@ def cape_raw(th, s):
     # are a little sharper than the Fourier curve
     c2 = math.cos(2 * th)
     zh = 0.8 + 0.08 * cs - 0.1 * c2 - 0.03 * max(0.0, cs) ** 8 - 0.04 * max(0.0, -cs) ** 6
+    zh += 0.014 * math.sin(5 * th + 1.0) + 0.008 * math.sin(11 * th + 0.3)  # wool hangs unevenly
     rr = 1.0 + 0.05 * c2 * c2
     ry = 0.3 if cs > 0 else 0.34
     H = Vector((0.53 * sn * rr, (-ry * cs) * rr + 0.015, zh))
     p = C * ((1 - s) ** 2) + Q * (2 * s * (1 - s)) + H * (s * s)
-    fold = 0.04 * s**1.5 * (0.55 * math.sin(9 * th + 0.7) + 0.3 * math.sin(5 * th + 2.1) + 0.15 * math.sin(14 * th))
+    fold = 0.052 * s**1.5 * (0.5 * math.sin(9 * th + 0.7) + 0.35 * math.sin(5 * th + 2.1) + 0.15 * math.sin(14 * th))
     radial = Vector((p.x, p.y, 0.0))
     if radial.length > 1e-6:
         p += radial.normalized() * fold
@@ -678,6 +681,9 @@ def bake_ao(geo):
             k *= 0.88 + 0.12 * sstep(0.36, 0.6, co.z)
         elif tag == "cape":
             k = 0.75 + 0.25 * sstep(1.47, 1.4, co.z)
+        elif tag == "hair":
+            # dark at the roots (the mass reads as one shape, the rim stays off its bumps), lit toward the tips
+            k = 0.66 + 0.3 * sstep(0.13, 0.32, (co - R.HEAD_C).length)
         elif tag == "scarf":
             k = 0.82 + 0.18 * sstep(1.42, 1.5, co.z)
         geo.ao[vi] = k

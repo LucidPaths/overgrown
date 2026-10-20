@@ -330,7 +330,8 @@ def paint() -> np.ndarray:
     vst = 0.5 + 0.5 * np.cos((ys + np.abs(((xs % 9.0) - 4.5)) * 1.4) / 7.0 * 2 * np.pi)  # V stitches
     roll = np.sin(ys / h * np.pi)  # light on the top of the roll
     field = value_noise(h, w, 3, 24, rng)
-    t = 0.35 + 0.35 * rib * vst + 0.2 * roll + 0.15 * (field - 0.5)
+    # soft knit: the stitches are a texture inside the light, not a pattern on top of it (they read as rope at 0.35)
+    t = 0.38 + 0.17 * rib * vst + 0.26 * roll + 0.3 * (field - 0.5)
     base = mix(SCARF_DARK, SCARF, np.clip(t * 1.3, 0, 1))
     base = mix(base, SCARF_HI, np.clip((t - 0.62) * 2.2, 0, 1))
     # a darker rust weave line every 64 px (a wrapped, hand-made look)
@@ -338,6 +339,7 @@ def paint() -> np.ndarray:
     base[stripe] = mix(base[stripe], RUST, 0.3)
     img[y0 : y0 + h, x0 : x0 + w] = base
     strokes(img, "scarf", 900, rng, length=(6, 14), width=(2.0, 3.5), angle=1.5708, angle_jit=0.35, jitter=0.08)
+    strokes(img, "scarf", 500, rng, length=(18, 40), width=(2.5, 5.0), angle=0.0, angle_jit=0.25, jitter=0.1)
 
     # ---- hair: blue-black strands, y along the lock (root at the top)
     x0, y0, w, h = REGIONS["hair"]
