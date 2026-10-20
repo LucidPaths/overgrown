@@ -81,7 +81,8 @@ Grass (0.32, 0.47, 0.26); dirt (0.50, 0.32, 0.17) (the warm accent of every mead
 ### 3.1 Light (`og_light.gdshaderinc`)
 One light model for every world surface: a two-tone ramp (lit/shade in a few values, not a gradient), a
 burnt-orange band at the terminator, drifting cloud shadows (wind in the light itself), teal ambient in the
-shade. Every new world shader calls `og_paint_light` from `light()`.
+shade. Every new world shader calls `og_paint_light` from `light()`. Water is the one exception: a mirror lit
+by its own soft 0.4 + 0.6·N·L ramp in `water.gdshader`.
 
 ### 3.2 Sky (`og_sky.gdshaderinc`, `sky.gdshader`)
 One function, `og_sky_base(dir, t, detail, eye, wind)`, used by the sky shader (post off), the water

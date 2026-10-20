@@ -3,13 +3,13 @@
 The orchestrator's memory on disk. **Any new or post-compaction session reads this first**, then `docs/agents/PIPELINE.md` and `docs/agents/ORCHESTRATOR.md`.
 Ephemeral sections get overwritten; Decisions and Corrections accumulate. Keep it under ~200 lines.
 
-Last updated: 2026-10-20 (≈04:20 UTC)
+Last updated: 2026-10-20 (≈04:35 UTC)
 
 ## Current phase
 
-**G0 done except polish; G1 (the look) in progress; G2 replanned around "the frontier".** Godot overhaul: `docs/overhaul/PLAN.md` (#35). **Durable authorization from Lucid:** "just build, merge etc": no per-PR sign-off (critic + Fable gates stay). **Art exception:** nothing art-related merges until Lucid has seen pictures (my promise, 2026-10-19). Lucid dislikes emojis in replies.
+**G0 done; G1's three pieces merged (world look #49, wanderer #51, camera #48): next the G1 E2E + Lucid playtest; G2 replanned around "the frontier".** Godot overhaul: `docs/overhaul/PLAN.md` (#35). **Durable authorization from Lucid:** "just build, merge etc": no per-PR sign-off (critic + Fable gates stay). **Art exception:** nothing art-related merges until Lucid has seen pictures (my promise, 2026-10-19). Lucid dislikes emojis in replies.
 
-Merged so far (newest last): GOD-001 #36, GOD-002 #37, GOD-003 #38, GOD-004 #39, OVR-009 #40, GOD-005 #41, OVR-010 #42, GOD-006 #43, G0 E2E #44 (docs/e2e/G0.md), ops delete-branches workflow #45, GOD-008 #46 (+GOD-007: camera orbit, attack while moving OQ-039, dodge dash), OVR-011 #47 (frontier design OQ-040..044, G2 replanned), OVR-012 #50 (dungeon death, OQ-045), ART-028 #51 (wanderer v1), GOD-009 #48 (camera looks 45° up, smooth spring arm).
+Merged so far (newest last): GOD-001 #36, GOD-002 #37, GOD-003 #38, GOD-004 #39, OVR-009 #40, GOD-005 #41, OVR-010 #42, GOD-006 #43, G0 E2E #44 (docs/e2e/G0.md), ops delete-branches workflow #45, GOD-008 #46 (+GOD-007: camera orbit, attack while moving OQ-039, dodge dash), OVR-011 #47 (frontier design OQ-040..044, G2 replanned), OVR-012 #50 (dungeon death, OQ-045), ART-028 #51 (wanderer v1), GOD-009 #48 (camera looks 45° up, smooth spring arm), ART-027 #49 (G1 world look + `docs/art/BIBLE.md`).
 
 Lucid's playtests:
 - Round 1 (2026-10-19, exe at 6112b6a): wanted right-drag camera orbit, attacks that don't stop movement, a non-shrinking dodge → GOD-008 #46.
@@ -26,11 +26,12 @@ Mechanics: main checkout /home/user/overgrown; worktrees in /home/user/wt/<id>; 
 
 Lucid paused the pipeline at ≈02:20 UTC to save usage and asked to resume at 5:31 German time (03:31 UTC, a one-shot scheduled self-message); resumed then. Lesson: on a pause, stop agents, commit + push every worktree's uncommitted work as a marked WIP commit, record per-PR resume points here; on resume, SendMessage the stopped agents (they keep their transcripts).
 
-- **#49 ART-027 world look**, branch `g1-world-lab`: lab done; main merged in twice (wanderer #51, camera #48); critic PASS WITH NOTES, fixed: compat renderer falls back to the post-off look, rocks/ruins dither between camera and wanderer (as BIBLE §4 says), foliage test checks prop height (mutation h+4 m fails it). This commit also ticks GOD-009, amends the GOD-009 spec (round-2 numbers, AC2 capture list) and points 10-art-audio at BIBLE.md. Next: Fable → mark ready → merge → tick ART-027 → G1 E2E + Lucid playtest.
+- **G1 merged** (2026-10-20): ART-027 #49 (Fable PASS; its two docs findings, the missing CLAUDE.md rows for shader globals / prop buffers / vertex colours / the post Frame UBO and BIBLE §3.1's water exception, are fixed in the follow-up docs PR on branch `g1-docs-followup`). **Next:** G1 E2E (`docs/agents/E2E.md`, MILESTONES § G1) on the merged main + Lucid playtest of the `latest` exe; then fold the follow-ups below into G1 polish tasks or G2 specs.
 - **G1 follow-ups found by the gates (not yet tasks):**
   - **Compatibility (OpenGL) renderer renders garbage on the art branch** (main renders fine): one of the new world shaders breaks under GL, even with `--post off`. Matters only on machines without Vulkan/D3D12 (Godot falls back to GL); Lucid's machine is fine. Bisect the shaders (terrain/foliage/sky) with `capture.sh <png> gl_compatibility`.
   - **Landmark sites ignore terrain**: ~40% of sites (seeds 1–8) land on water, cliff or stone (geoglyph under water, island over the ocean). Needs a render-side site search over loaded chunks; seed 1's is on land.
   - **Attack arc readability** with the v1 wanderer: a hairline on dark teal at 1280×720 (`--seed 1 --autopilot --capture-tick 206 --at -170.5,-2.5 --yaw -40`); the lab's `final/readability-attack.jpg` predates the wanderer merge. Needs a brighter additive arc with a dark under-stroke (wanderer_view) — a G1 E2E item.
+  - From #49's Fable: if a post shader fails to load or compile, `OgPaintPost` stays off but the post-on environment remains (black sky, streaming edge): expose `ok` and fall back to the off look; `main.tscn` keeps a dead G0 ProceduralSky; `terrain_view.gd:15` mentions a rune-circle decal that no longer exists.
   - Vista could look 12–15° higher to frame the eye and pillar; broadleaf crowns low-poly up close; freeze shader time in captures; paint_post frees RIDs off the render thread (fine in the default thread model).
   - Camera (from #48's gate): when the arm collapses to the pivot against a cliff the look can turn up to 11.8° in one tick; over water the camera can sit below the water surface (clearance is against the terrain floor); `local_input.gd`'s `screen_to_world` comment still says "below the horizon"; `height_at` can build a chunk synchronously.
   - Playtest questions for Lucid: the wanderer leaves the frame below orbit −10 (last ~30° of drag all sky) — maybe a −30 minimum; mouse aim near the horizon is compressed.
