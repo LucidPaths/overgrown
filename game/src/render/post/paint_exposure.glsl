@@ -35,7 +35,7 @@ void main() {
 		vec3 c = textureLod(src_tex, uv, 0.0).rgb;
 		float l = dot(pow(max(c, vec3(0.0)), vec3(1.0 / 2.2)), vec3(0.299, 0.587, 0.114));
 		vec2 d = (uv - 0.5) * vec2(1.6, 1.0);
-		float w = 1.0 - 0.6 * smoothstep(0.1, 0.7, length(d));
+		float w = 1.0 - 0.3 * smoothstep(0.1, 0.7, length(d));
 		sum += log(max(l, 0.01)) * w;
 		wsum += w;
 	}

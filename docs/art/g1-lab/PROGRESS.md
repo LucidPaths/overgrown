@@ -121,7 +121,42 @@ keeps white at white. The grade ramps were rebalanced so each stop's luminance s
 change hue, not exposure). Ambient raised 1.0 → 1.7 (teal shade should be mid-teal, not black; the near-black
 darks belong to crevices and silhouettes). Now: spawn 0.12, vista 0.13, river 0.27, landmark play 0.14.
 
+### Loop 9: readability (`loops/l9-readability-cliff.jpg`)
+Autopilot attack captures (tick 207) at the spawn walked straight into the landmark: the wanderer, gold on
+gold, vanished in the geoglyph. And a placeholder orange body reads as "light" to a grade that turns warm
+into gold. Fixes, all in the post or materials (character_view.gd untouched):
+- **Focal outline:** inside the focal region, a thin blue-black line on the near side of depth edges within
+  1–2 m of the wanderer's depth (focus distance passed in `eye_dir.w`); grass at its feet is too shallow a
+  depth step to be outlined. Mood boards 01–03 draw the figure dark against the light; this is that.
+- Focal clarity 0.45 → 0.6; geoglyph emission halved (it is a landmark, not the focal point).
+- Near-camera foliage fade 3–5.5 m → 4–8 m.
+- The attack arc (character_view, ART-028/GOD territory) reads against teal but loses contrast against gold
+  surfaces; noted for the report (an additive arc with a dark under-stroke would fix it there).
+- Found: at some orbit yaws a hill sits between camera and wanderer (camera has no terrain collision);
+  noted for the report, not mine to change.
+
+### Loop 10: strokes and gold
+1:1 crops against 02 showed big soft blobs where the painting has dense short strokes, and lemon gold.
+Hair noise now has a 24/m octave faded out by 18–45 m (no aliasing far away), LIC half-length 9 → 13 px,
+stroke strength 0.6 → 0.85. Warm pixels take their colour from the ramp (ochre) unless truly red/orange
+(flowers, the wanderer's borders keep theirs); teal mids desaturated toward 02's grey-teal.
+
+### Loop 11: forest (`loops/l11-forest-canopy-cut.jpg`)
+Forest play view was a wall of low-poly crowns at camera height. Added a **canopy cut-away** (crowns above
+the wanderer's head, in front of it and within 5 m of it on screen dither away; trunks stay) and **leafy
+silhouettes** (canopy fragments whose normals turn from the view break into world-anchored leaf clumps;
+pines at 0.45 strength so they keep their cones). Rejected: full-strength breakup on pines (they turned
+into bare poles). Forest stays the cool, dark biome; grassland is the gold one (03 vs 02).
+
+### Loop 12: landmark framing (`loops/l12-landmark-vista-west.jpg`, `loops/l12-landmark-play-west.jpg`)
+Tried four vista framings around the site (from S, W, E, N): from the west the glyph, island and pillar
+stack into one diagonal. Island enlarged (r 11, depth 9), the tree-free glade widened 16 → 24 m so the stone
+ring stands in open grass, metering centre weight lowered (the glyph's glow was darkening the frame) and the
+exposure key raised 0.27 → 0.31.
+
 ## Next
-- Readability capture mid-attack (play view, post high): wanderer, cursor, swing, cliffs, water.
-- Brush strokes stronger (the paint is still smooth at a distance); pines more ragged; nebula fluffier.
-- Post off/low/high set; deterministic foliage placement test; the bible; final captures and side-by-sides.
+- Final captures (exact plan): play views Grassland `--at -75.5,-95.5`, Forest `--at -20.5,-45.5`, river
+  `--at -165.5,-53.5`; landmark vista `--vista --at -55.5,-70.5 --yaw -90`; readability `--autopilot
+  --capture-tick 206 --at -170.5,-2.5 --yaw -40`; post off/low/high at the river. All `--capture-tick 0`
+  unless noted. Then side-by-sides with mood boards 02, 03, 06, 10, 05 into `final/`.
+- `docs/art/BIBLE.md` (replaces DIRECTION.md as the source of truth), report with GPU costs.

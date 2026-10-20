@@ -43,7 +43,7 @@ const BUSH_H := Vector2(0.8, 1.6)
 const ROCK_S := Vector2(0.5, 2.4)
 const GRASS_S := Vector2(0.55, 1.0)
 ## No trees within this many metres of a landmark site (a glade under the floating island).
-const LANDMARK_CLEAR_M := 16.0
+const LANDMARK_CLEAR_M := 24.0
 ## Patchiness: grass density follows a value-noise field with cells of this many tiles.
 const PATCH_TILES := 6
 

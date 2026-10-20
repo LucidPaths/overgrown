@@ -28,9 +28,9 @@ const GRADE := 0.9
 const GRAIN := 0.045
 ## Exposure: the metered geometric-mean display luminance is eased toward at EXPOSURE_RATE (1/s) and the
 ## composite gains the image toward EXPOSURE_KEY, within EXPOSURE_MIN..MAX (tunable).
-const EXPOSURE_KEY := 0.27
+const EXPOSURE_KEY := 0.31
 const EXPOSURE_MIN := 0.8
-const EXPOSURE_MAX := 2.2
+const EXPOSURE_MAX := 2.5
 const EXPOSURE_RATE := 1.5
 ## Unsharp mask on the upsampled paint (0 = soft upscale).
 const SHARPEN := 0.9

@@ -10,8 +10,8 @@ extends Node3D
 ## Mood boards 04 (layered worlds), 05 (the pillar of light), 08 and 10 (floating, overgrown ruins), 12
 ## (glowing glyphs). Reads the store; never writes it.
 
-const ISLAND_R := 8.5
-const ISLAND_DEPTH := 8.0
+const ISLAND_R := 11.0
+const ISLAND_DEPTH := 9.0
 ## The geoglyph's radius on the ground and the standing stones around it (metres; tunable).
 const GLYPH_R := 17.0
 const STONES := 11
