@@ -23,9 +23,15 @@ Dungeons and rifts are the same thing in two settings. This is where equipment l
 
 ## Death in a dungeon
 
-- You're teleported to the dungeon entrance and **lose XP**. The loss scales with floor depth and **can de-level you** (Metin2-style, harsh; amounts tunable).
-- **The dungeon ate you:** each death raises that dungeon's **difficulty tier** for everyone in that world. Its monsters level up and its floors get nastier.
-- Difficulty tiers decay slowly over time, and clearing deep floors pushes them back down faster.
+A death in a dungeon or rift follows OQ-045. It costs **no XP and no levels**.
+
+- You're teleported to the dungeon entrance.
+- **A sealed ability:** one of your abilities (or draft picks) is sealed until a church or healer NPC unseals it (→ 06-npcs-society). Which one, and what unsealing costs, is decided in CHR-024.
+- **The world gets harder:** the death raises the world's difficulty level for everyone in that world, and it never goes back down (→ 02-world). What it scales and by how much is decided in WLD-025.
+- **The dungeon ate you:** each death also raises that dungeon's **difficulty tier** for everyone in that world. Its monsters level up and its floors get nastier. This rule is unchanged.
+- Difficulty tiers decay slowly over time, and clearing deep floors pushes them back down faster. This is also unchanged, and it applies to the dungeon's tier only: the world difficulty never decreases.
+- There is no death limit per character.
+- NPCs that adventure in dungeons follow the same rule (pillar 1); whether their deaths raise the world difficulty is decided in WLD-025.
 
 ## Rift lifecycle
 
@@ -44,7 +50,7 @@ Dungeons and rifts are the same thing in two settings. This is where equipment l
 - [ ] **DNG-005** Depth scaling: monster level and loot quality per floor.
 - [ ] **DNG-006** Checkpoints every N floors.
 - [ ] **DNG-007** Dungeon drop tables: equipment, Ability Books, consumables.
-- [ ] **DNG-008** Death → teleport to entrance + XP loss (→ CMB-021).
+- [ ] **DNG-008** Death → teleport to the entrance; the seal and the difficulty rises are in CMB-021 (rewritten: OQ-045 replaced the XP loss) (→ CMB-021).
 - [ ] **DNG-009** Dungeon difficulty tier: rises on deaths, decays over time, drops on deep clears.
 - [ ] **DNG-010** Rift spawning in the overworld.
 - [ ] **DNG-011** Rift growth over time.

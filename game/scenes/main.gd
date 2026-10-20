@@ -9,6 +9,8 @@ extends Node3D
 ##   --vista            hold the vista pose
 ##   --yaw DEG          start the camera orbit at this yaw (0: looking north; 90: looking west; default 0)
 ##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range (default 30)
+##   --wanderer old|new the wanderer's look: new = the Blender-built model (OgWandererView, default), old = the G0
+##                      placeholder (OgCharacterView)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
 ##                      save the PNG, quit 0
@@ -60,7 +62,7 @@ var _speed := 0.0
 
 @onready var _env: WorldEnvironment = $WorldEnvironment
 @onready var _terrain: OgTerrainView = $Terrain
-@onready var _view: OgCharacterView = $Wanderer
+@onready var _view: Node3D = $Wanderer
 @onready var _local: OgLocalInput = $LocalInput
 @onready var _rig: OgCameraRig = $CameraRig
 @onready var _label: Label = $Hud/Label
@@ -90,6 +92,11 @@ func _ready() -> void:
 		return
 	_terrain.setup(_sim.store, _seed)
 	$Landmarks.setup(_sim.store, _seed)
+	if opts["wanderer"] == "new":
+		_view.free()
+		_view = OgWandererView.new()
+		_view.name = "Wanderer"
+		add_child(_view)
 	_you = _sim.add_character(at)
 	_latch = _sim.drive(_you)
 	_sim.you = _you
@@ -118,12 +125,13 @@ func _blocked_tile_under_box(p: Vector2) -> String:
 	return ""
 
 
-## {seed, at, has_at, vista, yaw, pitch, autopilot, capture, capture_tick, frames, walk, post, shot}, or {} after
+## {seed, at, has_at, vista, yaw, pitch, autopilot, capture, capture_tick, frames, walk, post, shot, wanderer}, or {} after
 ## printing what is wrong.
 func _parse_args(args: PackedStringArray) -> Dictionary:
 	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "yaw": 0.0,
 		"pitch": OgCameraRig.PLAY_PITCH_DEG, "autopilot": false, "capture": "", "capture_tick": -1,
-		"frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "post": OgWorldLook.POST_DEFAULT, "shot": null}
+		"frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "post": OgWorldLook.POST_DEFAULT, "shot": null,
+		"wanderer": "new"}
 	var i := 0
 	while i < args.size():
 		var a := args[i]
@@ -177,6 +185,11 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 					printerr("--shot needs YAW,PITCH,DIST, got '%s'" % v)
 					return {}
 				o["shot"] = Vector3(sp[0].to_float(), sp[1].to_float(), sp[2].to_float())
+			"--wanderer":
+				if v != "old" and v != "new":
+					printerr("--wanderer needs old or new, got '%s'" % v)
+					return {}
+				o["wanderer"] = v
 			"--walk":
 				if not v.is_valid_int() or v.to_int() < 1:
 					printerr("--walk needs a positive number of chunks, got '%s'" % v)

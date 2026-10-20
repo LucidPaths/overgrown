@@ -41,7 +41,7 @@ Goblins (scavenger camps, love corpses) · Ogres (strongholds, heavy-swing teach
 
 ### Focus-bound abilities (draft, OQ-017)
 
-Each focus item carries exactly one built-in ability, which is free (no level point), costs mana, and scales with that focus's mastery. Examples: *Ember Staff* → Flame Jet (short cone) · *Shard Wand* → Stone Shards (3-shot spread) · *Frostbound Tome* → Rime Ward (absorb shield) · *Storm Rod* (wand) → Arc Lash (chain to 2 targets) · *Living Staff* → Sapling (summon a healing sprout) · *Hollow Tome* → Siphon (drain mana from target).
+Each focus item carries exactly one built-in ability, which comes with the focus (not picked in the level-up draft, OQ-041), costs mana, and scales with that focus's mastery. Examples: *Ember Staff* → Flame Jet (short cone) · *Shard Wand* → Stone Shards (3-shot spread) · *Frostbound Tome* → Rime Ward (absorb shield) · *Storm Rod* (wand) → Arc Lash (chain to 2 targets) · *Living Staff* → Sapling (summon a healing sprout) · *Hollow Tome* → Siphon (drain mana from target).
 
 ## Traits (grow by use)
 
