@@ -6,12 +6,14 @@ A real-time hack-and-slash sandbox RPG in a saturated, cozy, painted 3D world, s
 
 It looks lovely, but it isn't safe. A level 2 horned bunny grazes ten meters from a level 40 bear asleep in its den. Leave an area alone long enough and the monsters there grow older, stronger and more numerous until even the villages give up and leave.
 
+The play loop runs between the **frontier** and the dungeons. The overworld is a real-time horde slayer that gets wilder the further you walk from the origin: calm near it, "monster horde nonsense" far out. Every level-up offers a draft of three choices that builds your character (OQ-040, OQ-041, OQ-043). Dying in the overworld is always permadeath and leaves your grave behind, while dungeons are the safer side of the loop: no permadeath, only an XP-loss penalty (OQ-042). The world remembers what your characters did, and the frontier is a tug of war: graves, lit beacons and settlements push back against the monsters spreading, and the monsters push back where nobody holds the line (OQ-044).
+
 ## Pillars
 
 1. **You are just another one.** Players and NPCs share one rule set: same traits, same learning by doing, same death. The world doesn't revolve around the player and doesn't wait for them.
 2. **The world keeps living.** Monsters age, breed, compete and spread. Cities grow, starve, migrate and die. Every system changes world state, and that state is what the player reads.
 3. **You grow by doing.** No classes, no attributes. Swing a sword and you get better with swords. Fight an ogre often enough and you learn its heavy swing. Your build is your history.
-4. **Cozy surface, brutal depth.** Saturated, lighthearted visuals and humor sit on top of permadeath (per world), corpse runs, open PvP and dungeons that remember who they killed.
+4. **Cozy surface, brutal depth.** Saturated, lighthearted visuals and humor sit on top of permadeath, graves and corpse runs, open PvP and dungeons that remember who they killed.
 5. **Friends at the table.** A desktop game for you and a few friends (OQ-029). One machine hosts the world, friends join over LAN or the internet, and nobody needs an account.
 6. **Everything is ours or credited.** What we make, by any method (including Lucid's AI-generated images and our agents' Blender scripts), and what we take under a compatible licence, with every third-party file listed in `game/assets/third_party/CREDITS.md`. Nothing unlicensed, NonCommercial or ripped from commercial games or artists (OQ-038, which supersedes OQ-030).
 
@@ -38,9 +40,14 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 - **World**: one seed-generated, infinite map with its own simulation state. Hosted on one machine.
 - **Character**: portable across worlds. Holds level, traits, abilities, teachings and inventory.
 - **Trait**: a passive competence grown by repeated use (sword mastery, dodging, haggling).
-- **Ability**: an active power learned from an Ability Book. Costs level points to learn and to rank up.
+- **Ability**: an active power learned from an Ability Book: the book adds it to the level-up draft pool, and the draft picks it (OQ-041).
 - **Teaching** (also "skill"): a transferable technique, such as an attack pattern or movement trick, learned from NPCs or from fighting monsters that use it.
-- **Level points**: one per character level. Spent on learning and ranking up abilities.
+- **Level-up draft**: each level-up offers 3 choices drawn from what the character has (books read, gear carried, teachings learned, generic boons), and the player picks one (OQ-041).
+- **Frontier**: the overworld far from the world origin, where monster density and horde size are highest (OQ-043).
+- **Grave**: the container a death leaves with the dead character's full inventory (the corpse); it becomes a landmark that acts as a civilization anchor (OQ-044).
+- **Civilization anchor**: a grave, a lit beacon or waystone, a village or a city. Anchors push back against monsters spreading and taking over settlements (OQ-044).
+- **Knowledge codex**: the record of the Ability Books and teachings a character learned, which helps the next character (OQ-044).
+- **Heirloom**: the one item (or bit of power) that passes from a dead character to the next (OQ-044).
 - **Dungeon**: a city-bound, multi-floor instance. Its upper floors are stable and may contain shops.
 - **Rift**: the wild version of a dungeon. Appears in the overworld, grows, leaks monsters, can be sealed.
 - **Sim LOD**: simulation level of detail. Full simulation near players, coarse statistics far away.
@@ -59,3 +66,4 @@ Lighthearted and saturated, with dark humor. A big mob knocks a tree onto your h
 - [x] **OVR-008** Retarget to a desktop game for a few friends and redefine 'everything is ours' as 'authored by us' (OQ-029, OQ-030; OQ-030 is superseded by OQ-038). — #33
 - [x] **OVR-009** Record the Godot overhaul (decisions D1 to D8, OQ-031 to OQ-038): rewrite the GDD sections it touches, `CLAUDE.md`, the milestones and the root README, and add `game/assets/third_party/CREDITS.md` with its CI check `tools/check-credits.sh`. (`docs/overhaul/PLAN.md`) — #40
 - [x] **OVR-010** Retire the TypeScript sim, the Pixi client, the Python art pipeline and the browser scripts (`sim/`, `client/`, `tools/art/`, `scripts/`) and `deploy.yml`, once the GDScript ports (GOD-003, GOD-004) are proven against the shared fixtures. They stay in git history. (OQ-031) — #42
+- [ ] **OVR-011** Record the frontier design (OQ-040 to OQ-044): the horde-slayer combat shape, the level-up draft, always-permadeath, horde density by distance, and the world-remembers meta progression with the tug of war. Rewrites the GDD sections it touches, strikes or rewrites the tasks it makes wrong, adds the new tasks, and replans G2 in `docs/agents/MILESTONES.md`. (`docs/specs/OVR-011.md`)

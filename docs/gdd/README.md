@@ -10,7 +10,7 @@ The GDD is the single source of truth for what the game is. Code that contradict
 | 01 | [Tech & multiplayer](01-tech.md) | `TEC` / `GOD` | Stack, architecture, netcode, saves, auth, budgets. `GOD` = Godot engine and tooling tasks (OQ-031) |
 | 02 | [World](02-world.md) | `WLD` | Worldgen, chunks, biomes, difficulty, clock, weather, seasons, water |
 | 03 | [Ecology](03-ecology.md) | `ECO` | Monster aging, breeding, density, variants, flyers, territory bosses |
-| 04 | [Characters & progression](04-characters.md) | `CHR` | Species, levels, level points, traits, abilities, teachings |
+| 04 | [Characters & progression](04-characters.md) | `CHR` | Species, levels, the level-up draft, traits, abilities, teachings |
 | 05 | [Combat & controls](05-combat.md) | `CMB` | Inputs, stamina/mana, weapons, damage, PvP, death |
 | 06 | [NPCs & society](06-npcs-society.md) | `NPC` | Life sim, factions, cities, migration, crime, quests |
 | 07 | [Dungeons & rifts](07-dungeons.md) | `DNG` | City dungeons, wild rifts, floors, death, lifecycle |

@@ -29,7 +29,17 @@ Every monster has an **age**, measured in in-game days.
 - NPC factions: hunters, guards and settlements that cull nearby threats (→ NPC).
 - Monster wars: competing species fight over territory.
 - Players.
+- **Civilization anchors** (graves, lit beacons, villages and cities): see "The tug of war" below (OQ-044).
 - **Nothing**, in which case the area spreads. An overrun area spawns a **territory boss**: an exceptional, old, high-level individual that anchors the region until killed.
+
+## The tug of war (OQ-044)
+
+Monster spread (density pressure and overrun areas above, settlement death in 06-npcs-society) is only one side of a back and forth.
+
+- **Civilization anchors** are graves, lit beacons and waystones (→ 02-world), villages and cities (→ 06-npcs-society). They push back against monsters spreading and taking over settlements.
+- Where nobody holds the line, the monsters push civilization back: spread continues, settlements are overrun and become ruins.
+- Which side wins is decided by skill and preparation. Lucid: "a proper back and forth … like a tug of war".
+- How an anchor resists (its reach, its strength, and its effect on density pressure and territory-boss emergence) is decided in NPC-023. Balancing comes later.
 
 ## Variants and mutations
 

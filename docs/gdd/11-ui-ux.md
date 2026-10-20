@@ -25,8 +25,8 @@
 
 ## Menus
 
-- Inventory + paper doll · character sheet (traits, abilities, teachings, level points) · crafting · trade/barter · stall management · map · quest log · faction reputation.
-- World menu: create world (seed; mode: Respawn / Permadeath / Hardcore, where Hardcore is solo-only; PvP is always on), load, export/import, open to friends (friends join the host over LAN or the internet, OQ-029; hidden for Hardcore), kick/ban.
+- Inventory + paper doll · character sheet (traits, abilities, teachings, level) · level-up draft pick (OQ-041) · crafting · trade/barter · stall management · map · quest log · faction reputation.
+- World menu: create world (seed; the optional Hardcore setting, solo-only, OQ-042; permadeath and PvP are always on), load, export/import, open to friends (friends join the host over LAN or the internet, OQ-029; hidden for Hardcore), kick/ban.
 - Settings include the optional click-to-move control scheme.
 
 ## Onboarding
