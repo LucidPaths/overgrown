@@ -10,7 +10,7 @@ Seeded generation stays deterministic: same code + same seed = identical output.
 ## Visual spec
 
 - **Camera (OQ-034, D4):** a tilted action-RPG camera. It is low enough to see the horizon and sky during play, and pulls out to wide vistas at landmarks. The world is 3D (a heightfield terrain with biome materials), and 1 tile = 1 m. The tilt angle and the vista zoom are tuned in GOD-005 and G1.
-- **Direction (OQ-035, D5): Lucid's mood board** (`docs/art/moodboard/`). A painted look (oil and impasto), teal against orange and gold, cosmic skies, wind, and small figures in huge worlds. The images are Lucid's own and may also ship in-game (title and loading art). The G1 art bible turns the board into rules; the ART-024 art bible (`docs/art/DIRECTION.md`) was written for the pixel pipeline and is reference only until then.
+- **Direction (OQ-035, D5): Lucid's mood board** (`docs/art/moodboard/`). A painted look (oil and impasto), teal against orange and gold, cosmic skies, wind, and small figures in huge worlds. The images are Lucid's own and may also ship in-game (title and loading art). The G1 art bible, `docs/art/BIBLE.md` (ART-027), turns the board into rules and is the source of truth; the ART-024 art bible (`docs/art/DIRECTION.md`) was written for the pixel pipeline and is history.
 - **The wanderer (OQ-036, D6):** faceless, a poncho with orange geometric borders, a gold scarf, wind-blown hair. It is the north star for character design and for the game's identity. The details are decided in G1.
 - **Look stack:** Forward+ with a painterly post-process (brush and Kuwahara-style filtering, canvas grain, palette grading to the mood board, glow, volumetric fog), animated cosmic skies as a sky shader, and wind shaders on foliage, cloth and hair.
 - **Readability in fights:** the painted look must never hide a telegraph or a hit. This is a G1 acceptance criterion.
@@ -79,7 +79,7 @@ Audio follows the same D8 rule (OQ-038): we make it, or take CC0 or other allowe
 - [ ] ~~**ART-025** Art lab: unconstrained art-direction exploration with a browser prototype, art bible and integration plan.~~ (dropped: Godot overhaul, OQ-031; superseded by ART-027; the parked work stays on branch `art-lab`, draft PR #32)
 - [ ] ~~**ART-026** Character lab: redesign characters from scratch for the desktop target.~~ (dropped: Godot overhaul, OQ-031; superseded by ART-028; the parked work stays on branch `art-lab`, draft PR #32)
 - [ ] **ART-027** G1 world look: painterly post stack, palette grade, cosmic sky, terrain materials, foliage and props, water, wind, one landmark vista, and the new art bible `docs/art/BIBLE.md`, with full creative freedom inside the mood board (OQ-035). (`docs/specs/ART-027.md`)
-- [ ] **ART-028** G1 wanderer v1: Blender-scripted model, rig and animations (idle, walk, run, sprint, dodge, attack), cloth and hair secondary motion, the in-game view (OQ-036, OQ-037). (`docs/specs/ART-028.md`)
+- [x] **ART-028** G1 wanderer v1: Blender-scripted model, rig and animations (idle, walk, run, sprint, dodge, attack), cloth and hair secondary motion, the in-game view (OQ-036, OQ-037). (`docs/specs/ART-028.md`) — #51
 - [ ] ~~**AUD-001** `[proto]` Python sfxr-style synth → audio files in the atlas build.~~ (dropped: Godot overhaul, OQ-031; the Python atlas build is retired)
 - [ ] **AUD-002** SFX set: hits per material, footsteps per terrain, UI, creature calls, spells.
 - [ ] **AUD-003** Runtime audio mixer with spatial panning and volume buses.
