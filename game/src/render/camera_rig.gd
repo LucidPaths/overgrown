@@ -1,46 +1,56 @@
 class_name OgCameraRig
 extends Node3D
 ## The tilted action-RPG camera (PLAN D4). The rig follows `target` with frame-rate independent smoothing;
-## its Camera3D child sits behind the target on an orbit of yaw (0: south of the target, north up) and pitch,
-## aimed at the target and raised by look_raise_deg(pitch) so the top of the frame shows sky. Dragging with
-## camera_orbit held turns the yaw (freely) and the play pitch (clamped); camera_left/right turn the yaw at a
-## steady rate. Yaw and pitch persist for the session. Below LOOK_UP_FROM_DEG the camera sinks toward the ground
-## and tilts up (GOD-009): at PLAY_PITCH_MIN_DEG the view points LOW_LOOK_RAISE_DEG - PLAY_PITCH_MIN_DEG above
-## the horizon and the target sits near the bottom of the frame. The camera keeps CLEAR_GROUND_M above the
-## terrain under it (read through `ground`, never written) and CLEAR_TARGET_M above the target: where terrain
-## would block, the arm pulls in toward a pivot ARM_PIVOT_M above the target (clear_arm) and eases back out.
-## Holding camera_vista eases out to a wide, high view at the current yaw; the mouse wheel zooms the play view.
-## The rig also moves the depth fog with the pose so the streaming edge stays hidden. Moves in _physics_process
-## (physics interpolation smooths it); runs after the target moves (process_physics_priority).
+## its Camera3D child sits behind the target on an orbit of yaw (0: south of the target, north up) and orbit pitch.
+## Dragging with camera_orbit held turns the yaw (freely) and the orbit pitch (clamped); camera_left/right turn the
+## yaw at a steady rate. Yaw and pitch persist for the session. The view always looks PLAY_LOOK_RAISE_DEG less
+## steeply than the orbit pitch, so one drag pixel tilts it by ORBIT_DEG_PER_PX over the whole range: 60 degrees
+## below the horizon at the top, 45 above at the bottom (GOD-009: room to look up at a floating island).
+## At and above LOOK_UP_FROM_DEG the camera sits on the orbit at that pitch (unchanged from GOD-008). Below it the
+## camera settles smoothly toward CAMERA_FLOOR_PITCH_DEG and rises by up to LOW_LIFT_M (camera_pitch_deg,
+## camera_lift_m), while the view keeps tilting up: the target sinks to the bottom of the frame (in frame down to
+## about -10, a view 15 degrees up) and then below it; the sky fills the view.
+## Terrain: the camera never sits within CLEAR_GROUND_M of the ground under it (read through `ground`, never
+## written) or CLEAR_TARGET_M of the target; it snaps in only as far as that needs. Its goal is the spring arm from a
+## pivot ARM_PIVOT_M above the target: the first point out along the arm that would be that close to the ground
+## (so terrain between the camera and the wanderer pulls it in too), approached at ARM_IN_RATE and ARM_OUT_RATE.
+## When pulled in, the view tilts to keep the target where the posed camera had it. Holding camera_vista eases out
+## to a wide, high view at the current yaw; the mouse wheel zooms the play view. The rig also moves the depth fog
+## with the pose so the streaming edge stays hidden. Moves in _physics_process (physics interpolation smooths it);
+## runs after the target moves (process_physics_priority).
 
-## Play view: the camera starts PLAY_PITCH_DEG above the target line, at the zoom distance (tunable).
+## Play view: the orbit starts PLAY_PITCH_DEG above the target line, at the zoom distance (tunable).
 const PLAY_PITCH_DEG := 30.0
-## Look raise (tunable): PLAY_LOOK_RAISE_DEG at and above LOOK_UP_FROM_DEG, growing along a smoothstep (no kink)
-## to LOW_LOOK_RAISE_DEG at PLAY_PITCH_MIN_DEG. The target sits the raise below the frame centre, so the low raise
-## stays under half the field of view (FOV_DEG / 2) with room for the feet.
 const PLAY_LOOK_RAISE_DEG := 5.0
-const LOOK_UP_FROM_DEG := 23.0
-const LOW_LOOK_RAISE_DEG := 25.0
 const FOV_DEG := 55.0
 const PLAY_DISTANCE_M := 14.0
 const ZOOM_MIN_M := 8.0
 const ZOOM_MAX_M := 24.0
 const ZOOM_STEP_M := 2.0
 ## Orbit (tunable): degrees of yaw and pitch per pixel dragged with camera_orbit held, and the camera_left/right
-## yaw rate. The play pitch stays in PLAY_PITCH_MIN..MAX_DEG: at the low end the view looks 20 degrees above the
-## horizon (mostly sky), at LOOK_UP_FROM_DEG 18 below, at the high end 60 below (close to top-down).
+## yaw rate. The orbit pitch stays in PLAY_PITCH_MIN..MAX_DEG, a view 45 degrees above the horizon to 60 below.
 const ORBIT_DEG_PER_PX := 0.3
 const YAW_KEYS_DEG_S := 100.0
-const PLAY_PITCH_MIN_DEG := 5.0
+const PLAY_PITCH_MIN_DEG := -40.0
 const PLAY_PITCH_MAX_DEG := 65.0
-## Terrain clearance (tunable): the camera stays CLEAR_GROUND_M above the ground under it and CLEAR_TARGET_M above
-## the target. The arm pulls in toward the pivot ARM_PIVOT_M above the target (the wanderer's neck, clear above its
-## own ground), found by ARM_SAMPLES steps from the far end and ARM_REFINE halvings, and eases back out at ZOOM_RATE.
+## Low end (tunable): below LOOK_UP_FROM_DEG the camera's own pitch eases from it toward CAMERA_FLOOR_PITCH_DEG
+## (exponentially, same slope at LOOK_UP_FROM_DEG, so no kink) and the camera rises by up to LOW_LIFT_M (eased in
+## from zero slope), keeping it clear of rolling ground.
+const LOOK_UP_FROM_DEG := 23.0
+const CAMERA_FLOOR_PITCH_DEG := 4.0
+const LOW_LIFT_M := 1.5
+## Terrain clearance (tunable): the hard margins above the ground under the camera and above the target; the pivot
+## (the wanderer's neck, clear above its own ground); ARM_SAMPLES steps plus ARM_REFINE halvings along the arm; and
+## the arm's approach rates toward its goal, in (faster) and out (1 - exp(-rate * delta) of the gap per tick).
 const CLEAR_GROUND_M := 0.6
 const CLEAR_TARGET_M := 0.3
+const GOAL_GROUND_M := 0.8
+const ARM_LOS_M := 0.3
 const ARM_PIVOT_M := 1.5
 const ARM_SAMPLES := 16
 const ARM_REFINE := 6
+const ARM_IN_RATE := 6.0
+const ARM_OUT_RATE := 2.0
 ## Vista (tunable).
 const VISTA_PITCH_DEG := 38.0
 const VISTA_LOOK_RAISE_DEG := 0.0
@@ -61,16 +71,17 @@ const VISTA_FOG_END_M := 125.0
 @export var environment: Environment
 ## Forces the vista pose (capture mode) regardless of input.
 var force_vista := false
-## Read-only terrain height lookup, (x: float, z: float) -> float in metres (OgChunkStore.height_at).
+## Read-only terrain height lookup, (x: float, z: float) -> float in metres (OgChunkStore.height_at). Unset: no
+## terrain, the arm is never pulled in.
 var ground: Callable
 
 var _zoom_goal := PLAY_DISTANCE_M
 var _zoom := PLAY_DISTANCE_M
 var _vista := 0.0
-## Orbit yaw (radians, turning the view left as it grows) and play pitch (degrees).
+## Orbit yaw (radians, turning the view left as it grows) and orbit pitch (degrees).
 var _yaw := 0.0
 var _pitch := PLAY_PITCH_DEG
-## The arm's eased length as a fraction of the posed one (1: not pulled in).
+## The arm's length as a fraction of the posed one (1: not pulled in).
 var _arm := 1.0
 
 @onready var _camera: Camera3D = $Camera3D
@@ -92,7 +103,7 @@ func set_zoom(dist_m: float) -> void:
 	_zoom_goal = clampf(dist_m, ZOOM_MIN_M, ZOOM_MAX_M)
 
 
-## The orbit yaw (0..360) and play pitch in degrees, for the HUD.
+## The orbit yaw (0..360) and orbit pitch in degrees, for the HUD.
 func orbit_deg() -> Vector2:
 	return Vector2(fposmod(rad_to_deg(_yaw), 360.0), _pitch)
 
@@ -107,10 +118,25 @@ static func camera_offset(yaw: float, pitch: float, dist: float) -> Vector3:
 	return Basis(Vector3.UP, yaw) * Vector3(0.0, sin(pitch) * dist, cos(pitch) * dist)
 
 
-## The play look raise in degrees at play pitch `pitch_deg` (see LOOK_UP_FROM_DEG).
-static func look_raise_deg(pitch_deg: float) -> float:
-	var u := clampf((LOOK_UP_FROM_DEG - pitch_deg) / (LOOK_UP_FROM_DEG - PLAY_PITCH_MIN_DEG), 0.0, 1.0)
-	return lerpf(PLAY_LOOK_RAISE_DEG, LOW_LOOK_RAISE_DEG, u * u * (3.0 - 2.0 * u))
+## The camera's own pitch in degrees at orbit pitch `pitch_deg` (see LOOK_UP_FROM_DEG).
+static func camera_pitch_deg(pitch_deg: float) -> float:
+	if pitch_deg >= LOOK_UP_FROM_DEG:
+		return pitch_deg
+	return CAMERA_FLOOR_PITCH_DEG + (LOOK_UP_FROM_DEG - CAMERA_FLOOR_PITCH_DEG) * _settle(pitch_deg)
+
+
+## The camera's rise in metres above the orbit at orbit pitch `pitch_deg` (see LOOK_UP_FROM_DEG).
+static func camera_lift_m(pitch_deg: float) -> float:
+	if pitch_deg >= LOOK_UP_FROM_DEG:
+		return 0.0
+	var u := 1.0 - _settle(pitch_deg)
+	return LOW_LIFT_M * u * u
+
+
+## exp(-(LOOK_UP_FROM_DEG - pitch) / (LOOK_UP_FROM_DEG - CAMERA_FLOOR_PITCH_DEG)): 1 at LOOK_UP_FROM_DEG, toward 0.
+static func _settle(pitch_deg: float) -> float:
+	var span := LOOK_UP_FROM_DEG - CAMERA_FLOOR_PITCH_DEG
+	return exp(-(LOOK_UP_FROM_DEG - pitch_deg) / span)
 
 
 ## The camera's position with the arm pulled in to fraction `k`: on the segment from the pivot (ARM_PIVOT_M above
@@ -120,30 +146,57 @@ static func arm_point(target: Vector3, offset: Vector3, k: float) -> Vector3:
 	return pivot + (target + offset - pivot) * k
 
 
-## The largest arm fraction k in [0, 1] whose arm_point clears the terrain: CLEAR_GROUND_M above
-## `ground.call(x, z)` and CLEAR_TARGET_M above the target. 0 when nothing is clear (the pivot itself clears the
-## ground under a target standing on it).
-static func clear_arm(target: Vector3, offset: Vector3, ground: Callable) -> float:
-	var hi := 1.0
-	for i in ARM_SAMPLES + 1:
-		var k := 1.0 - float(i) / ARM_SAMPLES
-		if _is_clear(arm_point(target, offset, k), target, ground):
-			if i == 0:
-				return 1.0
-			var lo := k
-			for j in ARM_REFINE:
-				var mid := (lo + hi) * 0.5
-				if _is_clear(arm_point(target, offset, mid), target, ground):
-					lo = mid
-				else:
-					hi = mid
-			return lo
-		hi = k
+## The camera's position at arm fraction `k`: arm_point, lifted straight up wherever it would be closer than the
+## hard margins (CLEAR_GROUND_M above `ground.call(x, z)`, CLEAR_TARGET_M above `target`). The lift follows the
+## ground continuously, so it never pops.
+static func camera_point(target: Vector3, offset: Vector3, k: float, ground: Callable) -> Vector3:
+	var p := arm_point(target, offset, k)
+	p.y = maxf(p.y, maxf(ground.call(p.x, p.z) + CLEAR_GROUND_M, target.y + CLEAR_TARGET_M))
+	return p
+
+
+## The arm's goal fraction: out from the pivot to the first point less than ARM_LOS_M above the ground (terrain
+## between the camera and the wanderer), then in from there to the first camera point with the cushion
+## (GOAL_GROUND_M above the ground, CLEAR_TARGET_M above the target). ARM_SAMPLES steps, ARM_REFINE halvings.
+static func arm_goal(target: Vector3, offset: Vector3, ground: Callable) -> float:
+	var los := 1.0
+	for i in range(1, ARM_SAMPLES + 1):
+		var k := float(i) / ARM_SAMPLES
+		if not _passes(target, offset, ground, k, ARM_LOS_M):
+			los = _refine(target, offset, ground, float(i - 1) / ARM_SAMPLES, k, ARM_LOS_M)
+			break
+	for i in range(0, ARM_SAMPLES + 1):
+		var k := los * (1.0 - float(i) / ARM_SAMPLES)
+		if _passes(target, offset, ground, k, GOAL_GROUND_M):
+			return k if i == 0 else _refine(target, offset, ground, k, los * (1.0 - float(i - 1) / ARM_SAMPLES), GOAL_GROUND_M)
 	return 0.0
 
 
-static func _is_clear(p: Vector3, target: Vector3, ground: Callable) -> bool:
-	return p.y >= ground.call(p.x, p.z) + CLEAR_GROUND_M and p.y >= target.y + CLEAR_TARGET_M
+## True if arm_point(k) is `margin` above the ground under it and CLEAR_TARGET_M above the target.
+static func _passes(target: Vector3, offset: Vector3, ground: Callable, k: float, margin: float) -> bool:
+	var p := arm_point(target, offset, k)
+	return p.y >= ground.call(p.x, p.z) + margin and p.y >= target.y + CLEAR_TARGET_M
+
+
+## Halves [lo (passes), hi (fails)] ARM_REFINE times; returns the passing end.
+static func _refine(target: Vector3, offset: Vector3, ground: Callable, lo: float, hi: float, margin: float) -> float:
+	for j in ARM_REFINE:
+		var mid := (lo + hi) * 0.5
+		if _passes(target, offset, ground, mid, margin):
+			lo = mid
+		else:
+			hi = mid
+	return lo
+
+
+## One tick of the arm fraction: close `in_part` of the gap to a shorter arm_goal, or `out_part` of the gap to a
+## longer one, but never out onto a point inside the hard margin. With both parts 1 it jumps to the goal.
+static func step_arm(arm: float, target: Vector3, offset: Vector3, ground: Callable, in_part: float, out_part: float) -> float:
+	var goal := arm_goal(target, offset, ground)
+	if goal <= arm:
+		return lerpf(arm, goal, in_part)
+	var k := lerpf(arm, goal, out_part)
+	return k if out_part >= 1.0 or _passes(target, offset, ground, k, CLEAR_GROUND_M) else arm
 
 
 ## Jumps straight to the current goal pose (scene start, teleports, captures).
@@ -151,7 +204,7 @@ func snap() -> void:
 	global_position = target.global_position
 	_zoom = _zoom_goal
 	_vista = _vista_goal()
-	_apply(1.0)
+	_apply(1.0, 1.0)
 	reset_physics_interpolation()
 	_camera.reset_physics_interpolation()
 
@@ -177,24 +230,25 @@ func _physics_process(delta: float) -> void:
 	global_position = global_position.lerp(target.global_position, 1.0 - exp(-FOLLOW_RATE * delta))
 	_zoom = lerpf(_zoom, _zoom_goal, 1.0 - exp(-ZOOM_RATE * delta))
 	_vista = lerpf(_vista, _vista_goal(), 1.0 - exp(-VISTA_RATE * delta))
-	_apply(1.0 - exp(-ZOOM_RATE * delta))
+	_apply(1.0 - exp(-ARM_IN_RATE * delta), 1.0 - exp(-ARM_OUT_RATE * delta))
 
 
-## Poses the camera; `arm_ease` is the fraction of the way the arm eases back out this call (1: jump).
-func _apply(arm_ease: float) -> void:
+## Poses the camera; the arm closes `in_part` / `out_part` of the gap to its goal this call (1: jump).
+func _apply(in_part: float, out_part: float) -> void:
 	var t := smoothstep(0.0, 1.0, _vista)
 	var dist := lerpf(_zoom, VISTA_DISTANCE_M, t)
-	var pitch := deg_to_rad(lerpf(_pitch, VISTA_PITCH_DEG, t))
-	var raise := deg_to_rad(lerpf(look_raise_deg(_pitch), VISTA_LOOK_RAISE_DEG, t))
-	var offset := camera_offset(_yaw, pitch, dist)
-	# Pull in at once where terrain blocks; ease back out like a zoom, jumping out if the eased point is blocked.
-	var clear := clear_arm(global_position, offset, ground)
-	var eased := minf(lerpf(_arm, clear, arm_ease), clear)
-	_arm = eased if _is_clear(arm_point(global_position, offset, eased), global_position, ground) else clear
-	_camera.position = arm_point(Vector3.ZERO, offset, _arm)
-	# Aim at the target from where the camera is; on the posed arm this is the pitch itself.
-	var p := _camera.position
-	_camera.basis = camera_basis(_yaw, atan2(p.y, Vector2(p.x, p.z).length()) - raise)
+	var pitch := deg_to_rad(lerpf(camera_pitch_deg(_pitch), VISTA_PITCH_DEG, t))
+	var lift := lerpf(camera_lift_m(_pitch), 0.0, t)
+	var view := deg_to_rad(lerpf(_pitch - PLAY_LOOK_RAISE_DEG, VISTA_PITCH_DEG - VISTA_LOOK_RAISE_DEG, t))
+	var offset := camera_offset(_yaw, pitch, dist) + Vector3(0.0, lift, 0.0)
+	_arm = step_arm(_arm, global_position, offset, ground, in_part, out_part) if ground.is_valid() else 1.0
+	_camera.position = camera_point(global_position, offset, _arm, ground) - global_position if ground.is_valid() else offset
+	# Pulled in, the camera tilts by the change in its elevation seen from the target, keeping the target in place.
+	_camera.basis = camera_basis(_yaw, view + _elevation(_camera.position) - _elevation(offset))
 	if environment != null:
 		environment.fog_depth_begin = lerpf(PLAY_FOG_BEGIN_M, VISTA_FOG_BEGIN_M, t)
 		environment.fog_depth_end = lerpf(PLAY_FOG_END_M, VISTA_FOG_END_M, t)
+
+
+static func _elevation(offset: Vector3) -> float:
+	return atan2(offset.y, Vector2(offset.x, offset.z).length())
