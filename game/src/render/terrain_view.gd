@@ -31,16 +31,14 @@ var _store: OgChunkStore
 var _builds := {} # Vector2i -> _Build, for loaded chunks not yet added; insertion order = load order
 var _dropped: Array[_Build] = [] # builds of unloaded chunks, waited for and discarded
 var _nodes := {} # Vector2i -> MeshInstance3D (ground; the water mesh is its child)
-var _ground_mat := StandardMaterial3D.new()
+var _ground_mat := ShaderMaterial.new()
 var _water_mat := StandardMaterial3D.new()
 
 
 func _init() -> void:
 	# Chunks never move; children inherit this.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	_ground_mat.vertex_color_use_as_albedo = true
-	_ground_mat.vertex_color_is_srgb = true
-	_ground_mat.roughness = 0.95
+	_ground_mat.shader = preload("res://src/render/shaders/terrain.gdshader")
 	_water_mat.vertex_color_use_as_albedo = true
 	_water_mat.vertex_color_is_srgb = true
 	_water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

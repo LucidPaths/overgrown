@@ -11,6 +11,8 @@ extends Node3D
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
 ##                      save the PNG, quit 0
 ##   --capture-tick N   with --capture: freeze the rules after N ticks counted from world ready, then capture
+##   --post off|low|high  the painterly post stack's quality (OgWorldLook; default high)
+##   --shot YAW,PITCH,DIST  debug captures: a free camera around the wanderer instead of the play camera
 ##   --walk N           after world ready, sprint the wanderer east across N chunks (through the latch, with
 ##                      collision; ends early if blocked) and print the timings, then capture or quit 0
 ## World ready: every chunk within READY_RADIUS of the wanderer's chunk is meshed; its time from scene start
@@ -59,6 +61,7 @@ var _speed := 0.0
 @onready var _local: OgLocalInput = $LocalInput
 @onready var _rig: OgCameraRig = $CameraRig
 @onready var _label: Label = $Hud/Label
+@onready var _look: OgWorldLook = $Look
 
 
 func _ready() -> void:
@@ -92,6 +95,7 @@ func _ready() -> void:
 	_rig.environment = _env.environment
 	_rig.force_vista = opts["vista"]
 	_rig.snap()
+	_look.setup(_env, $Sun, _rig.get_node("Camera3D"), _view, opts["post"], opts["shot"])
 	if opts["autopilot"]:
 		_driver = Driver.AUTOPILOT
 	if opts["capture"] != "" or opts["walk"] > 0:
@@ -109,10 +113,10 @@ func _blocked_tile_under_box(p: Vector2) -> String:
 	return ""
 
 
-## {seed, at, has_at, vista, autopilot, capture, capture_tick, frames, walk}, or {} after printing what is wrong.
+## {seed, at, has_at, vista, autopilot, capture, capture_tick, frames, walk, post, shot}, or {} after printing what is wrong.
 func _parse_args(args: PackedStringArray) -> Dictionary:
 	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "autopilot": false, "capture": "",
-		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0}
+		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "post": OgWorldLook.POST_DEFAULT, "shot": null}
 	var i := 0
 	while i < args.size():
 		var a := args[i]
@@ -149,6 +153,18 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 					printerr("--frames needs a positive integer, got '%s'" % v)
 					return {}
 				o["frames"] = v.to_int()
+			"--post":
+				var q := OgWorldLook.POST_NAMES.find(v)
+				if q < 0:
+					printerr("--post needs off, low or high, got '%s'" % v)
+					return {}
+				o["post"] = q
+			"--shot":
+				var sp := v.split(",")
+				if sp.size() != 3 or not (sp[0].is_valid_float() and sp[1].is_valid_float() and sp[2].is_valid_float()):
+					printerr("--shot needs YAW,PITCH,DIST, got '%s'" % v)
+					return {}
+				o["shot"] = Vector3(sp[0].to_float(), sp[1].to_float(), sp[2].to_float())
 			"--walk":
 				if not v.is_valid_int() or v.to_int() < 1:
 					printerr("--walk needs a positive number of chunks, got '%s'" % v)

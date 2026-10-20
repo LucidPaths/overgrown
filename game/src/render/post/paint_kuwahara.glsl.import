@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://g6hk4wue2g7o"
+path="res://.godot/imported/paint_kuwahara.glsl-365c2df4c942ad1d9f8c41bd8969adf0.res"
+
+[deps]
+
+source_file="res://src/render/post/paint_kuwahara.glsl"
+dest_files=["res://.godot/imported/paint_kuwahara.glsl-365c2df4c942ad1d9f8c41bd8969adf0.res"]
+
+[params]
+

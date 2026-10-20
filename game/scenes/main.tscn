@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scenes/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://src/render/terrain_view.gd" id="2_terrain"]
 [ext_resource type="Script" path="res://src/render/camera_rig.gd" id="3_rig"]
 [ext_resource type="Script" path="res://src/render/character_view.gd" id="4_view"]
 [ext_resource type="Script" path="res://src/input/local_input.gd" id="5_input"]
+[ext_resource type="Script" path="res://src/render/world_look.gd" id="6_look"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.08, 0.3, 0.38, 1)
@@ -64,6 +65,9 @@ transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 
 current = true
 fov = 55.0
 near = 0.1
+
+[node name="Look" type="Node" parent="."]
+script = ExtResource("6_look")
 
 [node name="Hud" type="CanvasLayer" parent="."]
 
