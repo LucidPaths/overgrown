@@ -17,9 +17,11 @@ const CASES := [
 ]
 
 
+## At the lowest pitch the view looks up above the horizon (GOD-009); screen_to_world must still map up to away.
 func test_screen_directions_map_through_the_orbit_yaw(t: TestContext) -> void:
-	for pitch_deg in [OgCameraRig.PLAY_PITCH_MIN_DEG, OgCameraRig.PLAY_PITCH_MAX_DEG]:
-		var look := deg_to_rad(pitch_deg - OgCameraRig.PLAY_LOOK_RAISE_DEG)
+	t.check(OgCameraRig.PLAY_PITCH_MIN_DEG < OgCameraRig.look_raise_deg(OgCameraRig.PLAY_PITCH_MIN_DEG), "the lowest pitch no longer looks above the horizon")
+	for pitch_deg in [OgCameraRig.PLAY_PITCH_MIN_DEG, OgCameraRig.LOOK_UP_FROM_DEG, OgCameraRig.PLAY_PITCH_MAX_DEG]:
+		var look := deg_to_rad(pitch_deg - OgCameraRig.look_raise_deg(pitch_deg))
 		for c: Array in CASES:
 			var yaw := deg_to_rad(c[0])
 			var basis := OgCameraRig.camera_basis(yaw, look)

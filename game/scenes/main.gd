@@ -8,7 +8,8 @@ extends Node3D
 ##                      walkable tiles)
 ##   --vista            hold the vista pose
 ##   --yaw DEG          start the camera orbit at this yaw (0: looking north; 90: looking west; default 0)
-##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range (default 30)
+##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range
+##                      (OgCameraRig.PLAY_PITCH_MIN_DEG..PLAY_PITCH_MAX_DEG, 5..65; default 30)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
 ##                      save the PNG, quit 0
@@ -93,6 +94,7 @@ func _ready() -> void:
 	_local.camera = _rig.get_node("Camera3D")
 	_rig.target = _view
 	_rig.environment = _env.environment
+	_rig.ground = _sim.store.height_at
 	_rig.force_vista = opts["vista"]
 	_rig.set_orbit(opts["yaw"], opts["pitch"])
 	_rig.snap()
