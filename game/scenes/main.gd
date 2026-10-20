@@ -7,6 +7,8 @@ extends Node3D
 ##   --at X,Z           start the wanderer at world metres (X, Z) instead of the spawn (the foot box must be on
 ##                      walkable tiles)
 ##   --vista            hold the vista pose
+##   --wanderer old|new the wanderer's look: new = the Blender-built model (OgWandererView, default), old = the G0
+##                      placeholder (OgCharacterView)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
 ##                      save the PNG, quit 0
@@ -55,7 +57,7 @@ var _speed := 0.0
 
 @onready var _env: WorldEnvironment = $WorldEnvironment
 @onready var _terrain: OgTerrainView = $Terrain
-@onready var _view: OgCharacterView = $Wanderer
+@onready var _view: Node3D = $Wanderer
 @onready var _local: OgLocalInput = $LocalInput
 @onready var _rig: OgCameraRig = $CameraRig
 @onready var _label: Label = $Hud/Label
@@ -83,6 +85,11 @@ func _ready() -> void:
 		get_tree().quit(2)
 		return
 	_terrain.setup(_sim.store)
+	if opts["wanderer"] == "new":
+		_view.free()
+		_view = OgWandererView.new()
+		_view.name = "Wanderer"
+		add_child(_view)
 	_you = _sim.add_character(at)
 	_latch = _sim.drive(_you)
 	_sim.you = _you
@@ -109,10 +116,10 @@ func _blocked_tile_under_box(p: Vector2) -> String:
 	return ""
 
 
-## {seed, at, has_at, vista, autopilot, capture, capture_tick, frames, walk}, or {} after printing what is wrong.
+## {seed, at, has_at, vista, autopilot, capture, capture_tick, frames, walk, wanderer}, or {} after printing what is wrong.
 func _parse_args(args: PackedStringArray) -> Dictionary:
 	var o := {"seed": DEFAULT_SEED, "at": Vector2.ZERO, "has_at": false, "vista": false, "autopilot": false, "capture": "",
-		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0}
+		"capture_tick": -1, "frames": DEFAULT_WARMUP_FRAMES, "walk": 0, "wanderer": "new"}
 	var i := 0
 	while i < args.size():
 		var a := args[i]
@@ -149,6 +156,11 @@ func _parse_args(args: PackedStringArray) -> Dictionary:
 					printerr("--frames needs a positive integer, got '%s'" % v)
 					return {}
 				o["frames"] = v.to_int()
+			"--wanderer":
+				if v != "old" and v != "new":
+					printerr("--wanderer needs old or new, got '%s'" % v)
+					return {}
+				o["wanderer"] = v
 			"--walk":
 				if not v.is_valid_int() or v.to_int() < 1:
 					printerr("--walk needs a positive number of chunks, got '%s'" % v)
