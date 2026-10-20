@@ -8,6 +8,9 @@ render_mode cull_back;
 #include "res://src/render/shaders/og_common.gdshaderinc"
 #include "res://src/render/shaders/og_light.gdshaderinc"
 
+// The landmark island uses this shader too; it dithers away where it would hide the wanderer.
+uniform bool fade_occluders = false;
+
 varying vec3 v_world;
 varying vec3 v_wnormal;
 
@@ -27,6 +30,9 @@ float dabs(vec2 p, float angle, float scale, float stretch) {
 }
 
 void fragment() {
+	if (fade_occluders && og_occluder(v_world, CAMERA_POSITION_WORLD) > og_bayer4(FRAGCOORD.xy) * 0.999) {
+		discard;
+	}
 	vec3 base = og_lin(COLOR.rgb);
 	float kind = COLOR.a;
 	vec2 p = v_world.xz;

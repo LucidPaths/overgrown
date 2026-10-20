@@ -86,6 +86,7 @@ func _ready() -> void:
 		get_tree().quit(2)
 		return
 	_terrain.setup(_sim.store, _seed)
+	$Landmarks.setup(_sim.store, _seed)
 	_you = _sim.add_character(at)
 	_latch = _sim.drive(_you)
 	_sim.you = _you
@@ -95,7 +96,7 @@ func _ready() -> void:
 	_rig.environment = _env.environment
 	_rig.force_vista = opts["vista"]
 	_rig.snap()
-	_look.setup(_env, $Sun, _rig.get_node("Camera3D"), _view, opts["post"], opts["shot"])
+	_look.setup(_env, $Sun, _rig.get_node("Camera3D"), _view, opts["post"], opts["shot"], $Landmarks)
 	if opts["autopilot"]:
 		_driver = Driver.AUTOPILOT
 	if opts["capture"] != "" or opts["walk"] > 0:

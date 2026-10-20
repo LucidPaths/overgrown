@@ -20,6 +20,8 @@ layout(set = 0, binding = 4, std140) uniform Frame {
 	vec4 focus; // u, v, radius (fraction of height), strength
 	vec4 sizes; // full w, h, paint w, h
 	vec4 wind; // xy unit wind direction (world xz), z strength
+	vec4 beam_a; // landmark light pillar: origin (world), radius m (0 = none)
+	vec4 beam_b; // unit direction, length m
 } frame;
 layout(push_constant, std430) uniform Params {
 	float stroke; // brush-stroke texture strength
@@ -69,10 +71,11 @@ vec4 world_at(vec2 px) {
 	return vec4((frame.cam_to_world * vec4(view.xyz, 1.0)).xyz, 1.0);
 }
 
-// The brush-hair noise: fine streaks in world space (sky: in direction space).
+// The brush noise: broad strokes (one value per stroke, ~30 cm wide) plus fine hairs, in world space so the
+// strokes stay on the world when the camera moves (sky: in direction space).
 float hair(vec4 w) {
-	vec3 p = w.xyz * (w.w > 0.0 ? 7.0 : 1.0);
-	return vnoise3(p) * 0.65 + vnoise3(p * 2.7 + 5.0) * 0.35;
+	vec3 p = w.xyz * (w.w > 0.0 ? 1.0 : 0.02);
+	return vnoise3(p * 3.2) * 0.55 + vnoise3(p * 9.0 + 5.0) * 0.3 + vnoise3(p * 21.0 + 11.0) * 0.15;
 }
 
 // The sharp scene colour at a pixel, tonemapped like the paint (for the focal point, which sits well inside
@@ -154,7 +157,9 @@ void main() {
 		// Impasto: strokes show most in the lights (thick paint) and along strong edges.
 		float lum = dot(col, vec3(0.299, 0.587, 0.114));
 		float k = params.stroke * (0.55 + 0.45 * smoothstep(0.1, 0.6, lum)) * (0.7 + 0.6 * aniso);
-		col *= 1.0 + (lic - 0.5) * 1.6 * k;
+		col *= 1.0 + (lic - 0.5) * 1.8 * k;
+		// Impasto ridge: the brightest stroke crests catch a little extra light.
+		col += vec3(1.0, 0.85, 0.6) * smoothstep(0.62, 0.8, lic) * k * 0.08 * smoothstep(0.2, 0.7, lum);
 	}
 
 	// Focal clarity: the wanderer's neighbourhood keeps more of the sharp render (readability, and the

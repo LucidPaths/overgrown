@@ -42,6 +42,8 @@ const TREE_H := Vector2(4.0, 7.0)
 const BUSH_H := Vector2(0.8, 1.6)
 const ROCK_S := Vector2(0.5, 2.4)
 const GRASS_S := Vector2(0.55, 1.0)
+## No trees within this many metres of a landmark site (a glade under the floating island).
+const LANDMARK_CLEAR_M := 16.0
 ## Patchiness: grass density follows a value-noise field with cells of this many tiles.
 const PATCH_TILES := 6
 
@@ -58,6 +60,7 @@ static func place(seed: int, c: OgChunkStore.Chunk) -> Array:
 	var rng := OgRng.new(OgRng.derive_seed(seed, [c.cx, c.cy, SALT]))
 	if not rng.is_valid():
 		return [grass, pine, tree, bush, rock, reed]
+	var sites := _nearby_sites(seed, c)
 	for ly in N:
 		for lx in N:
 			var i := ly * N + lx
@@ -88,7 +91,7 @@ static func place(seed: int, c: OgChunkStore.Chunk) -> Array:
 				continue
 			var roll := rng.next_float()
 			if tile == OgTile.GRASS or tile == OgTile.DIRT:
-				if not bank:
+				if not bank and not _in_glade(sites, tx + 0.5, ty + 0.5):
 					if roll < PINE_CHANCE[biome]:
 						pine.append_array(_inst(c, lx, ly, rng, PINE_H, ground, 1.0))
 						continue
@@ -107,6 +110,24 @@ static func place(seed: int, c: OgChunkStore.Chunk) -> Array:
 				if roll < ROCK_CHANCE_STONE * (1.0 if tile == OgTile.STONE else 0.3):
 					rock.append_array(_inst(c, lx, ly, rng, ROCK_S, ground, 1.0))
 	return [grass, pine, tree, bush, rock, reed]
+
+
+## Landmark sites of the chunk's region and the 8 regions around it (world metres).
+static func _nearby_sites(seed: int, c: OgChunkStore.Chunk) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var rx := OgLandmark.region_of(c.cx)
+	var ry := OgLandmark.region_of(c.cy)
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			out.append(OgLandmark.site(seed, rx + dx, ry + dy)["pos"])
+	return out
+
+
+static func _in_glade(sites: Array[Vector2], x: float, z: float) -> bool:
+	for p in sites:
+		if absf(p.x - x) < LANDMARK_CLEAR_M and absf(p.y - z) < LANDMARK_CLEAR_M and p.distance_to(Vector2(x, z)) < LANDMARK_CLEAR_M:
+			return true
+	return false
 
 
 ## One instance on tile (lx, ly): random point in the tile, random yaw, scale in `size` (the y scale gets

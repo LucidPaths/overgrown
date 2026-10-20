@@ -21,8 +21,8 @@ const RADIUS_HIGH := 5.0
 ## Structure tensor smoothing (paint px).
 const TENSOR_SIGMA := 2.0
 ## Brush hair strength and LIC half-length (full-res px at 720p; scaled with the height).
-const STROKE := 0.45
-const STROKE_LEN_PX := 6.0
+const STROKE := 0.6
+const STROKE_LEN_PX := 9.0
 const GRADE := 0.8
 const GRAIN := 0.045
 ## Unsharp mask on the upsampled paint (0 = soft upscale).
@@ -44,6 +44,11 @@ var time := 0.0
 var eye_dir := Vector3(0, 0.3, -0.95)
 ## (x, z unit direction, strength, 0), as og_wind.
 var wind := Vector4(1, 0, 1, 0)
+## The nearest landmark's pillar of light (beam_radius 0: none). Written by OgWorldLook.
+var beam_origin := Vector3.ZERO
+var beam_dir := Vector3.UP
+var beam_radius := 0.0
+var beam_length := 0.0
 ## Focus point in screen uv (0..1), or negative to disable.
 var focus_uv := Vector2(-10, -10)
 
@@ -105,7 +110,7 @@ func _init_rd() -> void:
 	_ok = true
 
 
-const FRAME_BYTES := 16 * 4 * 2 + 16 * 5
+const FRAME_BYTES := 16 * 4 * 2 + 16 * 7
 
 
 func _render_callback(_type: int, render_data: RenderData) -> void:
@@ -139,7 +144,9 @@ func _render_callback(_type: int, render_data: RenderData) -> void:
 		eye_dir.x, eye_dir.y, eye_dir.z, 0.0,
 		focus_uv.x, focus_uv.y, focus_r, FOCUS_STRENGTH,
 		full.x, full.y, paint.x, paint.y,
-		wind.x, wind.y, wind.z, 0.0])
+		wind.x, wind.y, wind.z, 0.0,
+		beam_origin.x, beam_origin.y, beam_origin.z, beam_radius,
+		beam_dir.x, beam_dir.y, beam_dir.z, beam_length])
 	var bytes := data.to_byte_array()
 	_rd.buffer_update(_frame_ubo, 0, bytes.size(), bytes)
 

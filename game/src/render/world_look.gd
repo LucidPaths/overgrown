@@ -18,7 +18,7 @@ const POST_NAMES: Array[String] = ["off", "low", "high"]
 const SUN_AZIMUTH_DEG := -38.0
 const SUN_ELEVATION_DEG := 34.0
 const SUN_COLOR := Color(1.0, 0.80, 0.52)
-const SUN_ENERGY := 1.9
+const SUN_ENERGY := 2.3
 ## The cosmic eye hangs in the north (the default camera looks north) at the height the tilted camera's
 ## water reflects: look down at a river and the eye looks back up at you. Its nebula ring reaches the strip of
 ## sky at the top of the frame.
@@ -46,12 +46,16 @@ var _shot_cam: Camera3D
 var _shot := Vector3.ZERO
 var _post_effect: OgPaintPost
 var _time := 0.0
+var _landmarks: OgLandmarkView
 
 
 ## Sets up the look. world_env: the scene's WorldEnvironment; sun: the key light; camera: the play camera;
 ## focus: the wanderer's view node; quality: Post; shot: Vector3(yaw, pitch, dist) or null.
-func setup(world_env: WorldEnvironment, sun: DirectionalLight3D, camera: Camera3D, focus: Node3D, quality: int, shot: Variant = null) -> void:
+func setup(world_env: WorldEnvironment, sun: DirectionalLight3D, camera: Camera3D, focus: Node3D, quality: int, shot: Variant = null, landmarks: OgLandmarkView = null) -> void:
 	post = quality
+	_landmarks = landmarks
+	if landmarks != null:
+		landmarks.mesh_pillar = post == Post.OFF
 	_env = world_env.environment
 	_sun = sun
 	_camera = camera
@@ -160,6 +164,12 @@ func _update(delta: float) -> void:
 	if _post_effect != null:
 		_post_effect.time = _time
 		_post_effect.wind = wind
+		var b := _landmarks.nearest_beam(_focus.global_position) if _landmarks != null and _focus != null else {}
+		_post_effect.beam_radius = 0.0 if b.is_empty() else b["radius"]
+		if not b.is_empty():
+			_post_effect.beam_origin = b["origin"]
+			_post_effect.beam_dir = b["dir"]
+			_post_effect.beam_length = b["length"]
 		_post_effect.eye_dir = dir_from(EYE_AZIMUTH_DEG, EYE_ELEVATION_DEG)
 		var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
 		if cam != null and _focus != null:

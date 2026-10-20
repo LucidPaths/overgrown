@@ -19,6 +19,8 @@ layout(set = 0, binding = 3, std140) uniform Frame {
 	vec4 focus; // focus u, v, radius (fraction of height), strength
 	vec4 sizes; // full w, h, paint w, h
 	vec4 wind; // xy unit wind direction (world xz), z strength
+	vec4 beam_a; // landmark light pillar: origin (world), radius m (0 = none)
+	vec4 beam_b; // unit direction, length m
 } frame;
 
 #include "res://src/render/shaders/og_noise.gdshaderinc"
@@ -81,8 +83,9 @@ void main() {
 		// world-anchored noise so it reads as painted haze rather than a gradient.
 		float n = vnoise3(world * 0.07 + vec3(t * 0.05, 0.0, 0.0));
 		float f = clamp((dist - frame.fog.x) / max(frame.fog.y - frame.fog.x, 1.0), 0.0, 1.0);
+		// Gentle at first, opaque by fog.y (the streaming edge must vanish).
 		f = f * f * (3.0 - 2.0 * f);
-		f = clamp(f + (n - 0.5) * f * (1.0 - f), 0.0, 1.0);
+		f = clamp(f * f * (1.6 - 0.6 * f) + (n - 0.5) * f * (1.0 - f), 0.0, 1.0);
 		// Valley mist: low ground gets a pale veil that thickens with distance.
 		float mist = (1.0 - smoothstep(-1.0, 4.0, world.y)) * smoothstep(8.0, 40.0, dist) * frame.fog.w * (0.6 + 0.4 * n);
 		fogs[k] = max(f, mist * 0.5);
@@ -94,10 +97,38 @@ void main() {
 		vec3 dir = normalize(cam_basis * view_at(ivec2(base), 1e-4));
 		sky = og_sky_base(dir, t, 1, frame.eye_dir.xyz, frame.wind.xy);
 	}
+	// The landmark's pillar of light, drawn here as a volume (so it glows through the haze instead of being
+	// fogged with the ground behind it): the closest approach of the view ray to the beam's axis.
+	vec3 beam = vec3(0.0);
+	if (frame.beam_a.w > 0.0) {
+		vec3 dir = normalize(cam_basis * view_at(ivec2(base), 1e-4));
+		vec3 o = frame.beam_a.xyz;
+		vec3 bd = frame.beam_b.xyz;
+		vec3 w0 = cam - o;
+		float b = dot(dir, bd);
+		float denom = 1.0 - b * b;
+		if (denom > 1e-5) {
+			float sc = (b * dot(bd, w0) - dot(dir, w0)) / denom; // along the view ray
+			float tc = (dot(bd, w0) - b * dot(dir, w0)) / denom; // along the beam
+			tc = clamp(tc, 0.0, frame.beam_b.w);
+			sc = max(sc, 0.0);
+			vec3 pc = o + bd * tc;
+			float d = length(cam + dir * sc - pc);
+			float scene_d = taps == 1 ? dists[0] : min(min(dists[0], dists[1]), min(dists[2], dists[3]));
+			float vis = smoothstep(-2.0, 2.0, scene_d - sc);
+			float r = frame.beam_a.w;
+			float flow = og_fbm(vec2(tc * 0.06 - t * 0.8, atan(d, r) * 2.0), 3);
+			float core = exp(-(d * d) / (r * r)) * (0.6 + 0.8 * flow);
+			float halo = exp(-d / (r * 5.0)) * 0.35;
+			float along = smoothstep(0.0, 4.0, tc) * (1.0 - smoothstep(frame.beam_b.w * 0.3, frame.beam_b.w, tc));
+			beam = og_lin(vec3(1.0, 0.76, 0.38)) * (core * 2.4 + halo) * along * vis;
+		}
+	}
 	vec4 acc = vec4(0.0);
 	for (int k = 0; k < taps; k++) {
-		vec3 c = mix(cols[k], sky, fogs[k]);
-		acc += vec4(tonemap(c), clamp(dists[k] / 256.0, 0.0, 1.0));
+		// Sky pixels: the sky shader drew black there, so the colour is only what transparent passes added.
+		vec3 c = dists[k] >= 256.0 ? sky + cols[k] : mix(cols[k], sky, fogs[k]);
+		acc += vec4(tonemap(c + beam), clamp(dists[k] / 256.0, 0.0, 1.0));
 	}
 	imageStore(out_image, p, acc / float(taps));
 }

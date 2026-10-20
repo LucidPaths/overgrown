@@ -12,6 +12,8 @@ const MESH_ADDS_PER_FRAME := 2
 ## Grass and reeds are drawn only for chunks within this distance of the camera (metres; their shader also
 ## shrinks them away before it).
 const GRASS_RANGE_M := 72.0
+## Visual layer for props (decals such as the landmark's rune circle paint layer 1, the ground, only).
+const PROP_LAYER := 2
 
 
 ## One mesh build. The worker writes only `arrays` and `props`; the main thread reads them after the task
@@ -38,7 +40,6 @@ var add_usec: Array[int] = []
 
 var _store: OgChunkStore
 var _seed := 0
-var _prop_mats := {} # OgFoliage kind -> Material
 var _builds := {} # Vector2i -> _Build, for loaded chunks not yet added; insertion order = load order
 var _dropped: Array[_Build] = [] # builds of unloaded chunks, waited for and discarded
 var _nodes := {} # Vector2i -> MeshInstance3D (ground; the water mesh is its child)
@@ -50,7 +51,6 @@ func _init() -> void:
 	# Chunks never move; children inherit this.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_ground_mat.shader = preload("res://src/render/shaders/terrain.gdshader")
-	_build_prop_materials()
 	_water_mat.shader = preload("res://src/render/shaders/water.gdshader")
 
 
@@ -163,44 +163,14 @@ func _add(key: Vector2i, arrays: Dictionary, props: Array) -> void:
 		var mmi := MultiMeshInstance3D.new()
 		mmi.name = OgFoliage.KIND_NAMES[kind]
 		mmi.multimesh = mm
-		mmi.material_override = _prop_mats[kind]
+		mmi.material_override = OgPropMeshes.material(kind)
+		mmi.layers = PROP_LAYER
 		if kind == OgFoliage.KIND_GRASS or kind == OgFoliage.KIND_REED:
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			mmi.visibility_range_end = GRASS_RANGE_M
 		node.add_child(mmi)
 	add_child(node)
 	_nodes[key] = node
-
-
-func _build_prop_materials() -> void:
-	var grass := preload("res://src/render/shaders/grass.gdshader")
-	var foliage := preload("res://src/render/shaders/foliage.gdshader")
-	var rock := ShaderMaterial.new()
-	rock.shader = preload("res://src/render/shaders/rock.gdshader")
-	_prop_mats[OgFoliage.KIND_ROCK] = rock
-	var g := ShaderMaterial.new()
-	g.shader = grass
-	_prop_mats[OgFoliage.KIND_GRASS] = g
-	var reed := ShaderMaterial.new()
-	reed.shader = grass
-	reed.set_shader_parameter("sway", 0.3)
-	reed.set_shader_parameter("flower_chance", 0.0)
-	reed.set_shader_parameter("tip_tint", Color(1.0, 0.8, 0.45))
-	_prop_mats[OgFoliage.KIND_REED] = reed
-	# Leaf colours (sRGB): dark teal pines, olive-gold broadleaf, flowering bushes (mood boards 02, 03, 06, 09).
-	var specs := {
-		OgFoliage.KIND_PINE: [Color(0.03, 0.09, 0.09), Color(0.13, 0.27, 0.19), 0.0, 0.03],
-		OgFoliage.KIND_TREE: [Color(0.07, 0.15, 0.11), Color(0.36, 0.40, 0.18), 0.0, 0.04],
-		OgFoliage.KIND_BUSH: [Color(0.08, 0.17, 0.11), Color(0.34, 0.38, 0.17), 0.55, 0.06],
-	}
-	for kind: int in specs:
-		var m := ShaderMaterial.new()
-		m.shader = foliage
-		m.set_shader_parameter("leaf_dark", specs[kind][0])
-		m.set_shader_parameter("leaf_light", specs[kind][1])
-		m.set_shader_parameter("flower_amount", specs[kind][2])
-		m.set_shader_parameter("sway", specs[kind][3])
-		_prop_mats[kind] = m
 
 
 func _exit_tree() -> void:

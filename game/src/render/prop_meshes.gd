@@ -15,6 +15,39 @@ extends RefCounted
 const MESH_SEED := 0x0637A1
 
 static var _cache := {}
+static var _materials := {}
+
+
+## The shared material for `kind` (one of OgFoliage.KIND_*), built on first use. Main thread only.
+static func material(kind: int) -> Material:
+	if _materials.has(kind):
+		return _materials[kind]
+	var m := ShaderMaterial.new()
+	match kind:
+		OgFoliage.KIND_ROCK:
+			m.shader = preload("res://src/render/shaders/rock.gdshader")
+		OgFoliage.KIND_GRASS:
+			m.shader = preload("res://src/render/shaders/grass.gdshader")
+		OgFoliage.KIND_REED:
+			m.shader = preload("res://src/render/shaders/grass.gdshader")
+			m.set_shader_parameter("sway", 0.3)
+			m.set_shader_parameter("flower_chance", 0.0)
+			m.set_shader_parameter("tip_tint", Color(1.0, 0.8, 0.45))
+		_:
+			# Leaf colours (sRGB): dark teal pines, olive-gold broadleaf, flowering bushes (mood boards 02, 03,
+			# 06, 09): [dark, light, flower amount, sway].
+			var specs := {
+				OgFoliage.KIND_PINE: [Color(0.03, 0.09, 0.09), Color(0.13, 0.27, 0.19), 0.0, 0.03],
+				OgFoliage.KIND_TREE: [Color(0.07, 0.15, 0.11), Color(0.36, 0.40, 0.18), 0.0, 0.04],
+				OgFoliage.KIND_BUSH: [Color(0.08, 0.17, 0.11), Color(0.34, 0.38, 0.17), 0.55, 0.06],
+			}
+			m.shader = preload("res://src/render/shaders/foliage.gdshader")
+			m.set_shader_parameter("leaf_dark", specs[kind][0])
+			m.set_shader_parameter("leaf_light", specs[kind][1])
+			m.set_shader_parameter("flower_amount", specs[kind][2])
+			m.set_shader_parameter("sway", specs[kind][3])
+	_materials[kind] = m
+	return m
 
 
 ## The mesh for `kind` (one of OgFoliage.KIND_*), built on first use. Main thread only.
