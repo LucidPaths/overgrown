@@ -1,6 +1,6 @@
 extends RefCounted
-## OgFoliage (ART-027): seeded prop placement is deterministic, and every prop stands on dry land inside its
-## own chunk (props are drawn chunk-local; a wrong offset would put trees in rivers or across seams).
+## OgFoliage (ART-027): seeded prop placement is deterministic, and every prop stands on the ground of dry land
+## inside its own chunk (props are drawn chunk-local; a wrong offset would put trees in rivers or across seams).
 
 ## Seed 1 chunks with grassland, forest, river banks and mountain, including negative coordinates.
 const CHUNKS: Array[Vector2i] = [Vector2i(-2, -2), Vector2i(-5, -1), Vector2i(-2, -3), Vector2i(-6, -1), Vector2i(0, 0)]
@@ -38,4 +38,11 @@ func test_props_stand_on_dry_land_in_their_chunk(t: TestContext) -> void:
 				var tile := c.tiles[floori(lz) * OgWorld.CHUNK_TILES + floori(lx)]
 				if OgTerrain.is_water(tile) or tile == OgTile.CLIFF:
 					bad += 1
-			t.check(bad == 0, "chunk %s: %d %s outside the chunk or on water or cliff" % [str(k), bad, OgFoliage.KIND_NAMES[kind]])
+					continue
+				# The prop's foot (y) must sit on the tile's ground: within its corner heights, sunk at most 0.1 m.
+				var tl := floori(lz) * OgFoliage.CORNERS + floori(lx)
+				var hs := [c.heights[tl], c.heights[tl + 1], c.heights[tl + OgFoliage.CORNERS], c.heights[tl + OgFoliage.CORNERS + 1]]
+				var y := buf[i + 7]
+				if y < float(hs.min()) - 0.1 or y > float(hs.max()):
+					bad += 1
+			t.check(bad == 0, "chunk %s: %d %s outside the chunk, on water or cliff, or off the ground" % [str(k), bad, OgFoliage.KIND_NAMES[kind]])

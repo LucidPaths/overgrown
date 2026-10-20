@@ -21,6 +21,10 @@ void vertex() {
 }
 
 void fragment() {
+	// Dithers away between the camera and the wanderer, as the bible asks of anything that can block the view.
+	if (og_occluder(VERTEX, VIEW_MATRIX, 2.4) > og_bayer4(FRAGCOORD.xy) * 0.999) {
+		discard;
+	}
 	vec3 w = v_world;
 	float n = og_fbm(w.xz * 0.8 + w.y * 0.7, 3);
 	vec3 col = mix(stone_dark, stone, smoothstep(0.25, 0.75, n));

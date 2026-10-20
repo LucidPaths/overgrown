@@ -53,6 +53,11 @@ var _landmarks: OgLandmarkView
 ## focus: the wanderer's view node; quality: Post; shot: Vector3(yaw, pitch, dist) or null.
 func setup(world_env: WorldEnvironment, sun: DirectionalLight3D, camera: Camera3D, focus: Node3D, quality: int, shot: Variant = null, landmarks: OgLandmarkView = null) -> void:
 	post = quality
+	if post != Post.OFF and RenderingServer.get_rendering_device() == null:
+		# The post stack is compute shaders; without a RenderingDevice (the Compatibility renderer) the post-on
+		# environment (linear tonemap, no fog, a sky made for the post's repaint) would render wrong, so use the off look.
+		push_warning("OgWorldLook: no RenderingDevice (Compatibility renderer?); using --post off")
+		post = Post.OFF
 	_landmarks = landmarks
 	if landmarks != null:
 		landmarks.mesh_pillar = post == Post.OFF
