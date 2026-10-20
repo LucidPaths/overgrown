@@ -53,6 +53,7 @@ Still open with Lucid (non-blocking): stray files `/nonexistent_root_dir/x.png` 
 - 2026-10-19 Lucid: Godot overhaul (D1–D8 in docs/overhaul/PLAN.md, #35): Godot 4 desktop, exe from Releases, cloud-only development, mood-board art, tilted ARPG camera + vistas, agent-built Blender characters, loosened asset rule D8 (open licences + CREDITS). "Just build, merge": no per-PR sign-off.
 - 2026-10-19 GDScript cross-language fixtures carry floats as IEEE-754 hex bits (Godot's JSON float parsing isn't correctly rounded).
 - 2026-10-19 OVR-009 #40: 3 Fable loops, each finding new small doc-accuracy items (no failed fix); the last one-clause fix (OQ-032 asset names) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (same call as #30).
+- 2026-10-20 OVR-011 #47: 3 Fable loops, each finding new small bookkeeping items (no failed fix); the last one-clause fix (OQ-040 trade-off deferral wording) was verified locally and merged without a 4th gate under Lucid's standing "just build, merge" (as #40, #30).
 - 2026-10-19 Third-party assets live in `game/assets/third_party/` (inside the Godot project so res:// can load them), credited in its CREDITS.md (OVR-009).
 - 2026-10-12 TypeScript pinned to 6.0.3 (typescript-eslint peer limit). Recorded in CLAUDE.md traps.
 
