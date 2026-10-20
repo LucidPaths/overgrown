@@ -9,7 +9,7 @@ extends Node3D
 ##   --vista            hold the vista pose
 ##   --yaw DEG          start the camera orbit at this yaw (0: looking north; 90: looking west; default 0)
 ##   --pitch DEG        start the play pitch at this angle above the target, clamped to the orbit range
-##                      (OgCameraRig.PLAY_PITCH_MIN_DEG..PLAY_PITCH_MAX_DEG, 5..65; default 30)
+##                      (OgCameraRig.PLAY_PITCH_MIN_DEG..PLAY_PITCH_MAX_DEG, -40..65; default 30)
 ##   --zoom M           start the play zoom at M metres, clamped to OgCameraRig.ZOOM_MIN_M..ZOOM_MAX_M (default 14)
 ##   --autopilot        drive the wanderer with OgAutopilot's scripted frames (from world ready), not devices
 ##   --capture PNG      wait for world ready (and --capture-tick), render --frames N warm-up frames (default 5),
