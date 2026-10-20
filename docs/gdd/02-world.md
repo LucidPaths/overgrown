@@ -35,6 +35,7 @@ creature_level ≈ f(species base, age, local density pressure, distance from wo
 - Monster **density and horde size grow with distance from the world origin.** This adds to the creature-level distribution above (WLD-007): far out you meet more monsters, in bigger groups, as well as higher-level ones.
 - Near the origin it's calm. Far out it's "monster horde nonsense" (Lucid), the normal encounter for the horde-slayer combat (→ CMB).
 - Biomes stay about place, not difficulty (see Biomes). The density and horde-size curves and where "far" begins are decided in WLD-023.
+- **World difficulty level (OQ-045).** The world has one difficulty level that every dungeon death raises for everyone in that world. It **never goes back down.** Which of the creature-level and density rules above read it, what it scales (creature levels, density, both), by how much and how it combines with distance are decided in WLD-025.
 
 ## Beacons and waystones (OQ-044)
 
@@ -107,3 +108,4 @@ These are the main source of "feel", so give them real visual budget.
 - [ ] **WLD-022** Chunk retention: drop visited chunks that have no lasting changes and regenerate them from the seed on revisit; region sim statistics are kept.
 - [ ] **WLD-023** Horde spawning and density by distance: monster density and horde size grow with distance from the origin, on top of the level distribution (OQ-043) (→ WLD-007, ECO-001, ECO-005).
 - [ ] **WLD-024** Beacons and waystones at the frontier that stay lit once lit, kept across chunk retention (OQ-044) (→ WLD-006, WLD-022).
+- [ ] **WLD-025** World difficulty level: one per world, raised by every dungeon death (OQ-045), never decreased, read by the creature-level and/or density rules; decides which rules read it, what it scales (creature levels, density, both), by how much, how it combines with distance, and whether NPC deaths raise it (→ WLD-007, WLD-023).
